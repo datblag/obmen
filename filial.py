@@ -22,6 +22,8 @@ from zeep.transports import Transport
 
 
 
+
+1
 def get_nomenklatura_groups(prm_cursor,prm_parent_id,prm_parent_id_2,prm_list,prm_nomenklatura_type,prm_arrayn_type):
     prm_cursor.execute('''SELECT descr,id,code,sp4802 as idartmarket,SP3024 as fullname 
                                  from sc33 where (isfolder='1') and (ltrim(rtrim(parentid))= %s)''',prm_parent_id)  
