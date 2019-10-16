@@ -362,7 +362,7 @@ session = Session()
 session.auth = HTTPBasicAuth(prod_server_user, prod_server_password)
 
 client = Client(wsdl=prod_server_address,transport=Transport(session=session))
-1
+
 
 #client.wsdl.dump()
 
