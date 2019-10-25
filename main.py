@@ -356,6 +356,8 @@ except:
 
 
 
+
+
 logging.warning('Начало работы')
 
 session = Session()
