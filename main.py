@@ -16,6 +16,7 @@ import prihod
 from wsdl import *
 import sql
 from sql import cursor,conn
+import hdb
 #import timeit
 #import profile
 #from config import prod_server_address,prod_server_user,prod_server_password
@@ -103,34 +104,6 @@ def get_region_groups(prm_cursor,prm_id_list=''):
 
 
 
-
-
-def load_clients():
-    pass
-    #контрагенты sc46
-    #папка доставка SELECT  *  FROM [torg2006].[dbo].[SC46] where rtrim(ltrim(code))='30' id='     Z   '
-    #папка в доставке SELECT  *   FROM [torg2006].[dbo].[SC46] where parentid='     Z   ' and isfolder='1'
-    #sp4807 идентификатор
-
-
-# try:
-#     logname = r'h:\project\base\logs\obmen\obmen.log'
-#     logname_debug = r'h:\project\base\logs\obmen\obmen_debug.log'
-#     logname_error = r'h:\project\base\logs\obmen\obmen_error.log'
-#     run_logers(logname,logname_debug,logname_error)
-# except:
-#     logname = r'h:\project\base\logs\obmen\obmen_res.log'
-#     logname_debug = r'h:\project\base\logs\obmen\obmen_res_debug.log'
-#     logname_error = r'h:\project\base\logs\obmen\obmen_res_error.log'
-#     run_logers(logname,logname_debug,logname_error)
-
-
-#run_logers(logname,logname_debug,logname_error)
-
-
-
-
-
 logging.warning('Начало работы')
 
 
@@ -167,7 +140,23 @@ while True:
         #k2=input('Введите дату (гггг-мм-дд):')
             nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date=k2)
     elif k == 'документ7':
-        pass
+        #434 - приход
+        start_date = date(2018, 1, 1)
+        end_date = date(2018, 1,31)
+        doc_type_list=[{'typeid':434,'typename':'приход','idfield':'SP6059','sumfield':'sp453'}]
+        for doc_type in doc_type_list:
+            print(doc_type['sumfield'])
+            cursor.execute('''select  closed, _1sjourn.iddocdef as doctype, _1sjourn.iddoc, docno as docno, CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate,
+            dt.sm,'''+doc_type['idfield']+''' as idartmarket  from _1sjourn
+            left join dh'''+str(doc_type['typeid'])+''' dh on _1sjourn.iddoc = dh.iddoc
+            left join(select sum('''+doc_type['sumfield']+''') as sm, iddoc from dt'''+str(doc_type['typeid'])+''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
+            where(iddocdef='''+str(doc_type['typeid'])+''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between '''+
+                           "'" + start_date.strftime("%Y-%m-%d") + "'" +''' and '''+
+                           "'" + end_date.strftime("%Y-%m-%d") + "'" +''')''')
+            rows_doc=cursor.fetchall()
+            for row_doc in rows_doc:
+                pass
+                #print(row_doc)
     elif k=='авто':
         white_list=[]
         if 1==1:
@@ -567,7 +556,7 @@ while True:
                         if client_list==[]:
                             continue
                         str_id=",".join(client_list)
-                        get_client_groups(cursor,str_id)
+                        hdb.get_client_groups(cursor,str_id)
                         #print(row_list)
                         rows=rows_type(rows=row_list)
                         document=document_type(header=header,rowslist=rows)
@@ -676,7 +665,7 @@ while True:
 
 
                         str_id=",".join(client_list)
-                        get_client_groups(cursor,str_id)
+                        hdb.get_client_groups(cursor,str_id)
                         header=header_type(document_type=2,firma=row['firma'].strip(),sklad=row['sklad'].strip(),client=row['client'].strip(),idartmarket=row['idartmarket'].strip()
                                             ,document_date=row['datedoc'],nomerartmarket=row['docno'])
                         logging.info('Выборка строк расхода')
