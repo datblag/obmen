@@ -4,12 +4,14 @@ from zeep import Client
 from requests import Session
 from requests.auth import HTTPBasicAuth  # or HTTPDigestAuth, or OAuth1, etc.
 from zeep.transports import Transport
+import logging
 
 
 session = Session()
 session.auth = HTTPBasicAuth(prod_server_user, prod_server_password)
 client = Client(wsdl=prod_server_address,transport=Transport(session=session))
 
+logging.warning('Определение wsdl типов')
 
 hdb_type = client.get_type('ns3:hdb_element')
 hdb_array_type = client.get_type('ns3:hdb_array_element')

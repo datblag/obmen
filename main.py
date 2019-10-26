@@ -1,13 +1,20 @@
 # -*- encoding: utf-8 -*-
-import pymssql
+from logging.handlers import TimedRotatingFileHandler
 import logging
+import logs
+logs.run()
+from config import logname,logname_debug,logname_error
+#import pymssql
 from logging.handlers import TimedRotatingFileHandler
 import datetime
 from datetime import date, timedelta
 import time
 from tqdm import *
-from config import cb_sql_address,cb_sql_user_name,cb_sql_password,cb_sql_database
+#from config import cb_sql_address,cb_sql_user_name,cb_sql_password,cb_sql_database
 import nomenklatura
+from wsdl import *
+import sql
+from sql import cursor,conn
 #import timeit
 #import profile
 #from config import prod_server_address,prod_server_user,prod_server_password
@@ -137,50 +144,20 @@ def load_clients():
     #папка в доставке SELECT  *   FROM [torg2006].[dbo].[SC46] where parentid='     Z   ' and isfolder='1'
     #sp4807 идентификатор
 
-def run_logers(prm_logname,prm_logname_debug,prm_logname_error):
-    #logname = prm_logname
-    #logname_debug = prm_logname_debug
-    #logname_error = prm_logname_error
-    f = logging.Formatter(fmt=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
-        datefmt="%Y-%m-%d %H:%M:%S")
-    handlers = [
-        logging.handlers.RotatingFileHandler(prm_logname, encoding='utf8',
-            maxBytes=100000000, backupCount=100),
-        logging.StreamHandler(),
-        logging.handlers.RotatingFileHandler(prm_logname_debug, encoding='utf8',
-            maxBytes=100000000, backupCount=100),
-        logging.handlers.RotatingFileHandler(prm_logname_error, encoding='utf8',
-            maxBytes=100000000, backupCount=100)
-    ]
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
 
-    handlers[0].setLevel(logging.INFO)
-    handlers[1].setLevel(logging.INFO)
-    handlers[2].setLevel(logging.DEBUG)
-    handlers[3].setLevel(logging.ERROR)
-
-    for h in handlers:
-        h.setFormatter(f)
-        #h.setLevel(logging.INFO)
-        root_logger.addHandler(h)
-    ##############################
-    #### END LOGGING SETTINGS ####
-    ##############################
-
-try:
-    logname = r'h:\project\base\logs\obmen\obmen.log'
-    logname_debug = r'h:\project\base\logs\obmen\obmen_debug.log'
-    logname_error = r'h:\project\base\logs\obmen\obmen_error.log'
-    run_logers(logname,logname_debug,logname_error)
-except:
-    logname = r'h:\project\base\logs\obmen\obmen_res.log'
-    logname_debug = r'h:\project\base\logs\obmen\obmen_res_debug.log'
-    logname_error = r'h:\project\base\logs\obmen\obmen_res_error.log'
-    run_logers(logname,logname_debug,logname_error)
+# try:
+#     logname = r'h:\project\base\logs\obmen\obmen.log'
+#     logname_debug = r'h:\project\base\logs\obmen\obmen_debug.log'
+#     logname_error = r'h:\project\base\logs\obmen\obmen_error.log'
+#     run_logers(logname,logname_debug,logname_error)
+# except:
+#     logname = r'h:\project\base\logs\obmen\obmen_res.log'
+#     logname_debug = r'h:\project\base\logs\obmen\obmen_res_debug.log'
+#     logname_error = r'h:\project\base\logs\obmen\obmen_res_error.log'
+#     run_logers(logname,logname_debug,logname_error)
 
 
-
+#run_logers(logname,logname_debug,logname_error)
 
 
 
@@ -197,14 +174,6 @@ list=[]
 
 #os.environ['TDSDUMP'] = 'stdout'
 
-logging.warning('Соединение с sql сервером')
-
-conn = pymssql.connect(server=cb_sql_address, user=cb_sql_user_name, password=cb_sql_password, database=cb_sql_database)
-logging.warning('Соединение с sql сервером завершено')
-cursor = conn.cursor(as_dict=True)
-
-cursor.execute('''SET TRANSACTION ISOLATION LEVEL READ COMMITTED''')
-
 
 
 
@@ -217,7 +186,7 @@ while True:
     elif k=='цены':
         #36-доставка 38-приобретение
         # приобретение сделать на начало года
-        load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date='2018-12-31')
+        nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date='2018-12-31')
         #выгрузка истории
         start_date = date(2019, 2, 2)
         end_date = date(2019, 10,1)
@@ -228,7 +197,7 @@ while True:
             print (k2)
             start_date += delta
         #k2=input('Введите дату (гггг-мм-дд):')
-            load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date=k2)
+            nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date=k2)
     elif k == 'документ7':
         pass
     elif k=='авто':
@@ -341,7 +310,7 @@ while True:
 
                         rows=rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
 
 
@@ -410,7 +379,7 @@ while True:
 
                         rows=rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
 
                         list_partii=[]
@@ -507,7 +476,7 @@ while True:
 
                         rows=rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
 
 
@@ -771,7 +740,7 @@ while True:
 
                         rows=rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=1)
+                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=1)
 
                         document=document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа расхода',row['docno']]))
@@ -940,7 +909,7 @@ while True:
 
                         rows=rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
                         document=document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа прихода',row_header['docno']]))
@@ -1189,7 +1158,7 @@ while True:
                 rows=rows_type(rows=row_list)
                 str_id=",".join(tovar_list)
                 
-                load_nomenklatura(str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                nomenklatura.load_nomenklatura(str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
                 
                 document=document_type(header=header,rowslist=rows)
                 logging.info('Загрузка документа остатков')

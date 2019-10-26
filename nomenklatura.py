@@ -1,6 +1,12 @@
 import logging
-from logging.handlers import TimedRotatingFileHandler
+#import logs
+from sql import cursor
+from wsdl import nomenklatura_type,arrayn_type,client
 
+#from logging.handlers import TimedRotatingFileHandler
+
+
+#logs.run()
 
 def load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=0, prm_unload_price=0,
                       prm_unload_price_date='1900-01-01'):
