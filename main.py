@@ -17,44 +17,6 @@ from wsdl import *
 import sql
 from sql import cursor,conn
 import hdb
-#import timeit
-#import profile
-#from config import prod_server_address,prod_server_user,prod_server_password
-#import sys
-#from zeep import Client
-#from lxml import etree
-#import os
-#from logging import StreamHandler
-#from requests import Session
-#from requests.auth import HTTPBasicAuth  # or HTTPDigestAuth, or OAuth1, etc.
-#from zeep.transports import Transport
-
-
-# def get_nomenklatura_groups(prm_cursor,prm_parent_id,prm_parent_id_2,prm_list,prm_nomenklatura_type,prm_arrayn_type):
-#     prm_cursor.execute('''SELECT descr,id,code,sp4802 as idartmarket,SP3024 as fullname
-#                                  from sc33 where (isfolder='1') and (ltrim(rtrim(parentid))= %s)''',prm_parent_id)
-#     row = prm_cursor.fetchall()
-#     for r in row:
-#         nom=nomenklatura_type(code=r[2].strip(),name=r[0].strip(),id=r[3].strip(),idparent=prm_parent_id_2)
-#         prm_list.append(nom)
-#         get_nomenklatura_groups(prm_cursor,r[1].strip(),r[3].strip(),prm_list,prm_nomenklatura_type,prm_arrayn_type)
-
-
-# def get_nomenklatura_elements1(prm_cursor,prm_parent_id,prm_parent_id_2,prm_list,prm_nomenklatura_type,prm_arrayn_type,prm_id_list):
-#     logging.info('Выборка элементов номенклатуры')
-#     prm_cursor.execute('''SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.sp4802 as idartmarket,elemement1.SP3024 as fullname,
-#     groups1.sp4802 as idparent FROM SC33 elemement1 left join SC33  groups1 on elemement1.parentid=groups1.id where elemement1.isfolder<>'1'
-#     and element1.id in %s''',prm_id_list)
-#     logging.info('Выборка элементов номенклатуры завершена')
-#     row = cursor.fetchall()
-#     for r in row:
-#         nom=nomenklatura_type(code=r[2].strip(),name=r[0].strip(),id=r[3].strip(),idparent=r[5].strip())
-#         prm_list.append(nom)
-#         #get_nom_groups(prm_cursor,r[1].strip(),r[3].strip(),prm_list,prm_nomenklatura_type,prm_arrayn_type)
-
-
-
-
 
 def get_region_groups(prm_cursor,prm_id_list=''):
     hdb_type = client.get_type('ns3:hdb_element')
