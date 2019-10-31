@@ -124,21 +124,23 @@ while True:
     k=input('Введите команду:')
     if k=='0':
         break
+    elif k == 'ценынач':
+        nomenklatura.load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
+                                       prm_unload_price=4549, prm_unload_price_date='2018-12-31')
     elif k=='цены':
-        #36-доставка 38-приобретение
-        # приобретение сделать на начало года
-        nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date='2018-12-31')
+        #36-доставка 38-приобретение, 4549 закуп
         #выгрузка истории
-        start_date = date(2019, 2, 2)
-        end_date = date(2019, 10,1)
+        end_date = date(2019, 10,20)
         delta = timedelta(days=1)
-        while start_date <= end_date:
-            break
-            k2=start_date.strftime("%Y-%m-%d")
-            print (k2)
-            start_date += delta
-        #k2=input('Введите дату (гггг-мм-дд):')
-            nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=38,prm_unload_price_date=k2)
+        price_type_to_load=[36,38]
+        for price_type in price_type_to_load:
+            print(price_type)
+            start_date = date(2019, 10, 2)
+            while start_date <= end_date:
+                k2=start_date.strftime("%Y-%m-%d")
+                print(k2)
+                start_date += delta
+                nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=price_type,prm_unload_price_date=k2)
     elif k == 'документ7':
         #434 - приход
         start_date = date(2018, 1, 1)
