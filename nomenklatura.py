@@ -56,7 +56,7 @@ def load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_updat
         # 36-доставка
         # str_select=str_select+'''
         #                    (select a.objid as idtovar,value,date from (
-        #                    select objid,id,max(date) as mdate from _1SCONST where date=('''+"'"+prm_unload_price_date+"'"+''') and (_1SCONST.id=36) group by objid,id) a
+        #                    select objid,id,max(date) as mdate from _1SCONST where date<=('''+"'"+prm_unload_price_date+"'"+''') and (_1SCONST.id=36) group by objid,id) a
         #                    inner join (select objid,id,date,value from _1SCONST where _1SCONST.id=36) b on a.objid=b.objid and mdate=date ) cdost on elemement1.id= cdost.idtovar
         #                     where   (elemement1.isfolder=2) and (isnull(cdost.date,'1978-01-01')<>'1978-01-01') '''
 
