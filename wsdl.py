@@ -1,4 +1,4 @@
-from config import prod_server_address,prod_server_user,prod_server_password
+#from config import prod_server_address,prod_server_user,prod_server_password
 
 from zeep import Client
 from requests import Session
@@ -6,25 +6,28 @@ from requests.auth import HTTPBasicAuth  # or HTTPDigestAuth, or OAuth1, etc.
 from zeep.transports import Transport
 import logging
 
-
-session = Session()
-session.auth = HTTPBasicAuth(prod_server_user, prod_server_password)
-client = Client(wsdl=prod_server_address,transport=Transport(session=session))
-
 logging.warning('Определение wsdl типов')
 
-hdb_type = client.get_type('ns3:hdb_element')
-hdb_array_type = client.get_type('ns3:hdb_array_element')
 
-header_type=client.get_type('ns2:document_header')
-row_type=client.get_type('ns2:document_row')
-rows_type=client.get_type('ns2:document_rows')
-document_type=client.get_type('ns2:document')
-arrayn_type = client.get_type('ns0:arrayn_elements')
-nomenklatura_type = client.get_type('ns0:nomenklatura_element')
+class WsdlClient:
+    def __init__(self, wsdl_config):
+        self.session = Session()
+        self.session.auth = HTTPBasicAuth(wsdl_config['server_user'], wsdl_config['server_password'])
+        self.client = Client(wsdl=wsdl_config['server_address'], transport=Transport(session=self.session))
 
-row_partii_type=client.get_type('ns2:partii_row')
-rows_partii_type=client.get_type('ns2:partii_rows')
-document_partii_type=client.get_type('ns2:document_partii')
+        self.hdb_type = self.client.get_type('ns3:hdb_element')
+        self.hdb_array_type = self.client.get_type('ns3:hdb_array_element')
+
+        self.header_type=self.client.get_type('ns2:document_header')
+        self.row_type=self.client.get_type('ns2:document_row')
+        self.rows_type=self.client.get_type('ns2:document_rows')
+        self.document_type=self.client.get_type('ns2:document')
+        self.arrayn_type = self.client.get_type('ns0:arrayn_elements')
+        self.nomenklatura_type = self.client.get_type('ns0:nomenklatura_element')
+
+        self.row_partii_type=self.client.get_type('ns2:partii_row')
+        self.rows_partii_type=self.client.get_type('ns2:partii_rows')
+        self.document_partii_type=self.client.get_type('ns2:document_partii')
+
 
 

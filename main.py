@@ -9,14 +9,29 @@ from logging.handlers import TimedRotatingFileHandler
 import datetime
 from datetime import date, timedelta
 import time
+
+import nomenklatura
+import hdb
+import prihod
+
 from tqdm import *
 #from config import cb_sql_address,cb_sql_user_name,cb_sql_password,cb_sql_database
-import nomenklatura
-import prihod
+#from sql import cursor,conn
+from config import cb_config
 from wsdl import *
-import sql
-from sql import cursor,conn
-import hdb
+from  sql import SqlClient
+
+wsdl_client = WsdlClient(cb_config['server_1c'])
+
+client = wsdl_client.client
+
+logging.warning('Соединение с sql сервером')
+sql_client = SqlClient(cb_config['sql'])
+cursor = sql_client.cursor
+conn = sql_client.conn
+
+
+
 
 def get_region_groups(prm_cursor,prm_id_list=''):
     hdb_type = client.get_type('ns3:hdb_element')
@@ -87,16 +102,16 @@ while True:
     if k=='0':
         break
     elif k == 'ценынач':
-        nomenklatura.load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
-                                       prm_unload_price=3677, prm_unload_price_date='2018-12-31')
+        nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
+                                       prm_unload_price=3678, prm_unload_price_date='2018-12-31',
+                                       wsdl_client=wsdl_client)
     elif k=='цены':
-        #36-доставка 38-приобретение, 4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей
-        # TODO проверить цены филиала 3240-филиал,
+        #36-доставка 38-приобретение, 4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей, 37 - розничная
         #выгрузка истории
-        end_date = date(2019, 10,20)
+        end_date = date(2019, 10,25)
         delta = timedelta(days=1)
 
-        #[36, 38, 4549, 35, 4460]
+        #[36, 38, 4549, 35, 4460,3677,37] полный список
         price_type_to_load=[36,38]
         for price_type in price_type_to_load:
             print(price_type)
@@ -105,7 +120,8 @@ while True:
                 k2=start_date.strftime("%Y-%m-%d")
                 print(k2)
                 start_date += delta
-                nomenklatura.load_nomenklatura(prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,prm_unload_price=price_type,prm_unload_price_date=k2)
+                nomenklatura.load_nomenklatura(cursor,prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,
+                                               prm_unload_price=price_type,prm_unload_price_date=k2,wsdl_client=wsdl_client)
     elif k == 'документ7':
         #434 - приход
         start_date = date(2018, 1, 1)
@@ -170,7 +186,7 @@ while True:
                     #print(row_delta)
                     str_id=",".join(["'"+row_delta['OBJID']+"'"])
                     #load_nomenklatura(prm_id_str=str_id,prm_id_mode=1,prm_with_parent=1,prm_update_mode=1)                                  
-                    nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=1,prm_with_parent=0,prm_update_mode=1)
+                    nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id,prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,wsdl_client=wsdl_client)
                 
                 #перемещение
                 elif row_delta['TYPEID']==239: 
@@ -632,8 +648,8 @@ while True:
 
 
                         str_id=",".join(client_list)
-                        hdb.get_client_groups(cursor,str_id)
-                        header=header_type(document_type=2,firma=row['firma'].strip(),sklad=row['sklad'].strip(),client=row['client'].strip(),idartmarket=row['idartmarket'].strip()
+                        hdb.get_client_groups(wsdl_client, cursor, str_id)
+                        header=wsdl_client.header_type(document_type=2,firma=row['firma'].strip(),sklad=row['sklad'].strip(),client=row['client'].strip(),idartmarket=row['idartmarket'].strip()
                                             ,document_date=row['datedoc'],nomerartmarket=row['docno'])
                         logging.info('Выборка строк расхода')
                         if row_delta['TYPEID']==410:
@@ -655,18 +671,19 @@ while True:
                         tovar_list=[]
 
                         for row_table in rows_table:
-                            row_nom=row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
                             if row_table['idtovar']==None:
                                 continue
                             if not "'"+row_table['idtovar']+"'" in tovar_list:
                                 tovar_list.append("'"+row_table['idtovar']+"'")
                             row_list.append(row_nom)
 
-                        rows=rows_type(rows=row_list)
+                        rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=1)
+                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0, prm_update_mode=1,
+                                                       wsdl_client=wsdl_client)
 
-                        document=document_type(header=header,rowslist=rows)
+                        document=wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа расхода',row['docno']]))
 
                         #hdb_agent=
@@ -700,7 +717,7 @@ while True:
                             logging.info('Выборка партий расхода завершена')
                             rows_table_partii = cursor.fetchall()
                             for row_partii in rows_table_partii:
-                                row_nom_partii=row_partii_type(tovar=row_partii['idtovar_artmarket'],
+                                row_nom_partii=wsdl_client.row_partii_type(tovar=row_partii['idtovar_artmarket'],
                                                                prihod_id=row_partii['prihodid'],
                                                                prihod_type=row_partii['prihodtype'],
                                                                prihod_no=row_partii['prihodno'],
@@ -710,8 +727,8 @@ while True:
                                                                prodstoimost=row_partii['prodstoimost'],
                                                                prodaga=row_partii['prodaga'])
                                 list_partii.append(row_nom_partii)
-                        document_partii_rows=rows_partii_type(rows=list_partii)
-                        document_partii=document_partii_type(rowslist=document_partii_rows)
+                        document_partii_rows=wsdl_client.rows_partii_type(rows=list_partii)
+                        document_partii=wsdl_client.document_partii_type(rowslist=document_partii_rows)
                         n=client.service.load_rashod_tovar(document,document_partii,isclosed,row['agent'],row['expeditor'])
                         logging.info(';'.join(['Загрузка документа расхода',row['docno'],n]))
           

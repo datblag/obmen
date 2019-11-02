@@ -21,7 +21,7 @@ def run_logers(prm_logname,prm_logname_debug,prm_logname_error):
     root_logger.setLevel(logging.INFO)
 
     handlers[0].setLevel(logging.INFO)
-    handlers[1].setLevel(logging.WARNING)
+    handlers[1].setLevel(logging.INFO)
     handlers[2].setLevel(logging.DEBUG)
     handlers[3].setLevel(logging.ERROR)
 

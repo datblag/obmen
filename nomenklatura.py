@@ -1,15 +1,15 @@
 import logging
 #import logs
-from sql import cursor
-from wsdl import nomenklatura_type,arrayn_type,client
+#from sql import cursor
+#from wsdl import nomenklatura_type,arrayn_type,client
 
 #from logging.handlers import TimedRotatingFileHandler
 
 
 #logs.run()
 
-def load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=0, prm_unload_price=0,
-                      prm_unload_price_date='1900-01-01'):
+def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=0, prm_unload_price=0,
+                      prm_unload_price_date='1900-01-01',wsdl_client=None):
     # prm_id_mode 1- by id, 2 - by idartmarket
     # and (elemement1.sp4802 in ('''+str_id+'''))''')
 
@@ -56,7 +56,7 @@ def load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_updat
         # 36-доставка
         # str_select=str_select+'''
         #                    (select a.objid as idtovar,value,date from (
-        #                    select objid,id,max(date) as mdate from _1SCONST where date<=('''+"'"+prm_unload_price_date+"'"+''') and (_1SCONST.id=36) group by objid,id) a
+        #                    select objid,id,max(date) as mdate from _1SCONST where date=('''+"'"+prm_unload_price_date+"'"+''') and (_1SCONST.id=36) group by objid,id) a
         #                    inner join (select objid,id,date,value from _1SCONST where _1SCONST.id=36) b on a.objid=b.objid and mdate=date ) cdost on elemement1.id= cdost.idtovar
         #                     where   (elemement1.isfolder=2) and (isnull(cdost.date,'1978-01-01')<>'1978-01-01') '''
 
@@ -166,7 +166,7 @@ def load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_updat
         else:
             pricedostval = 0
 
-        nom = nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
+        nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
                                 id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
                                 emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'])
         if row_nom['isfolder'] == 1:
@@ -174,13 +174,13 @@ def load_nomenklatura(prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_updat
         else:
             tovar_list.append(nom)
 
-    arrayn_group = arrayn_type(nomenklatura=tovar_group_list)
-    client.service.load_nom_groups(arrayn_group, prm_update_mode)
+    arrayn_group = wsdl_client.arrayn_type(nomenklatura=tovar_group_list)
+    wsdl_client.client.service.load_nom_groups(arrayn_group, prm_update_mode)
 
-    arrayn = arrayn_type(nomenklatura=tovar_list)
+    arrayn = wsdl_client.arrayn_type(nomenklatura=tovar_list)
     # print(tovar_group_list)
     logging.info('Загрузка номенклатуры начало')
-    client.service.load_nom_elements(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
+    wsdl_client.client.service.load_nom_elements(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
     logging.info('Загрузка номенклатуры завершена')
     logging.debug('Загрузка номенклатуры завершена')
     logging.debug(tovar_list)

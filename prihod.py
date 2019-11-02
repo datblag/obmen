@@ -1,11 +1,9 @@
 import logging
-from sql import cursor
-from wsdl import header_type,rows_type,row_type,document_type,client
 from hdb import get_client_groups
 import datetime
 import nomenklatura
 
-def load_prihod(prm_row_delta):
+def load_prihod(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка приходов заголовки')
     cursor.execute('''
 
@@ -42,7 +40,7 @@ def load_prihod(prm_row_delta):
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
 
-        header = header_type(document_type=2, firma=row_header['firma'].strip(), sklad=row_header['sklad'].strip(),
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad=row_header['sklad'].strip(),
                              client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
                              , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
                              zatr_nashi=row_header['zatr_nashi'],
@@ -63,7 +61,7 @@ def load_prihod(prm_row_delta):
         logging.info(';'.join(['Выборка строк прихода', row_header['docno']]))
 
         prm_datedoc = datetime.datetime.strftime(row_header['datedoc'], '%Y-%m-%d')
-        print(prm_datedoc)
+        logging.info(prm_datedoc)
 
         cursor.execute('''
                    			        select  sc33.sp4802 as idtovar,SP449 as kolvo,SP452 as koef,SP451 as price,
@@ -102,7 +100,7 @@ def load_prihod(prm_row_delta):
         tovar_list = []
 
         for row_table in rows_table:
-            row_nom = row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
+            row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
                                koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'])
             if row_table['idtovar'] == None:
                 continue
@@ -110,11 +108,11 @@ def load_prihod(prm_row_delta):
                 tovar_list.append("'" + row_table['idtovar'] + "'")
             row_list.append(row_nom)
 
-        rows = rows_type(rows=row_list)
+        rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
         nomenklatura.load_nomenklatura(prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0)
 
-        document = document_type(header=header, rowslist=rows)
+        document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))
-        n = client.service.load_prihod_tovar(document, isclosed)
+        n = wsdl_client.client.service.load_prihod_tovar(document, isclosed)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno'], n]))
