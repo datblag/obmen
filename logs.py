@@ -1,4 +1,4 @@
-from config import logname,logname_debug,logname_error
+#from config import logname,logname_debug,logname_error
 from logging.handlers import TimedRotatingFileHandler
 import logging
 
@@ -35,5 +35,5 @@ def run_logers(prm_logname,prm_logname_debug,prm_logname_error):
 
 
 
-def run():
-    run_logers(logname, logname_debug, logname_error)
+def run(prm_logname,prm_logname_debug,prm_logname_error):
+    run_logers(prm_logname,prm_logname_debug,prm_logname_error)

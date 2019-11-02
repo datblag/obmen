@@ -89,14 +89,14 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         # print(row_nom)
         if prm_with_parent == 1:
             if row_nom['idparent9'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent9'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent9'].strip(),
                                               id=row_nom['idparent9'].strip(), idparent='')
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent9'].strip()
             else:
                 idparent_prev = ''
             if row_nom['idparent8'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent8'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent8'].strip(),
                                               id=row_nom['idparent8'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent8'].strip()
@@ -104,7 +104,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent7'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent7'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent7'].strip(),
                                               id=row_nom['idparent7'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent7'].strip()
@@ -112,7 +112,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent6'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent6'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent6'].strip(),
                                               id=row_nom['idparent6'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent6'].strip()
@@ -120,7 +120,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent5'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent5'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent5'].strip(),
                                               id=row_nom['idparent5'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent5'].strip()
@@ -128,7 +128,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent4'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent4'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent4'].strip(),
                                               id=row_nom['idparent4'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent4'].strip()
@@ -136,7 +136,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent3'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent3'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent3'].strip(),
                                               id=row_nom['idparent3'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent3'].strip()
@@ -144,7 +144,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent2'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent2'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent2'].strip(),
                                               id=row_nom['idparent2'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent2'].strip()
@@ -152,7 +152,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 idparent_prev = ''
 
             if row_nom['idparent'] != None:
-                nom_group = nomenklatura_type(code='', name=row_nom['descrparent'].strip(),
+                nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent'].strip(),
                                               id=row_nom['idparent'].strip(), idparent=idparent_prev)
                 tovar_group_list.append(nom_group)
 

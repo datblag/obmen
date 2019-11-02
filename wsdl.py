@@ -6,11 +6,11 @@ from requests.auth import HTTPBasicAuth  # or HTTPDigestAuth, or OAuth1, etc.
 from zeep.transports import Transport
 import logging
 
-logging.warning('Определение wsdl типов')
 
 
 class WsdlClient:
     def __init__(self, wsdl_config):
+        logging.warning('Определение wsdl типов')
         self.session = Session()
         self.session.auth = HTTPBasicAuth(wsdl_config['server_user'], wsdl_config['server_password'])
         self.client = Client(wsdl=wsdl_config['server_address'], transport=Transport(session=self.session))

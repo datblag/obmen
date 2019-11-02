@@ -9,6 +9,7 @@ import logging
 
 class SqlClient:
     def __init__(self, sql_config):
+        logging.warning('Соединение с sql сервером')
         self.conn = pymssql.connect(server=sql_config['sql_address'], user=sql_config['sql_user_name'],
                                     password=sql_config['sql_password'], database=sql_config['sql_database'])
         self.cursor = self.conn.cursor(as_dict=True)

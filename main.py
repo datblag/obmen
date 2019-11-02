@@ -1,12 +1,5 @@
 # -*- encoding: utf-8 -*-
-from logging.handlers import TimedRotatingFileHandler
-import logging
 import logs
-logs.run()
-from config import logname,logname_debug,logname_error
-#import pymssql
-from logging.handlers import TimedRotatingFileHandler
-import datetime
 from datetime import date, timedelta
 import time
 
@@ -15,17 +8,16 @@ import hdb
 import prihod
 
 from tqdm import *
-#from config import cb_sql_address,cb_sql_user_name,cb_sql_password,cb_sql_database
-#from sql import cursor,conn
-from config import cb_config
+from config import cb_config,logname, logname_debug, logname_error
 from wsdl import *
-from  sql import SqlClient
+from sql import SqlClient
+
+logs.run(logname, logname_debug, logname_error)
 
 wsdl_client = WsdlClient(cb_config['server_1c'])
 
 client = wsdl_client.client
 
-logging.warning('Соединение с sql сервером')
 sql_client = SqlClient(cb_config['sql'])
 cursor = sql_client.cursor
 conn = sql_client.conn
@@ -34,8 +26,8 @@ conn = sql_client.conn
 
 
 def get_region_groups(prm_cursor,prm_id_list=''):
-    hdb_type = client.get_type('ns3:hdb_element')
-    hdb_array_type = client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.client.get_type('ns3:hdb_array_element')
 
     list=[]
     logging.info('Выборка регионов уровень 1')
@@ -224,7 +216,7 @@ while True:
                             continue
 
 
-                        header=header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client=row_header['sklad_in'].strip(),idartmarket=row_header['idartmarket'].strip()
+                        header=wsdl_client.header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client=row_header['sklad_in'].strip(),idartmarket=row_header['idartmarket'].strip()
                                             ,document_date=row_header['datedoc'],nomerartmarket=row_header['docno'])
 
                         isclosed=row_header['closed'] and 1
@@ -241,20 +233,20 @@ while True:
                         tovar_list=[]
 
                         for row_table in rows_table:
-                            row_nom=row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
                             if row_table['idtovar']==None:
                                 continue
                             if not "'"+row_table['idtovar']+"'" in tovar_list:
                                 tovar_list.append("'"+row_table['idtovar']+"'")
                             row_list.append(row_nom)
 
-                        rows=rows_type(rows=row_list)
+                        rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
                         nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
 
 
-                        document=document_type(header=header,rowslist=rows)
+                        document=wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа перемещение',row_header['docno']]))
                         n=client.service.load_peremesh(document,isclosed)
                         logging.info(';'.join(['Загрузка документа перемещение',row_header['docno'],n]))
@@ -293,7 +285,7 @@ while True:
                             continue
 
 
-                        header=header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client='',idartmarket=row_header['idartmarket'].strip()
+                        header=wsdl_client.header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client='',idartmarket=row_header['idartmarket'].strip()
                                             ,document_date=row_header['datedoc'],nomerartmarket=row_header['docno'])
 
                         isclosed=row_header['closed'] and 1
@@ -310,14 +302,14 @@ while True:
                         tovar_list=[]
 
                         for row_table in rows_table:
-                            row_nom=row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
                             if row_table['idtovar']==None:
                                 continue
                             if not "'"+row_table['idtovar']+"'" in tovar_list:
                                 tovar_list.append("'"+row_table['idtovar']+"'")
                             row_list.append(row_nom)
 
-                        rows=rows_type(rows=row_list)
+                        rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
                         nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
@@ -338,7 +330,7 @@ while True:
                             logging.info('Выборка партий списаний завершена')
                             rows_table_partii = cursor.fetchall()
                             for row_partii in rows_table_partii:
-                                row_nom_partii=row_partii_type(tovar=row_partii['idtovar_artmarket'],
+                                row_nom_partii=wsdl_client.row_partii_type(tovar=row_partii['idtovar_artmarket'],
                                                                prihod_id=row_partii['prihodid'],
                                                                prihod_type=row_partii['prihodtype'],
                                                                prihod_no=row_partii['prihodno'],
@@ -348,12 +340,12 @@ while True:
                                                                prodstoimost=row_partii['prodstoimost'],
                                                                prodaga=row_partii['prodaga'])
                                 list_partii.append(row_nom_partii)
-                        document_partii_rows=rows_partii_type(rows=list_partii)
-                        document_partii=document_partii_type(rowslist=document_partii_rows)
+                        document_partii_rows=wsdl_client.rows_partii_type(rows=list_partii)
+                        document_partii=wsdl_client.document_partii_type(rowslist=document_partii_rows)
 
 
 
-                        document=document_type(header=header,rowslist=rows)
+                        document=wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа списание',row_header['docno']]))
                         n=client.service.load_spisanie(document,document_partii,isclosed)
                         logging.info(';'.join(['Загрузка документа списание',row_header['docno'],n]))
@@ -390,7 +382,7 @@ while True:
                             continue
 
 
-                        header=header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client='',idartmarket=row_header['idartmarket'].strip()
+                        header=wsdl_client.header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client='',idartmarket=row_header['idartmarket'].strip()
                                             ,document_date=row_header['datedoc'],nomerartmarket=row_header['docno'])
 
                         isclosed=row_header['closed'] and 1
@@ -407,21 +399,21 @@ while True:
                         tovar_list=[]
 
                         for row_table in rows_table:
-                            row_nom=row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
                             if row_table['idtovar']==None:
                                 continue
                             if not "'"+row_table['idtovar']+"'" in tovar_list:
                                 tovar_list.append("'"+row_table['idtovar']+"'")
                             row_list.append(row_nom)
 
-                        rows=rows_type(rows=row_list)
+                        rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
                         nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
 
 
 
 
-                        document=document_type(header=header,rowslist=rows)
+                        document=wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа ввод остатка',row_header['docno']]))
                         n=client.service.load_vvodostatka_tovar(document,isclosed)
                         logging.info(';'.join(['Загрузка документа ввод остатка',row_header['docno'],n]))
@@ -481,7 +473,7 @@ while True:
                                 logging.error(';'.join(['Пустой ид',row['docno']]))
                             continue
 
-                        header=header_type(document_type=2,firma=row['firma'].strip(),sklad=doc_descr,client='',idartmarket=row['idartmarket'].strip()
+                        header=wsdl_client.header_type(document_type=2,firma=row['firma'].strip(),sklad=doc_descr,client='',idartmarket=row['idartmarket'].strip()
                                             ,document_date=row['datedoc'],nomerartmarket=row['docno'])
 
                         
@@ -532,17 +524,17 @@ while True:
 
                             if row_table['client']==None:
                                 continue
-                            row_nom=row_type(tovar=row_table['client'],quantity=row_table['typedvig'],price=0,koef=debkred,sum=row_table['summa'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['client'],quantity=row_table['typedvig'],price=0,koef=debkred,sum=row_table['summa'])
                             if not "'"+row_table['client']+"'" in client_list:
                                 client_list.append("'"+row_table['client']+"'")
                             row_list.append(row_nom)
                         if client_list==[]:
                             continue
                         str_id=",".join(client_list)
-                        hdb.get_client_groups(cursor,str_id)
+                        hdb.get_client_groups(wsdl_client,cursor,str_id)
                         #print(row_list)
-                        rows=rows_type(rows=row_list)
-                        document=document_type(header=header,rowslist=rows)
+                        rows=wsdl_client.rows_type(rows=row_list)
+                        document=wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа взаиморасчетов',row['docno']]))
                         n=client.service.load_client_rashet(document,isclosed)
                         logging.info(';'.join(['Загрузка документа взаиморасчетов',row['docno'],n]))
@@ -688,15 +680,15 @@ while True:
 
                         #hdb_agent=
                         if row['agent']!='' and row['agent']!=None:
-                            nom_agent=hdb_type(name=row['agentname'].strip(),id=row['agent'].strip(),idparent='')
-                            hdb_array=hdb_array_type(hdb_array=[nom_agent])
+                            nom_agent=wsdl_client.hdb_type(name=row['agentname'].strip(),id=row['agent'].strip(),idparent='')
+                            hdb_array=wsdl_client.hdb_array_type(hdb_array=[nom_agent])
                             logging.info('Загрузка агента начало')
                             client.service.load_hdb_elements(hdb_array,1,'agent')
                             logging.info('Загрузка агента завершена')
 
                         if row['expeditor']!='' and row['expeditor']!=None:
-                            nom_agent=hdb_type(name=row['expeditorname'].strip(),id=row['expeditor'].strip(),idparent='')
-                            hdb_array=hdb_array_type(hdb_array=[nom_agent])
+                            nom_agent=wsdl_client.hdb_type(name=row['expeditorname'].strip(),id=row['expeditor'].strip(),idparent='')
+                            hdb_array=wsdl_client.hdb_array_type(hdb_array=[nom_agent])
                             logging.info('Загрузка экспедитора начало')
                             client.service.load_hdb_elements(hdb_array,1,'agent')
                             logging.info('Загрузка экспедитора завершена')
@@ -736,7 +728,7 @@ while True:
                 #приходы
                 elif row_delta['TYPEID']==434:
                     #приходы
-                    prihod.load_prihod(row_delta)
+                    prihod.load_prihod(cursor,wsdl_client,row_delta)
                 try:
                     cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and (OBJID=%s)''',row_delta['OBJID'])  
                     conn.commit()
@@ -790,7 +782,7 @@ while True:
         #client_type = client.get_type('ns1:client_group')
         #array_client_groups=client.get_type('ns1:array_client_groups')
 
-        get_client_groups(cursor)
+        hdb.get_client_groups(wsdl_client, cursor)
     elif k=='регион':
         get_region_groups(cursor)
 
@@ -814,7 +806,7 @@ while True:
                 logging.info('Запрос остатков выполнен')
                 rows = cursor.fetchall()  
                 logging.info('Курсор получен')
-                header=header_type(document_type=2,firma=row_firma['idartmarket'].strip(),sklad='')
+                header=wsdl_client.header_type(document_type=2,firma=row_firma['idartmarket'].strip(),sklad='')
                 row_list_dolg_post=[]
                 row_list_dolg=[]
                 row_list_avans=[]
@@ -825,17 +817,17 @@ while True:
                         continue
                     if row['SP6065']==1:
                         if  row['ostatok']<0:
-                            row_nom=row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans.append(row_nom)
                         elif  row['ostatok']>0:
-                            row_nom=row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg.append(row_nom)
                     elif row['SP6065']==2:
                         if  row['ostatok']>0:
-                            row_nom=row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg_post.append(row_nom)
                         elif  row['ostatok']<0:
-                            row_nom=row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans_post.append(row_nom)
                     if not "'"+row['client']+"'" in client_list:
                         client_list.append("'"+row['client']+"'")
@@ -844,14 +836,14 @@ while True:
                 str_id=",".join(client_list)
                 #get_client_groups(cursor,str_id)
                 #print(row_list)
-                rows=rows_type(rows=row_list_dolg)
-                document=document_type(header=header,rowslist=rows)
-                rows=rows_type(rows=row_list_avans)
-                document2=document_type(header=header,rowslist=rows)
-                rows=rows_type(rows=row_list_dolg_post)
-                document3=document_type(header=header,rowslist=rows)
-                rows=rows_type(rows=row_list_avans_post)
-                document4=document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_dolg)
+                document=wsdl_client.document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_avans)
+                document2=wsdl_client.document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_dolg_post)
+                document3=wsdl_client.document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_avans_post)
+                document4=wsdl_client.document_type(header=header,rowslist=rows)
                 logging.info('Загрузка документа остатков')
                 #prmmode    1-долги клиентов (sc46.SP6065=1) row['ostatok']>0
                 #           2 - авнсы клиентов (sc46.SP6065=1) row['ostatok']<0
@@ -887,7 +879,7 @@ while True:
                 logging.info('Запрос остатков выполнен')
                 rows = cursor.fetchall()  
                 logging.info('Курсор получен')
-                header=header_type(document_type=1,firma=row_firma['idartmarket'].strip(),sklad='')
+                header=wsdl_client.header_type(document_type=1,firma=row_firma['idartmarket'].strip(),sklad='')
                 row_list_dolg_post=[]
                 row_list_dolg=[]
                 row_list_avans=[]
@@ -898,17 +890,17 @@ while True:
                         continue
                     if row['SP6065']==1:
                         if  row['ostatok']<0:
-                            row_nom=row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans.append(row_nom)
                         elif  row['ostatok']>0:
-                            row_nom=row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg.append(row_nom)
                     elif row['SP6065']==2:
                         if  row['ostatok']>0:
-                            row_nom=row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg_post.append(row_nom)
                         elif  row['ostatok']<0:
-                            row_nom=row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans_post.append(row_nom)
                     if not "'"+row['client']+"'" in client_list:
                         client_list.append("'"+row['client']+"'")
@@ -917,14 +909,14 @@ while True:
                 str_id=",".join(client_list)
                 #get_client_groups(cursor,str_id)
                 #print(row_list)
-                rows=rows_type(rows=row_list_dolg)
-                document=document_type(header=header,rowslist=rows)
-                rows=rows_type(rows=row_list_avans)
-                document2=document_type(header=header,rowslist=rows)
-                rows=rows_type(rows=row_list_dolg_post)
-                document3=document_type(header=header,rowslist=rows)
-                rows=rows_type(rows=row_list_avans_post)
-                document4=document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_dolg)
+                document=wsdl_client.document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_avans)
+                document2=wsdl_client.document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_dolg_post)
+                document3=wsdl_client.document_type(header=header,rowslist=rows)
+                rows=wsdl_client.rows_type(rows=row_list_avans_post)
+                document4=wsdl_client.document_type(header=header,rowslist=rows)
                 logging.info('Загрузка документа остатков')
                 #prmmode    1-долги клиентов (sc46.SP6065=1) row['ostatok']>0
                 #           2 - авнсы клиентов (sc46.SP6065=1) row['ostatok']<0
@@ -965,24 +957,24 @@ while True:
                 logging.info('Запрос остатков выполнен')
                 row = cursor.fetchall()  
                 logging.info('Курсор получен')
-                header=header_type(document_type=1,firma=row_firma['idartmarket'].strip(),sklad=row_sklad['idartmarket'].strip())
+                header=wsdl_client.header_type(document_type=1,firma=row_firma['idartmarket'].strip(),sklad=row_sklad['idartmarket'].strip())
                 row_list=[]
                 tovar_list=[]
                 for r in row:
                     if r['ostatok']<=0:
                         continue
-                    row=row_type(tovar=r['idtovar'],quantity=r['ostatok'],price=r['sebestoimost'])
+                    row=wsdl_client.row_type(tovar=r['idtovar'],quantity=r['ostatok'],price=r['sebestoimost'])
                     if not "'"+r['idtovar']+"'" in tovar_list:
                         tovar_list.append("'"+r['idtovar']+"'")
                     row_list.append(row)
                 if tovar_list==[]:
                     continue
-                rows=rows_type(rows=row_list)
+                rows=wsdl_client.rows_type(rows=row_list)
                 str_id=",".join(tovar_list)
                 
                 nomenklatura.load_nomenklatura(str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
                 
-                document=document_type(header=header,rowslist=rows)
+                document=wsdl_client.document_type(header=header,rowslist=rows)
                 logging.info('Загрузка документа остатков')
                 n=client.service.load_ostatki_tovar(document)
                 logging.info('Загрузка документа остатков завершена')

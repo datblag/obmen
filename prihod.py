@@ -56,7 +56,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         if client_list == []:
             continue
         str_id = ",".join(client_list)
-        get_client_groups(cursor, str_id)
+        get_client_groups(wsdl_client,cursor, str_id)
 
         logging.info(';'.join(['Выборка строк прихода', row_header['docno']]))
 
@@ -110,7 +110,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
 
         rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
-        nomenklatura.load_nomenklatura(prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0)
+        nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,wsdl_client=wsdl_client)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))
