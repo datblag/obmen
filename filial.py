@@ -18,6 +18,9 @@ cursor = sql_client.cursor
 conn = sql_client.conn
 
 
+#номенклатура SC84
+
+
 
 
 
