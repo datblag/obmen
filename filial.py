@@ -5,6 +5,8 @@ from sql import SqlClient
 from wsdl import WsdlClient
 import logs
 
+import ostatki
+
 logs.run(filial_logname, filial_logname_debug, filial_logname_error)
 
 
@@ -16,6 +18,8 @@ client = wsdl_client.client
 sql_client = SqlClient(filial_config['sql'])
 cursor = sql_client.cursor
 conn = sql_client.conn
+
+ostatki.load_ostatki_sklad_filial(wsdl_client, cursor)
 
 
 #номенклатура SC84
