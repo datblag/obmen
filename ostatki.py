@@ -2,6 +2,7 @@ import logging
 import nomenklatura
 
 
+
 def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_row_sklad):
     header = wsdl_client.header_type(document_type=1, firma=prm_row_firma['idartmarket'].strip(),
                                      sklad=prm_row_sklad['idartmarket'].strip())
@@ -29,23 +30,30 @@ def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_
 
 
 
-def load_ostatki_sklad_filial(wsdl_client, cursor):
+def load_ostatki_sklad_filial(wsdl_client, cursor, prm_firma_list=[], prm_sklad_list=[]):
     # загрузка остатков товаров
     # rg99 остатки товаров sp3603 - фирма ("     1   " - артмаркет?); sp101 - товар; sp100 - склад ('    12БЛ '); SP5183 - дата розлива; SP102 - количество
     # фирма sc13 АРТмаркет sp4805 - "9CD36F19-B8BD-49BC-BED4-A3335D2175C2    "; id - "     1   "
     #филиал Зея RG405  - SP4062 фирма, SP408 - номенклатура, SP418 - склад, SP3117 - цена прод, SP8981 - дата розлива, SP411 - количество
     logging.info('Выборка фирм')
-    cursor.execute(
-        '''SELECT  descr,SP5011 as idartmarket FROM SC4014''')
+    str_id = ', '.join(["'%s'" % w for w in prm_firma_list])
+    str_sql = '''SELECT  descr,SP5011 as idartmarket,code FROM SC4014 where (ltrim(rtrim(SP5011)) in
+                ('''+str_id+'''))'''
+    cursor.execute(str_sql)
     logging.info('Выборка фирм завершена')
     rows_firma = cursor.fetchall()
-    for row_firma in rows_firma:
+    for i,row_firma in enumerate(rows_firma):
+        logging.warning(row_firma)
         if row_firma['idartmarket'].strip() == '':
             continue
         if row_firma['idartmarket'] == '058E7FFD-AA56-4257-800A-E8494930DC1C    ':
             continue
         logging.info('Выборка складов')
-        cursor.execute('''SELECT  id,SP8452 as idartmarket,descr FROM SC55 ''')
+        str_id = ', '.join(["'%s'" % w for w in prm_sklad_list])
+        str_sql = '''SELECT  id,SP8452 as idartmarket,descr FROM SC55  where (ltrim(rtrim(SP8452)) in
+                    (''' + str_id + '''))'''
+
+        cursor.execute(str_sql)
         logging.info('Выборка складов завершена')
         rows_sklad = cursor.fetchall()
         for row_sklad in rows_sklad:
@@ -64,7 +72,7 @@ def load_ostatki_sklad_filial(wsdl_client, cursor):
             logging.info('Курсор получен')
             #send_ostatki_sklad(wsdl_client,cursor,row,row_firma,row_sklad)
         # print(n)
-
+        #break
 
 def load_ostatki_sklad(wsdl_client, cursor):
     # загрузка остатков товаров

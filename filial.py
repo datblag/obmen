@@ -19,7 +19,8 @@ sql_client = SqlClient(filial_config['sql'])
 cursor = sql_client.cursor
 conn = sql_client.conn
 
-ostatki.load_ostatki_sklad_filial(wsdl_client, cursor)
+ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
+                                  filial_config['sklad_white_list'])
 
 
 #номенклатура SC84
