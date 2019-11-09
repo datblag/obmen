@@ -84,10 +84,10 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
     logging.debug(element_id_str)
     logging.debug(prm_id_str)
 
-    if is_filial==1:
-        str_select=get_str_select_filial()
+    if is_filial == 1:
+        str_select = get_str_select_filial()
     else:
-        str_select=get_str_select()
+        str_select = get_str_select()
     if prm_unload_price > 0:
         # 36-доставка
         # str_select=str_select+'''
@@ -211,12 +211,18 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
             tovar_list.append(nom)
 
     arrayn_group = wsdl_client.arrayn_type(nomenklatura=tovar_group_list)
-    wsdl_client.client.service.load_nom_groups(arrayn_group, prm_update_mode)
+    if is_filial == 1:
+        wsdl_client.client.service.load_nom_groups_filial(arrayn_group, prm_update_mode)
+    else:
+        wsdl_client.client.service.load_nom_groups(arrayn_group, prm_update_mode)
 
     arrayn = wsdl_client.arrayn_type(nomenklatura=tovar_list)
     # print(tovar_group_list)
     logging.info('Загрузка номенклатуры начало')
-    wsdl_client.client.service.load_nom_elements(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
+    if is_filial == 1:
+        wsdl_client.client.service.load_nom_elements_filial(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
+    else:
+        wsdl_client.client.service.load_nom_elements(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
     logging.info('Загрузка номенклатуры завершена')
     logging.debug('Загрузка номенклатуры завершена')
     logging.debug(tovar_list)

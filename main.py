@@ -114,8 +114,9 @@ while True:
                 k2=start_date.strftime("%Y-%m-%d")
                 print(k2)
                 start_date += delta
-                nomenklatura.load_nomenklatura(cursor,prm_id_str='',prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,
-                                               prm_unload_price=price_type,prm_unload_price_date=k2,wsdl_client=wsdl_client)
+                nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0,
+                                               prm_update_mode=1, prm_unload_price=price_type, prm_unload_price_date=k2,
+                                               wsdl_client=wsdl_client)
     elif k == 'документ7':
         #434 - приход
         start_date = date(2018, 1, 1)
@@ -180,7 +181,8 @@ while True:
                     #print(row_delta)
                     str_id=",".join(["'"+row_delta['OBJID']+"'"])
                     #load_nomenklatura(prm_id_str=str_id,prm_id_mode=1,prm_with_parent=1,prm_update_mode=1)                                  
-                    nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id,prm_id_mode=1,prm_with_parent=0,prm_update_mode=1,wsdl_client=wsdl_client)
+                    nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
+                                                   prm_update_mode=1, wsdl_client=wsdl_client)
                 
                 #перемещение
                 elif row_delta['TYPEID']==239: 
@@ -244,7 +246,8 @@ while True:
 
                         rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id,prm_id_mode=2, prm_with_parent=0,
+                                                       prm_update_mode=0, wsdl_client=wsdl_client)
 
 
 
@@ -313,7 +316,8 @@ while True:
 
                         rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0,
+                                                       prm_update_mode=0, wsdl_client=wsdl_client)
 
 
                         list_partii=[]
@@ -410,7 +414,8 @@ while True:
 
                         rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        nomenklatura.load_nomenklatura(prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,prm_update_mode=0)
+                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0,
+                                                       prm_update_mode=0, wsdl_client=wsdl_client)
 
 
 
@@ -674,8 +679,8 @@ while True:
 
                         rows=wsdl_client.rows_type(rows=row_list)
                         str_id=",".join(tovar_list)
-                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id,prm_id_mode=2,prm_with_parent=0, prm_update_mode=1,
-                                                       wsdl_client=wsdl_client)
+                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2,prm_with_parent=0,
+                                                       prm_update_mode=1, wsdl_client=wsdl_client)
 
                         document=wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа расхода',row['docno']]))
