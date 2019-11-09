@@ -12,6 +12,10 @@ def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_
         if r['ostatok'] <= 0:
             continue
         #logging.info(r)
+        if is_filial==1:
+            if not r['idtovar'].strip().isdigit():
+                logging.error(["Некорректный код товара",r['idtovar']])
+                continue
         row = wsdl_client.row_type(tovar=r['idtovar'], quantity=r['ostatok'], price=r['sebestoimost'])
         if not "'" + r['idtovar'] + "'" in tovar_list:
             tovar_list.append("'" + r['idtovar'] + "'")
@@ -23,15 +27,16 @@ def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_
         str_id = ",".join(tovar_list)
 
         if is_filial == 1:
-            nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
-                                           wsdl_client=wsdl_client, is_filial=is_filial)
+            pass
+            # nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+            #                                wsdl_client=wsdl_client, is_filial=is_filial)
         else:
             nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,
                                            wsdl_client=wsdl_client, is_filial=is_filial)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info('Загрузка документа остатков')
-        #wsdl_client.client.service.load_ostatki_tovar(document)
+        wsdl_client.client.service.load_ostatki_tovar(document, is_filial)
         logging.info('Загрузка документа остатков завершена')
 
 
@@ -76,7 +81,7 @@ def load_ostatki_sklad_filial(wsdl_client, cursor, prm_firma_list=[], prm_sklad_
             row = cursor.fetchall()
             logging.info(['Выбрано товаров', len(row)])
             logging.info('Курсор получен')
-            send_ostatki_sklad(wsdl_client, cursor, row, row_firma, row_sklad, 1)
+            send_ostatki_sklad(wsdl_client, cursor, row, {'idartmarket':'9CD36F19-B8BD-49BC-BED4-A3335D2175C2'}, row_sklad, 1)
         # print(n)
         #break
 
