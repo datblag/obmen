@@ -22,8 +22,12 @@ def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_
         rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
 
-        nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,
-                                       wsdl_client=wsdl_client, is_filial=is_filial)
+        if is_filial == 1:
+            nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                           wsdl_client=wsdl_client, is_filial=is_filial)
+        else:
+            nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,
+                                           wsdl_client=wsdl_client, is_filial=is_filial)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info('Загрузка документа остатков')

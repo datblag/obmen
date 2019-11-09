@@ -39,16 +39,16 @@ def get_str_select():
 def get_str_select_filial():
     return '''
                             SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.code as idartmarket,
-                            element1. as fullname, elemement1.isfolder, elemement1.SP8935 as emkost,
-                            groups1.sp4802 as idparent,groups1.descr as descrparent,
-    						groups2.sp4802 as idparent2,groups2.descr as descrparent2,
-    						groups3.sp4802 as idparent3,groups3.descr as descrparent3,
-    						groups4.sp4802 as idparent4,groups4.descr as descrparent4,
-    						groups5.sp4802 as idparent5,groups5.descr as descrparent5,
-    						groups6.sp4802 as idparent6,groups6.descr as descrparent6,
-    						groups7.sp4802 as idparent7,groups7.descr as descrparent7,
-    						groups8.sp4802 as idparent8,groups8.descr as descrparent8,
-    						groups9.sp4802 as idparent9,groups9.descr as descrparent9,
+                            elemement1.SP101 as fullname, elemement1.isfolder, elemement1.SP8935 as emkost,
+                            groups1.code as idparent,groups1.descr as descrparent,
+    						groups2.code as idparent2,groups2.descr as descrparent2,
+    						groups3.code as idparent3,groups3.descr as descrparent3,
+    						groups4.code as idparent4,groups4.descr as descrparent4,
+    						groups5.code as idparent5,groups5.descr as descrparent5,
+    						groups6.code as idparent6,groups6.descr as descrparent6,
+    						groups7.code as idparent7,groups7.descr as descrparent7,
+    						groups8.code as idparent8,groups8.descr as descrparent8,
+    						groups9.code as idparent9,groups9.descr as descrparent9,
     						0 as pricedost, '1900-01-01' as datedost
     						FROM SC84 elemement1
     						left join SC84  groups1 on elemement1.parentid=groups1.id
@@ -65,7 +65,7 @@ def get_str_select_filial():
 
 def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=0, prm_unload_price=0,
                       prm_unload_price_date='1900-01-01',wsdl_client=None, is_filial=0):
-    # prm_id_mode 1- by id, 2 - by idartmarket
+    # prm_id_mode 1- by id, 2 - by idartmarket, 3 - by tovar code
     # and (elemement1.sp4802 in ('''+str_id+'''))''')
 
     if (prm_id_str.strip() == '') and (not prm_unload_price > 0):
@@ -78,6 +78,8 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
             element_id_str = '''(elemement1.id in ('''
         elif prm_id_mode == 2:
             element_id_str = '''(elemement1.sp4802 in ('''
+        elif prm_id_mode == 3:
+            element_id_str = '''(elemement1.code in ('''
 
     logging.info('Выборка элементов номенклатуры')
     logging.debug('Выборка элементов номенклатуры')
@@ -202,9 +204,13 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         else:
             pricedostval = 0
 
-        nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
-                                id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
-                                emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'])
+        if row_nom['code'].strip().isdigit():
+            nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
+                                    id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
+                                    emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'])
+        else:
+            logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
+            continue
         if row_nom['isfolder'] == 1:
             tovar_group_list.append(nom)
         else:
