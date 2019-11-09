@@ -18,7 +18,7 @@ def run_logers(prm_logname,prm_logname_debug,prm_logname_error):
             maxBytes=100000000, backupCount=100)
     ]
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.ERROR)
+    root_logger.setLevel(logging.DEBUG)
 
     handlers[0].setLevel(logging.INFO)
     handlers[1].setLevel(logging.INFO)
@@ -37,3 +37,13 @@ def run_logers(prm_logname,prm_logname_debug,prm_logname_error):
 
 def run(prm_logname,prm_logname_debug,prm_logname_error):
     run_logers(prm_logname,prm_logname_debug,prm_logname_error)
+
+
+
+
+
+
+
+
+
+
