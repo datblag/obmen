@@ -30,8 +30,8 @@ arrayn_group = wsdl_client.arrayn_type(nomenklatura=tovar_group_list)
 wsdl_client.client.service.load_nom_groups(arrayn_group, 1)
 
 #загрузка остатков склада
-# ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
-#                                   filial_config['sklad_white_list'])
+ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
+                                   filial_config['sklad_white_list'])
 
 
 #номенклатура SC84

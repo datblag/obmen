@@ -1,4 +1,5 @@
 import logging
+from config import filial_tovar_group_id
 #import logs
 #from sql import cursor
 #from wsdl import nomenklatura_type,arrayn_type,client
@@ -49,7 +50,8 @@ def get_str_select_filial():
     						groups7.code as idparent7,groups7.descr as descrparent7,
     						groups8.code as idparent8,groups8.descr as descrparent8,
     						groups9.code as idparent9,groups9.descr as descrparent9,
-    						0 as pricedost, '1900-01-01' as datedost
+    						0 as pricedost, '1900-01-01' as datedost,
+    						elemement1.SP8450 as idtovarfil
     						FROM SC84 elemement1
     						left join SC84  groups1 on elemement1.parentid=groups1.id
     						left join SC84  groups2 on groups1.parentid=groups2.id
@@ -204,17 +206,38 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         else:
             pricedostval = 0
 
-        if row_nom['code'].strip().isdigit():
-            nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
-                                    id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
-                                    emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'])
+
+        if is_filial == 1:
+            if row_nom['code'].strip().isdigit():
+                continue
+                nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
+                                                    id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
+                                                    emkost=row_nom['emkost'], pricedost=pricedostval,
+                                                    datedost=row_nom['datedost'])
+            else:
+                nom = wsdl_client.nomenklatura_type(code=0, name=row_nom['descr'].strip(),
+                                                    id=row_nom['idtovarfil'].strip(), idparent=filial_tovar_group_id,
+                                                    emkost=row_nom['emkost'], pricedost=pricedostval,
+                                                    datedost=row_nom['datedost'])
+                logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip(),
+                               row_nom['idtovarfil'].strip()])
+                #continue
+            if row_nom['isfolder'] == 1:
+                tovar_group_list.append(nom)
+            else:
+                tovar_list.append(nom)
         else:
-            logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
-            continue
-        if row_nom['isfolder'] == 1:
-            tovar_group_list.append(nom)
-        else:
-            tovar_list.append(nom)
+            if row_nom['code'].strip().isdigit():
+                nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
+                                        id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
+                                        emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'])
+            else:
+                logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
+                continue
+            if row_nom['isfolder'] == 1:
+                tovar_group_list.append(nom)
+            else:
+                tovar_list.append(nom)
 
     arrayn_group = wsdl_client.arrayn_type(nomenklatura=tovar_group_list)
     if is_filial == 1:
