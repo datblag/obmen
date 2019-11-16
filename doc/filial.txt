@@ -26,7 +26,7 @@
 
 строка0 инн SP9312 #TODO set in work base
 строка1 кпп SP9313 #TODO set in work base
-строка2
+строка2 идентификатор бизнес региона SP9314 #TODO set in work base
 строка3
 
 

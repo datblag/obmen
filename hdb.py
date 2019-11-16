@@ -75,17 +75,19 @@ def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
 
 
 
-def send_clients(prm_clients_rows, wsdl_client):
+def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
+    list_clients=[]
     for r in prm_clients_rows:
         if r['inn'].strip() == '':
             inn = '0000000000'
         else:
             inn = r['inn'].strip()
-        nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent=r['regionid'].strip(),
-                                   value1=inn, value2=r['kpp'].strip(), value3=r['parentname'].strip())
-        list.append(nom)
+        nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
+                                   idparent=r['regionid'].strip(),
+                                   value1=id_prefix+inn, value2=r['kpp'].strip(), value3=r['parentname'].strip())
+        list_clients.append(nom)
 
-    hdb_array = wsdl_client.hdb_array_type(hdb_array=list)
+    hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
     logging.info('Загрузка клиентов начало')
     wsdl_client.client.service.load_client_groups(hdb_array, 1)
     logging.info('Загрузка клиентов завершена')
@@ -97,8 +99,8 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
     if prm_id_list == '':
         prm_cursor.execute('''
 
-            select  SP56 as inn, sp4603 as kpp, descr, sp48 as parentname, sp4807 as idartmarket, SP6066 as regionid
-            from sc46 where (isfolder<>'1')                       
+            select  SP9312 as inn, SP9313 as kpp, descr, '' as parentname, SP573 as idartmarket, SP9314 as regionid
+            from SC172 where (isfolder<>'1')                       
                            ''')
     else:
         # print(prm_id_list)
@@ -108,7 +110,8 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
     row = prm_cursor.fetchall()
-    send_clients(row, wsdl_client=wsdl_client)
+    send_clients(row, wsdl_client=wsdl_client, id_prefix='Z')
+    # TODO перенести префикс в конфиг
 
 
 def get_client_groups(wsdl_client = None, prm_cursor = None, prm_id_list = ''):

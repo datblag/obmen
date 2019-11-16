@@ -5,7 +5,7 @@ from config import filial_config,filial_logname, filial_logname_debug, filial_lo
 from sql import SqlClient
 from wsdl import WsdlClient
 import logs
-from hdb import get_region_groups_filial
+from hdb import get_region_groups_filial, get_client_groups_filial
 
 
 import ostatki
@@ -34,7 +34,10 @@ wsdl_client.client.service.load_nom_groups(arrayn_group, 1)
 
 
 #загрузка регионов
-get_region_groups_filial(cursor, wsdl_client=wsdl_client)
+#get_region_groups_filial(cursor, wsdl_client=wsdl_client)
+
+#загрузка клиентов
+#get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor)
 
 #загрузка остатков склада
 # ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
