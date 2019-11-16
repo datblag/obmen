@@ -27,51 +27,6 @@ conn = sql_client.conn
 
 
 
-def get_region_groups(prm_cursor,prm_id_list=''):
-    hdb_type = wsdl_client.client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.client.get_type('ns3:hdb_array_element')
-
-    list=[]
-    logging.info('Выборка регионов уровень 1')
-
-    #nom_agent=hdb_type(name=row['agentname'].strip(),id=row['agent'].strip(),idparent='')
-    #hdb_array=hdb_array_type(hdb_array=[nom_agent])
-    #logging.info('Загрузка агента начало')
-    #client.service.load_hdb_elements(hdb_array,1,'agent')
-    #logging.info('Загрузка агента завершена')
-
-
-    prm_cursor.execute('''select sp4807 as idartmarket,descr,'' as idparent,'' as nameparent from
-                      sc46 where ltrim(rtrim(parentid))='0' and isfolder=1''')
-
-
-    logging.info('Выборка регионов уровень 1')
-    logging.info('Подготовка регионов уровень 1')
-
-    row = cursor.fetchall()  
-    for r in row:
-        nom_region=hdb_type(name=r['descr'].strip(),id=r['idartmarket'].strip(),idparent='')
-        list.append(nom_region)
-
-    logging.info('Выборка регионов уровень 2')
-
-    prm_cursor.execute('''select sc46.sp4807 as idartmarket,sc46.descr,scparent.sp4807 as idparent,scparent.descr as nameparent from sc46
-    left join sc46 as scparent on sc46.parentid=scparent.id
-     where (sc46.parentid in (select id from sc46 where isfolder=1 and ltrim(rtrim(parentid))='0')) and sc46.isfolder=1''')
-
-    logging.info('Выборка регионов уровень 2')
-    logging.info('Подготовка регионов уровень 2')
-    row = cursor.fetchall()  
-    for r in row:
-        nom_region=hdb_type(name=r['descr'].strip(),id=r['idartmarket'].strip(),idparent=r['idparent'])
-        list.append(nom_region)
-
-    hdb_array=hdb_array_type(hdb_array=list)
-    logging.info('Загрузка регионов начало')
-    client.service.load_hdb_elements(hdb_array,1,'region')
-    logging.info('Загрузка регионов завершена')
-
-
 
 
 
@@ -750,21 +705,21 @@ while True:
     #загрузка  фирм
         firm_list=[]
         logging.info('Выборка фирм')
-        cursor.execute('''SELECT  descr,sp4805 as idartmarket FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')  
+        cursor.execute('''SELECT  descr, sp4805 as idartmarket FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')
         logging.info('Выборка фирм завершена')
         logging.info('Подготовка загрузки фирм')
         row = cursor.fetchall()  
         for r in row:
             if r[1].strip()=='':
                 continue
-            nom=hdb_type(name=r[0].strip(),id=r[1].strip(),idparent='')
+            nom = hdb_type(name=r[0].strip(),id=r[1].strip(),idparent='')
             firm_list.append(nom)
 
-        hdb_array=hdb_array_type(hdb_array=firm_list)
+        hdb_array = hdb_array_type(hdb_array=firm_list)
         logging.info('Загрузка фирм начало')
         client.service.load_hdb_elements(hdb_array,1,'firma')
         logging.info('Загрузка фирм завершена')
-    elif k=='склад':
+    elif k == 'склад':
     #загрузка  складов
         sklad_list=[]
         hdb_type = client.get_type('ns3:hdb_element')
@@ -775,31 +730,31 @@ while True:
         logging.info('Подготовка загрузки складов')
         row = cursor.fetchall()  
         for r in row:
-            if r['idartmarket'].strip()=='':
-                logging.error(';'.join(['Пустой ид склада',r['descr']]))
+            if r['idartmarket'].strip() == '':
+                logging.error(';'.join(['Пустой ид склада', r['descr']]))
                 continue
-            nom=hdb_type(name=r['descr'].strip(),id=r['idartmarket'].strip(),idparent='')
+            nom=hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
             sklad_list.append(nom)
 
         hdb_array=hdb_array_type(hdb_array=sklad_list)
         logging.info('Загрузка складов начало')
-        client.service.load_hdb_elements(hdb_array,0,'sklad')
+        client.service.load_hdb_elements(hdb_array, 0, 'sklad')
         logging.info('Загрузка складов завершена')
-    elif k=='клиент':
+    elif k == 'клиент':
         #client_type = client.get_type('ns1:client_group')
         #array_client_groups=client.get_type('ns1:array_client_groups')
 
         hdb.get_client_groups(wsdl_client, cursor)
-    elif k=='регион':
+    elif k == 'регион':
         get_region_groups(cursor)
 
-    elif k=='остаткипоставщик':
+    elif k == 'остаткипоставщик':
         logging.info('Выборка фирм')
         cursor.execute('''SELECT  descr,sp4805 as idartmarket,id FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')  
         logging.info('Выборка фирм завершена')
         rows_firma = cursor.fetchall() 
         for row_firma in rows_firma:
-            if row_firma['idartmarket'].strip()!='':
+            if row_firma['idartmarket'].strip() != '':
 
                 logging.info('Выборка остатков начало')
                 cursor.execute('''
@@ -808,32 +763,32 @@ while True:
                         left join sc46 on ltrim(rtrim(SP934)) = ltrim(rtrim(sc46.id))
                         where (period='2018-12-01 00:00:00.000')  and  (SP2669=%s) group by sc46.sp4807,SP6065
                         
-                        ''',row_firma['id'])  
+                        ''', row_firma['id'])
                 #+ нам должны, - мы должны
                 logging.info('Запрос остатков выполнен')
                 rows = cursor.fetchall()  
                 logging.info('Курсор получен')
-                header=wsdl_client.header_type(document_type=2,firma=row_firma['idartmarket'].strip(),sklad='')
-                row_list_dolg_post=[]
-                row_list_dolg=[]
-                row_list_avans=[]
-                row_list_avans_post=[]
+                header=wsdl_client.header_type(document_type=2, firma=row_firma['idartmarket'].strip(), sklad='')
+                row_list_dolg_post = []
+                row_list_dolg = []
+                row_list_avans = []
+                row_list_avans_post = []
                 client_list=[]
                 for row in rows:
                     if row['client']==None:
                         continue
-                    if row['SP6065']==1:
-                        if  row['ostatok']<0:
+                    if row['SP6065'] == 1:
+                        if  row['ostatok'] < 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans.append(row_nom)
-                        elif  row['ostatok']>0:
+                        elif  row['ostatok'] > 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg.append(row_nom)
                     elif row['SP6065']==2:
-                        if  row['ostatok']>0:
+                        if  row['ostatok'] > 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg_post.append(row_nom)
-                        elif  row['ostatok']<0:
+                        elif  row['ostatok'] < 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans_post.append(row_nom)
                     if not "'"+row['client']+"'" in client_list:

@@ -5,6 +5,8 @@ from config import filial_config,filial_logname, filial_logname_debug, filial_lo
 from sql import SqlClient
 from wsdl import WsdlClient
 import logs
+from hdb import get_region_groups_filial
+
 
 import ostatki
 
@@ -29,9 +31,14 @@ tovar_group_list.append(nom_group)
 arrayn_group = wsdl_client.arrayn_type(nomenklatura=tovar_group_list)
 wsdl_client.client.service.load_nom_groups(arrayn_group, 1)
 
+
+
+#загрузка регионов
+get_region_groups_filial(cursor, wsdl_client=wsdl_client)
+
 #загрузка остатков склада
-ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
-                                   filial_config['sklad_white_list'])
+# ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
+#                                    filial_config['sklad_white_list'])
 
 
 #номенклатура SC84
