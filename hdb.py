@@ -103,10 +103,9 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
             from SC172 where (isfolder<>'1')                       
                            ''')
     else:
-        # print(prm_id_list)
         prm_cursor.execute('''
-            select  SP56 as inn, sp4603 as kpp,descr,sp48 as parentname,sp4807 as idartmarket,SP6066 as regionid from
-             sc46 where (isfolder<>'1') and (sp4807 in (''' + prm_id_list + '''))''')
+            select  SP9312 as inn, SP9313 as kpp,descr,'' as parentname,SP573 as idartmarket, SP9314 as regionid from
+             SC172 where (isfolder<>'1') and (SP573 in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
     row = prm_cursor.fetchall()

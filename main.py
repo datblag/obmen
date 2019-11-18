@@ -92,7 +92,7 @@ while True:
                 #print(row_doc)
     elif k=='авто':
         white_list=[]
-        if 1==1:
+        if 1 == 1:
 
             #расход
             white_list.append(3716) #расходнаядоставка

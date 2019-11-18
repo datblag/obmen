@@ -1,5 +1,6 @@
 import logging
 import nomenklatura
+from config import cb_firma_id
 
 
 
@@ -86,7 +87,7 @@ def load_ostatki_sklad_filial(wsdl_client, cursor, prm_firma_list=[], prm_sklad_
             row = cursor.fetchall()
             logging.info(['Выбрано товаров', len(row)])
             logging.info('Курсор получен')
-            send_ostatki_sklad(wsdl_client, cursor, row, {'idartmarket':'9CD36F19-B8BD-49BC-BED4-A3335D2175C2'}, row_sklad, 1)
+            send_ostatki_sklad(wsdl_client, cursor, row, {'idartmarket': cb_firma_id}, row_sklad, 1)
         # print(n)
         #break
 

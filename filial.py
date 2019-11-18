@@ -1,9 +1,10 @@
 # -*- encoding: utf-8 -*-
 import logging
 from config import filial_config,filial_logname, filial_logname_debug, filial_logname_error, filial_tovar_group_id, \
-    filial_tovar_group_name
+    filial_tovar_group_name, filial_firma_white_list, filial_sklad_white_list
 from sql import SqlClient
 from wsdl import WsdlClient
+from prihod import load_prihod_filial
 import logs
 from hdb import get_region_groups_filial, get_client_groups_filial
 
@@ -33,18 +34,52 @@ wsdl_client.client.service.load_nom_groups(arrayn_group, 1)
 
 
 
+
+#TODO сделать загрузку складов
+
+
+
 #загрузка регионов
 #get_region_groups_filial(cursor, wsdl_client=wsdl_client)
 
 #загрузка клиентов
 #get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor)
+# TODO убрать z в инн клиента
+
+cursor.execute('''
+		select top 100 closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+		SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9324 as idartmarket,
+		_1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
+        '0' as isreturn, _1sjourn.iddoc as OBJID
+		from DH1582 as dh WITH (NOLOCK)
+        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+		left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+		left join SC172 WITH (NOLOCK) on SP1555 = SC172.id
+		left join SC55 WITH (NOLOCK) on SP1565 = SC55.id
+		where (CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) >='2019-01-01')
+''')
+
+rows_prihod = cursor.fetchall()
+for row_prihod in rows_prihod:
+    if not row_prihod['firma'].strip() in filial_firma_white_list:
+        continue
+    if not row_prihod['sklad'].strip() in filial_sklad_white_list:
+        continue
+    logging.warning(row_prihod)
+    load_prihod_filial(cursor, wsdl_client, row_prihod)
+
+
+
+# TODO загрузка строк приходов
+# TODO загрузка измененых приходов
+
+
 
 #загрузка остатков склада
 # ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
 #                                    filial_config['sklad_white_list'])
 
 
-#номенклатура SC84
 
 
 
