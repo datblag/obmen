@@ -118,7 +118,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                             inner join (select objid,id,date,value from _1SCONST where _1SCONST.id=36) b
                             on a.objid=b.objid and mdate=date ) cdost on elemement1.id= cdost.idtovar
                         where ''' + element_id_str + prm_id_str + '''))'''
-
+        logging.warning(str_select)
     logging.debug(str_select)
     cursor.execute(str_select)
     rows_nom = cursor.fetchall()
@@ -126,7 +126,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
     tovar_group_list = []
     logging.info('Подготовка загрузки номенклатуры')
     for row_nom in rows_nom:
-        # print(row_nom)
+        logging.warning(row_nom)
         if prm_with_parent == 1:
             if row_nom['idparent9'] != None:
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent9'].strip(),
@@ -209,7 +209,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
 
         if is_filial == 1:
             if row_nom['code'].strip().isdigit():
-                continue
+                #continue
                 nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
                                                     id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
                                                     emkost=row_nom['emkost'], pricedost=pricedostval,
@@ -246,11 +246,13 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         wsdl_client.client.service.load_nom_groups(arrayn_group, prm_update_mode)
 
     arrayn = wsdl_client.arrayn_type(nomenklatura=tovar_list)
+    logging.warning(tovar_list)
     # print(tovar_group_list)
-    logging.info('Загрузка номенклатуры начало')
     if is_filial == 1:
+        logging.info('Загрузка номенклатуры начало фил')
         wsdl_client.client.service.load_nom_elements_filial(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
     else:
+        logging.info('Загрузка номенклатуры начало')
         wsdl_client.client.service.load_nom_elements(arrayn, prm_update_mode, prm_unload_price, prm_unload_price_date)
     logging.info('Загрузка номенклатуры завершена')
     logging.debug('Загрузка номенклатуры завершена')

@@ -56,58 +56,43 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
         prm_datedoc = datetime.datetime.strftime(row_header['datedoc'], '%Y-%m-%d')
         logging.info(prm_datedoc)
 
-        # cursor.execute('''
-        #            			        select  sc33.sp4802 as idtovar,SP449 as kolvo,SP452 as koef,SP451 as price,
-        #                             SP453 as sum, value as pricepriobr from dt434
-        #                             left join sc33 on sp448=sc33.id
-        #
-    	#                             left join
-        #                             (select a.objid as idtovar,ISNULL(cast(value as numeric(14,2)),0) as value,date from (
-        #                             select objid,id,
-        #
-        #                             max(substring(convert(varchar,date,120),1,10)
-        #                             +right('0000000000'+cast(time as varchar),10)
-        #                             +docid
-        #                             +right('0000000000'+cast(row_id as varchar),10))  md
-        #
-        #                             from _1SCONST where _1SCONST.id=38 and
-        #                             date<=%s group by objid,id) a
-        #                             inner join (select objid,id,date,value,
-        #
-        #                             substring(convert(varchar,date,120),1,10)
-        #                             +right('0000000000'+cast(time as varchar),10)
-        #                             +docid
-        #                             +right('0000000000'+cast(row_id as varchar),10)  ld
-        #
-        #
-        #                             from _1SCONST where _1SCONST.id=38 ) b
-        #                             on a.objid=b.objid and md=ld ) cpriobr on sc33.id= cpriobr.idtovar
-        #
-        #                             where iddoc=%s
-        #                     ''', (prm_datedoc, prm_row_delta['OBJID']))
+        cursor.execute('''
+                        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1570 as kolvo, SP1572 as koef, SP1573 as price,
+                        SP1574 as sum, SP1573 as pricepriobr  from Dt1582
+                        left join SC84 on SP1569 = SC84.id  where iddoc=%s ''', (prm_row_delta['OBJID']))
 
         logging.info(';'.join(['Выборка строк прихода завершена', row_header['docno']]))
-        # rows_table = cursor.fetchall()
-        # print(rows_table)
+        rows_table = cursor.fetchall()
+        logging.info(rows_table)
         row_list = []
         tovar_list = []
 
-        # for row_table in rows_table:
-        #     row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
-        #                        koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'])
-        #     if row_table['idtovar'] == None:
-        #         continue
-        #     if not "'" + row_table['idtovar'] + "'" in tovar_list:
-        #         tovar_list.append("'" + row_table['idtovar'] + "'")
-        #     row_list.append(row_nom)
+        for row_table in rows_table:
+            if not row_table['idtovar'].strip().isdigit():
+                logging.error(["Некорректный код товара", row_table['idtovar']])
+                row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'], price=row_table['price'],
+                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
+                                    tovar_filial=row_table['idtovarfil'])
+            else:
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
+                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
+                                    tovar_filial=row_table['idtovarfil'])
+            if row_table['idtovar'] == None:
+                 #continue
+                pass
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
 
         rows = wsdl_client.rows_type(rows=row_list)
-        # str_id = ",".join(tovar_list)
-        # nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,wsdl_client=wsdl_client)
+        str_id = ",".join(tovar_list)
+        logging.warning(str_id)
+        nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                       wsdl_client=wsdl_client, is_filial=1)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))
-        n = wsdl_client.client.service.load_prihod_tovar(document, isclosed)
+        n = wsdl_client.client.service.load_prihod_tovar(document, isclosed, 1)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno'], n]))
 
 
@@ -226,5 +211,5 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))
-        n = wsdl_client.client.service.load_prihod_tovar(document, isclosed)
+        n = wsdl_client.client.service.load_prihod_tovar(document, isclosed, 0)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno'], n]))

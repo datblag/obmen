@@ -47,7 +47,7 @@ wsdl_client.client.service.load_nom_groups(arrayn_group, 1)
 # TODO убрать z в инн клиента
 
 cursor.execute('''
-		select top 100 closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+		select top 5000 closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
 		SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9324 as idartmarket,
 		_1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
         '0' as isreturn, _1sjourn.iddoc as OBJID
@@ -85,3 +85,4 @@ for row_prihod in rows_prihod:
 
 
 
+# TODO Завести в 1С цену приобретения
