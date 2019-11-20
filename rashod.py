@@ -2,6 +2,31 @@ import logging
 import nomenklatura
 import hdb
 
+def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
+    cursor.execute('''
+                        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+                        SC4014.SP5011 as firma,
+                        SC172.SP573 as client,
+                        sc55.SP8452 as sklad,
+                        SP9325 as idartmarket,
+                        '' as agent,
+                        '' as expeditor,
+                        '' as expeditorname,
+                        _1sjourn.iddoc FROM DH1611 as dh WITH (NOLOCK)
+                        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+                        left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+                        left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
+                        left join sc55 WITH (NOLOCK) on SP1593 = sc55.id
+                        where _1sjourn.iddoc=%s
+                        ''', prm_row_delta['OBJID'])
+    logging.info('Выборка расходов заголовки завершена')
+    logging.warning(prm_row_delta['OBJID'])
+    rows_header = cursor.fetchall()
+
+    for row in rows_header:
+        logging.warning(row)
+
+
 def load_rashod(cursor, wsdl_client, prm_row_delta):
     # расходы 410 - расходнаянакладная экспедитор SP4485
     # расходы 469 - расходнаяреализатора экспедитор SP4487
