@@ -17,8 +17,8 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
                         left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
                         left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
                         left join sc55 WITH (NOLOCK) on SP1593 = sc55.id
-                        where ltrim(rtrim(_1sjourn.iddoc))=%s
-                        ''', prm_row_delta['OBJID'].strip())
+                        where _1sjourn.iddoc=%s
+                        ''', prm_row_delta['OBJID'])
     logging.info('Выборка расходов заголовки завершена')
     logging.warning(prm_row_delta['OBJID'])
     #rows_header = cursor.fetchall()

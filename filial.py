@@ -95,7 +95,7 @@ for row_rashod in rows_rashod:
         continue
     if not row_rashod['sklad'].strip() in filial_sklad_white_list:
         continue
-    logging.warning(row_rashod)
+    #logging.warning(row_rashod)
     load_rashod_filial(cursor, wsdl_client, row_rashod)
 
 
