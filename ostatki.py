@@ -20,7 +20,7 @@ def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_
                 row = wsdl_client.row_type(tovar='0', quantity=r['ostatok'], price=r['sebestoimost'],
                                            tovar_filial=r['idtovarfil'])
             else:
-                continue
+                #continue
                 row = wsdl_client.row_type(tovar=r['idtovar'], quantity=r['ostatok'], price=r['sebestoimost'],
                                            tovar_filial=r['idtovarfil'])
         if not "'" + r['idtovar'] + "'" in tovar_list:

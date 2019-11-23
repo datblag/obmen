@@ -73,7 +73,7 @@ wsdl_client.client.service.load_nom_groups(arrayn_group, 1)
 
 
 cursor.execute('''
-            SELECT  top 20 closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+            SELECT  top 1000 closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
             SC4014.SP5011 as firma,
             SC172.SP573 as client,
             sc55.SP8452 as sklad,
@@ -82,7 +82,7 @@ cursor.execute('''
             '' as expeditor,
             '' as expeditorname,
             _1sjourn.iddoc, _1sjourn.iddoc as OBJID FROM DH1611 as dh WITH (NOLOCK)
-            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc
             left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
             left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
             left join sc55 WITH (NOLOCK) on SP1593 = sc55.id
@@ -110,7 +110,7 @@ for row_rashod in rows_rashod:
 
 #загрузка остатков склада
 # ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
-#                                    filial_config['sklad_white_list'])
+#                                     filial_config['sklad_white_list'])
 
 
 

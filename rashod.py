@@ -1,6 +1,7 @@
 import logging
 import nomenklatura
-import hdb
+from hdb import get_client_groups_filial, get_client_groups
+from config import cb_firma_id
 
 def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
     cursor.execute('''
@@ -20,11 +21,67 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
                         where _1sjourn.iddoc=%s
                         ''', prm_row_delta['OBJID'])
     logging.info('Выборка расходов заголовки завершена')
-    logging.warning(prm_row_delta['OBJID'])
-    #rows_header = cursor.fetchall()
+    #logging.warning(prm_row_delta['OBJID'])
+    rows_header = cursor.fetchall()
 
-    for row in cursor.fetchall():
+    for row in rows_header:
         logging.warning(row)
+        logging.info('Выборка строк расхода завершена')
+        isclosed = row['closed'] and 1
+
+
+        client_list = []
+        if not "'" + row['client'] + "'" in client_list:
+            client_list.append("'" + row['client'] + "'")
+        if client_list == []:
+            continue
+        str_id = ",".join(client_list)
+        get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
+
+
+
+        cursor.execute('''
+        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1600 as kolvo, SP1602 as koef, SP1603 as price, 
+        SP1604 as sum from dt1611 WITH (NOLOCK) left join SC84 WITH (NOLOCK) on SP1599=SC84.id 
+        where iddoc=%s''', row['iddoc'])
+
+        rows_table = cursor.fetchall()
+        row_list = []
+        tovar_list = []
+
+        header = wsdl_client.header_type(document_type=2, firma=cb_firma_id, sklad=row['sklad'].strip(),
+                                         client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
+                                         , document_date=row['datedoc'], nomerartmarket=row['docno'])
+
+        for row_table in rows_table:
+            logging.warning(row_table)
+            if not row_table['idtovar'].strip().isdigit():
+                logging.error(["Некорректный код товара", row_table['idtovar']])
+                row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'], price=row_table['price'],
+                                    koef=row_table['koef'], sum=row_table['sum'],
+                                    tovar_filial=row_table['idtovarfil'])
+            else:
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
+                                    koef=row_table['koef'], sum=row_table['sum'],
+                                    tovar_filial=row_table['idtovarfil'])
+
+
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
+        rows = wsdl_client.rows_type(rows=row_list)
+        str_id = ",".join(tovar_list)
+        logging.warning(str_id)
+        nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                       wsdl_client=wsdl_client, is_filial=1)
+
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(';'.join(['Загрузка документа расхода', row['docno']]))
+
+        document_partii_rows = wsdl_client.rows_partii_type(rows=[])
+        document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
+        n = wsdl_client.client.service.load_rashod_tovar(document, document_partii, isclosed, '', '', 1)
+        logging.info(';'.join(['Загрузка документа расхода', row['docno'], n]))
 
 
 def load_rashod(cursor, wsdl_client, prm_row_delta):
@@ -125,22 +182,26 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             continue
 
         str_id = ",".join(client_list)
-        hdb.get_client_groups(wsdl_client, cursor, str_id)
+        get_client_groups(wsdl_client, cursor, str_id)
         header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
                                          client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                          , document_date=row['datedoc'], nomerartmarket=row['docno'])
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
-                   			            select  sp4802 as idtovar,SP424 as kolvo,SP427 as koef,SP426 as price,SP428 as sum from dt410 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP423=sc33.id where iddoc=%s
+            select  sp4802 as idtovar, SP424 as kolvo, SP427 as koef, SP426 as price, 
+            SP428 as sum from dt410 WITH (NOLOCK) left join sc33 WITH (NOLOCK) 
+            on SP423 = sc33.id where iddoc=%s
                                 ''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 469:
             cursor.execute('''
-                   			            select  sp4802 as idtovar,SP483 as kolvo,SP486 as koef,SP485 as price,SP487 as sum from dt469 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP482=sc33.id where iddoc=%s
-                                ''', row['iddoc'])
+            select  sp4802 as idtovar, SP483 as kolvo, SP486 as koef, SP485 as price, 
+            SP487 as sum from dt469 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP482=sc33.id 
+            where iddoc=%s''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 3716:
             cursor.execute('''
-                   			            select  sp4802 as idtovar,SP3731 as kolvo,SP3734 as koef,SP3733 as price,SP3735 as sum from dt3716 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP3730=sc33.id where iddoc=%s
+            select  sp4802 as idtovar, SP3731 as kolvo, SP3734 as koef, SP3733 as price, SP3735 as sum 
+            from dt3716 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP3730=sc33.id where iddoc=%s
                                 ''', row['iddoc'])
         logging.info('Выборка строк расхода завершена')
 
@@ -209,5 +270,5 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                 list_partii.append(row_nom_partii)
         document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
         document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
-        n = wsdl_client.client.service.load_rashod_tovar(document, document_partii, isclosed, row['agent'], row['expeditor'])
+        n = wsdl_client.client.service.load_rashod_tovar(document, document_partii, isclosed, row['agent'], row['expeditor'], 0)
         logging.info(';'.join(['Загрузка документа расхода', row['docno'], n]))
