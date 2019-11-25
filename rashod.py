@@ -30,13 +30,18 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
         isclosed = row['closed'] and 1
 
 
-        client_list = []
-        if not "'" + row['client'] + "'" in client_list:
-            client_list.append("'" + row['client'] + "'")
-        if client_list == []:
+        if not row['client'] == None and not row['client'] == '':
+            client_list = []
+            if not "'" + row['client'] + "'" in client_list:
+                client_list.append("'" + row['client'] + "'")
+            if client_list == []:
+                continue
+            str_id = ",".join(client_list)
+            get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
+        else:
+            if isclosed == 1:
+                logging.error(';'.join(['Пустой клиент', row['docno']]))
             continue
-        str_id = ",".join(client_list)
-        get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
 
 
 

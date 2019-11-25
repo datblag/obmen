@@ -90,11 +90,10 @@ while True:
             for row_doc in rows_doc:
                 pass
                 #print(row_doc)
-    elif k=='авто':
-        white_list=[]
+    elif k == 'авто':
+        white_list = []
         if 1 == 1:
-
-            #расход
+# расход
             white_list.append(3716) #расходнаядоставка
             white_list.append(410) #расходнаянакладная
             white_list.append(469) #расходнаяреализатора
@@ -140,7 +139,7 @@ while True:
                                                    prm_update_mode=1, wsdl_client=wsdl_client)
                 
                 #перемещение
-                elif row_delta['TYPEID']==239: 
+                elif row_delta['TYPEID'] == 239:
                     #continue
                     logging.info('Выборка перемещение заголовки')
                     cursor.execute('''
@@ -156,7 +155,7 @@ while True:
                     where _1sjourn.iddoc=%s
 
         
-                    ''',row_delta['OBJID'])  
+                    ''', row_delta['OBJID'])
                     logging.info('Выборка перемещение заголовки завершена')
                     rows_header = cursor.fetchall()
 
