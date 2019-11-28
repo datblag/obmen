@@ -61,6 +61,13 @@ def main():
                             continue
                         logging.warning(row_prihod)
                         load_prihod_filial(cursor, wsdl_client, row_prihod)
+                try:
+                    cursor.execute('''delete from _1SUPDTS where (DBSIGN = %s) and (DWNLDID='1122!!') 
+                                    and (OBJID=%s)''', (filial_base_code, row_delta['OBJID']))
+                    conn.commit()
+                    logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
+                except Exception as e:
+                    logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
 
 
 

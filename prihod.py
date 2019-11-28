@@ -91,7 +91,7 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
                                        wsdl_client=wsdl_client, is_filial=1)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
-        logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))
+        logging.info(['Загрузка документа прихода', row_header['docno'], row_header['datedoc']])
         n = wsdl_client.client.service.load_prihod_tovar(document, isclosed, 1)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno'], n]))
 
