@@ -4,20 +4,38 @@ import datetime
 import nomenklatura
 from config import cb_firma_id
 
+
+
+def get_prihod_rows_filial(prm_cursor, prm_obj_id):
+    prm_cursor.execute('''
+            select closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+            SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9324 as idartmarket,
+            _1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
+            '0' as isreturn, _1sjourn.iddoc as OBJID
+            from DH1582 as dh WITH (NOLOCK)
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc
+            left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+            left join SC172 WITH (NOLOCK) on SP1555 = SC172.id
+            left join SC55 WITH (NOLOCK) on SP1565 = SC55.id
+            where _1sjourn.iddoc=%s
+    ''', prm_obj_id)
+    return prm_cursor.fetchall()
+
+
 def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка приходов заголовки')
     cursor.execute('''
-		select  closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-		SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9324 as idartmarket,
-		_1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
-        '0' as isreturn
-		from DH1582 as dh WITH (NOLOCK)
-        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
-		left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
-		left join SC172 WITH (NOLOCK) on SP1555 = SC172.id
-		left join SC55 WITH (NOLOCK) on SP1565 = SC55.id
-        where _1sjourn.iddoc=%s
-                        ''', prm_row_delta['OBJID'])
+            select  closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+            SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9324 as idartmarket,
+            _1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
+            '0' as isreturn
+            from DH1582 as dh WITH (NOLOCK)
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+            left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+            left join SC172 WITH (NOLOCK) on SP1555 = SC172.id
+            left join SC55 WITH (NOLOCK) on SP1565 = SC55.id
+            where _1sjourn.iddoc=%s
+    ''', prm_row_delta['OBJID'])
 
     logging.info('Выборка приходов заголовки завершена')
     rows_header = cursor.fetchall()
