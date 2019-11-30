@@ -3,6 +3,7 @@ import nomenklatura
 from utils import check_firma, check_docid, check_sklad
 from config import cb_firma_id
 
+
 def get_move_header(cursor, prm_isfilial, prm_row_delta):
     logging.info('Выборка перемещение заголовки')
     if prm_isfilial == 0:
@@ -138,3 +139,126 @@ def move_tovar(cursor, wsdl_client, prm_row_delta):
         logging.info(';'.join(['Загрузка документа перемещение', row_header['docno']]))
         n = wsdl_client.client.service.load_peremesh(document, isclosed)
         logging.info(';'.join(['Загрузка документа перемещение', row_header['docno'], n]))
+
+
+def get_vvodostatka_header(cursor, prm_isfilial, prm_row_delta):
+    if prm_isfilial == 0:
+        logging.info('Выборка ввод остатков заголовки')
+        cursor.execute('''
+    
+        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+        sc13.sp4805 as firma,sc31.SP5639 as sklad,SP6077 as idartmarket,
+        _1sjourn.iddoc FROM dh310 as dh
+        left join _1sjourn on dh.iddoc=_1sjourn.iddoc 
+        left join sc31 on SP312 = sc31.id
+        left join sc13 on SP1005=sc13.id
+        where _1sjourn.iddoc=%s
+    
+    
+        ''', prm_row_delta['OBJID'])
+    if prm_isfilial == 1:
+        logging.info('Выборка ввод остатков заголовки')
+        cursor.execute('''
+
+        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+        SC4014.SP5011 as firma,sc55.SP8452 as sklad,SP9327 as idartmarket,
+        _1sjourn.iddoc FROM DH2106 as dh
+        left join _1sjourn on dh.iddoc=_1sjourn.iddoc 
+        left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+        left join sc55 WITH (NOLOCK) on SP2094 = sc55.id
+        where _1sjourn.iddoc=%s
+
+
+        ''', prm_row_delta['OBJID'])
+
+    logging.info('Выборка ввод остатков заголовки завершена')
+    return cursor.fetchall()
+
+
+def get_vvodostatka_rows(cursor, prm_isfilial, prm_row):
+    if prm_isfilial == 0:
+        logging.info(';'.join(['Выборка строк ввод остатка', prm_row['docno']]))
+        cursor.execute('''
+                select  sc33.sp4802 as idtovar,SP316 as kolvo,SP318 as koef,SP4716 as price,SP4717 as sum from dt310
+                left join sc33 on sp315=sc33.id
+                where iddoc=%s
+        ''', prm_row['iddoc'])
+        logging.info(';'.join(['Выборка строк ввод остатка завершена', prm_row['docno']]))
+
+    return cursor.fetchall()
+
+def vvodostatka_tovar_filial(cursor, wsdl_client, prm_row_delta):
+    # оприходование
+    rows_header = get_vvodostatka_header(cursor, 1, prm_row_delta)
+
+    for row_header in rows_header:
+        if not check_firma(row_header, 0) or not check_docid(row_header, 0) or not check_sklad(row_header, 0):
+            continue
+
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+                                         sklad=row_header['sklad'].strip(), client='',
+                                         idartmarket=row_header['idartmarket'].strip()
+                                         , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
+
+        isclosed = row_header['closed'] and 1
+        rows_table = get_vvodostatka_rows(cursor, 1, row_header)
+        row_list = []
+        tovar_list = []
+
+        # for row_table in rows_table:
+        #     row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+        #                                    price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
+        #     if row_table['idtovar'] is None:
+        #         continue
+        #     if not "'" + row_table['idtovar'] + "'" in tovar_list:
+        #         tovar_list.append("'" + row_table['idtovar'] + "'")
+        #     row_list.append(row_nom)
+
+        rows = wsdl_client.rows_type(rows=row_list)
+        str_id = ",".join(tovar_list)
+        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0,
+                                       prm_update_mode=0, wsdl_client=wsdl_client)
+
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno']]))
+        n = wsdl_client.client.service.load_vvodostatka_tovar(document, isclosed)
+        logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))
+
+
+
+def vvodostatka_tovar(cursor, wsdl_client, prm_row_delta):
+    # оприходование
+    rows_header = get_vvodostatka_header(cursor, 0, prm_row_delta)
+
+    for row_header in rows_header:
+        if not check_firma(row_header, 0) or not check_docid(row_header, 0) or not check_sklad(row_header, 0):
+            continue
+
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+                                         sklad=row_header['sklad'].strip(), client='',
+                                         idartmarket=row_header['idartmarket'].strip()
+                                         , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
+
+        isclosed = row_header['closed'] and 1
+        rows_table = get_vvodostatka_rows(cursor, 0, row_header)
+        row_list = []
+        tovar_list = []
+
+        for row_table in rows_table:
+            row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
+            if row_table['idtovar'] is None:
+                continue
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
+
+        rows = wsdl_client.rows_type(rows=row_list)
+        str_id = ",".join(tovar_list)
+        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0,
+                                       prm_update_mode=0, wsdl_client=wsdl_client)
+
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno']]))
+        n = wsdl_client.client.service.load_vvodostatka_tovar(document, isclosed)
+        logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))

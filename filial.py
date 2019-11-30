@@ -61,6 +61,7 @@ def main():
                         logging.warning(row_rashod)
                         load_rashod_filial(cursor, wsdl_client, row_rashod)
                 elif row_delta['TYPEID'] == 1628: #перемещения
+                    continue
                     logging.warning(row_delta)
                     move_tovar_filial(cursor, wsdl_client, row_delta)
                 try:
