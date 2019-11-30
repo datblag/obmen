@@ -2,55 +2,58 @@ import logging
 import nomenklatura
 from hdb import get_client_groups_filial, get_client_groups
 from config import cb_firma_id
+from utils import check_client, check_firma
 
-def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
-    cursor.execute('''
-                        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-                        SC4014.SP5011 as firma,
-                        SC172.SP573 as client,
-                        sc55.SP8452 as sklad,
-                        SP9325 as idartmarket,
-                        '' as agent,
-                        '' as expeditor,
-                        '' as expeditorname,
-                        _1sjourn.iddoc FROM DH1611 as dh WITH (NOLOCK)
-                        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
-                        left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
-                        left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
-                        left join sc55 WITH (NOLOCK) on SP1593 = sc55.id
-                        where _1sjourn.iddoc=%s
-                        ''', prm_row_delta['OBJID'])
-    logging.info('Выборка расходов заголовки завершена')
-    #logging.warning(prm_row_delta['OBJID'])
-    rows_header = cursor.fetchall()
-
-    for row in rows_header:
-        logging.warning(row)
-        logging.info('Выборка строк расхода завершена')
-        isclosed = row['closed'] and 1
+def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
+    if prm_isfilial == 1:
+        cursor.execute('''
+                            SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+                            SC4014.SP5011 as firma,
+                            SC172.SP573 as client,
+                            sc55.SP8452 as sklad,
+                            SP9325 as idartmarket,
+                            '' as agent,
+                            '' as expeditor,
+                            '' as expeditorname,
+                            _1sjourn.iddoc FROM DH1611 as dh WITH (NOLOCK)
+                            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+                            left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+                            left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
+                            left join sc55 WITH (NOLOCK) on SP1593 = sc55.id
+                            where _1sjourn.iddoc=%s
+                            ''', prm_row_delta['OBJID'])
+        logging.info('Выборка расходов заголовки завершена')
+    return cursor.fetchall()
 
 
-        if not row['client'] == None and not row['client'] == '':
-            client_list = []
-            if not "'" + row['client'] + "'" in client_list:
-                client_list.append("'" + row['client'] + "'")
-            if client_list == []:
-                continue
-            str_id = ",".join(client_list)
-            get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
-        else:
-            if isclosed == 1:
-                logging.error(';'.join(['Пустой клиент', row['docno']]))
-            continue
-
-
-
+def get_rashod_rows(cursor, prm_isfilial, prm_doctype, prm_row):
+    if prm_isfilial == 1:
         cursor.execute('''
         select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1600 as kolvo, SP1602 as koef, SP1603 as price, 
         SP1604 as sum from dt1611 WITH (NOLOCK) left join SC84 WITH (NOLOCK) on SP1599=SC84.id 
-        where iddoc=%s''', row['iddoc'])
+        where iddoc=%s''', prm_row['iddoc'])
+        logging.info('Выборка строк расхода завершена')
 
-        rows_table = cursor.fetchall()
+    return cursor.fetchall()
+
+
+def load_rashod_filial(cursor, wsdl_client, prm_row_header):
+    #rows_header = get_rashod_header(cursor, 1, 0, prm_row_delta)
+    row = prm_row_header
+    logging.warning(row)
+    isclosed = row['closed'] and 1
+
+    if check_client(row, 1, isclosed):
+        client_list = []
+        if not "'" + row['client'] + "'" in client_list:
+            client_list.append("'" + row['client'] + "'")
+        if client_list == []:
+            return
+        str_id = ",".join(client_list)
+        get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
+
+        rows_table = get_rashod_rows(cursor, 1, 0, row)
+
         row_list = []
         tovar_list = []
 
@@ -81,12 +84,12 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_delta):
                                        wsdl_client=wsdl_client, is_filial=1)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
-        logging.info(';'.join(['Загрузка документа расхода', row['docno'], row['datedoc']]))
+        logging.info(['Загрузка документа расхода', row['docno'], row['datedoc']])
 
         document_partii_rows = wsdl_client.rows_partii_type(rows=[])
         document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
         n = wsdl_client.client.service.load_rashod_tovar(document, document_partii, isclosed, '', '', 1)
-        logging.info(';'.join(['Загрузка документа расхода', row['docno'], n]))
+        logging.info(['Загрузка документа расхода', row['docno'], n])
 
 
 def load_rashod(cursor, wsdl_client, prm_row_delta):
@@ -160,9 +163,6 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         client_list = []
         # list_partii=[]
         isclosed = row['closed'] and 1
-        if isclosed != 1:
-            # continue
-            pass
 
         if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
             continue
