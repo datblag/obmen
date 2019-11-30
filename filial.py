@@ -8,6 +8,7 @@ from sql import SqlClient
 from wsdl import WsdlClient
 from prihod import load_prihod_filial, get_prihod_rows_filial
 from rashod import load_rashod_filial, get_rashod_header
+from sklad import move_tovar_filial
 import logs
 from tqdm import tqdm
 from hdb import get_region_groups_filial, get_client_groups_filial
@@ -25,7 +26,7 @@ def main():
 
     if k == 'авто':
         while True:
-            logging.warning('Выборка изменений')
+            #logging.warning('Выборка изменений')
             try:
                 cursor.execute('''update  _1SUPDTS set DWNLDID='1122!!' where (DBSIGN = %s) and not (DWNLDID='1122!!')''', filial_base_code)
                 conn.commit()
@@ -34,10 +35,11 @@ def main():
             cursor.execute(
                 '''SELECT  * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = %s) and (DWNLDID='1122!!')''', filial_base_code)
             rows_delta = cursor.fetchall()
-            for row_delta in tqdm(rows_delta):
+            for row_delta in rows_delta:
                 if not (row_delta['TYPEID'] in filial_object_white_list):
                     continue
                 elif row_delta['TYPEID'] == 1582: #поступление
+                    continue
                     logging.warning(row_delta)
                     rows_prihod = get_prihod_rows_filial(cursor, row_delta['OBJID'])
                     for row_prihod in rows_prihod:
@@ -48,6 +50,7 @@ def main():
                         logging.warning(row_prihod)
                         load_prihod_filial(cursor, wsdl_client, row_prihod)
                 elif row_delta['TYPEID'] == 1611: #реализация
+                    continue
                     logging.warning(row_delta)
                     rows_rashod = get_rashod_header(cursor, 1, 0, row_delta)
                     for row_rashod in rows_rashod:
@@ -57,6 +60,9 @@ def main():
                             continue
                         logging.warning(row_rashod)
                         load_rashod_filial(cursor, wsdl_client, row_rashod)
+                elif row_delta['TYPEID'] == 1628: #перемещения
+                    logging.warning(row_delta)
+                    move_tovar_filial(cursor, wsdl_client, row_delta)
                 try:
                     cursor.execute('''delete from _1SUPDTS where (DBSIGN = %s) and (DWNLDID='1122!!') 
                                     and (OBJID=%s)''', (filial_base_code, row_delta['OBJID']))
