@@ -33,7 +33,7 @@ def get_move_header(cursor, prm_isfilial, prm_row_delta):
                         ''', prm_row_delta['OBJID'])
         logging.info('Выборка перемещение заголовки завершена')
 
-        return cursor.fetchall()
+    return cursor.fetchall()
 
 
 def get_move_rows(cursor, prm_isfilial, prm_row):
@@ -185,6 +185,18 @@ def get_vvodostatka_rows(cursor, prm_isfilial, prm_row):
         ''', prm_row['iddoc'])
         logging.info(';'.join(['Выборка строк ввод остатка завершена', prm_row['docno']]))
 
+    if prm_isfilial == 1:
+        logging.info(';'.join(['Выборка строк ввод остатка', prm_row['docno']]))
+        cursor.execute('''
+                select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP2099 as kolvo, SP2101 as koef,
+                SP2102 as price,SP2103 as sum from dt2106
+                left join SC84 WITH (NOLOCK) on SP2098=SC84.id
+                where iddoc=%s
+        ''', prm_row['iddoc'])
+        logging.info(';'.join(['Выборка строк ввод остатка завершена', prm_row['docno']]))
+
+
+
     return cursor.fetchall()
 
 def vvodostatka_tovar_filial(cursor, wsdl_client, prm_row_delta):
@@ -192,10 +204,10 @@ def vvodostatka_tovar_filial(cursor, wsdl_client, prm_row_delta):
     rows_header = get_vvodostatka_header(cursor, 1, prm_row_delta)
 
     for row_header in rows_header:
-        if not check_firma(row_header, 0) or not check_docid(row_header, 0) or not check_sklad(row_header, 0):
+        if not check_firma(row_header, 1) or not check_docid(row_header, 1) or not check_sklad(row_header, 1):
             continue
 
-        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+        header = wsdl_client.header_type(document_type=2, firma=cb_firma_id,
                                          sklad=row_header['sklad'].strip(), client='',
                                          idartmarket=row_header['idartmarket'].strip()
                                          , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
@@ -205,23 +217,31 @@ def vvodostatka_tovar_filial(cursor, wsdl_client, prm_row_delta):
         row_list = []
         tovar_list = []
 
-        # for row_table in rows_table:
-        #     row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
-        #                                    price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
-        #     if row_table['idtovar'] is None:
-        #         continue
-        #     if not "'" + row_table['idtovar'] + "'" in tovar_list:
-        #         tovar_list.append("'" + row_table['idtovar'] + "'")
-        #     row_list.append(row_nom)
+        for row_table in rows_table:
+            if not row_table['idtovar'].strip().isdigit():
+                logging.error(["Некорректный код товара", row_table['idtovar']])
+                row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'],
+                                                price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                               tovar_filial=row_table['idtovarfil'])
+            else:
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                               price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                               tovar_filial=row_table['idtovarfil'])
+
+            if row_table['idtovar'] is None:
+                continue
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
 
         rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
-        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0,
-                                       prm_update_mode=0, wsdl_client=wsdl_client)
+        nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                       wsdl_client=wsdl_client, is_filial=1)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno']]))
-        n = wsdl_client.client.service.load_vvodostatka_tovar(document, isclosed)
+        n = wsdl_client.client.service.load_vvodostatka_tovar(document, isclosed, 1)
         logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))
 
 
