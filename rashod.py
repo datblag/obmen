@@ -85,7 +85,7 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(['Загрузка документа расхода', row['docno'], row['datedoc']])
-
+        #TODO партии филиала
         document_partii_rows = wsdl_client.rows_partii_type(rows=[])
         document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
         n = wsdl_client.client.service.load_rashod_tovar(document, document_partii, isclosed, '', '', 1)
