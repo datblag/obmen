@@ -1,7 +1,7 @@
 import logging
 import nomenklatura
 from utils import check_firma, check_docid, check_sklad
-from config import cb_firma_id
+from config import cb_firma_id, filial_sklad_white_list
 
 
 def get_move_header(cursor, prm_isfilial, prm_row_delta):
@@ -61,6 +61,49 @@ def move_tovar_filial(cursor, wsdl_client, prm_row_delta):
     for row_header in rows_header:
         logging.warning([check_firma(row_header, 1), check_docid(row_header, 1), check_sklad(row_header, 1)])
         if not check_firma(row_header, 1) or not check_docid(row_header, 1) or not check_sklad(row_header, 1):
+            logging.warning(row_header['sklad_in'])
+            if row_header['sklad_in'].strip() in filial_sklad_white_list:
+                logging.warning('Загружаем оприходованием')
+                header = wsdl_client.header_type(document_type=2, firma=cb_firma_id,
+                                                 sklad=row_header['sklad_in'].strip(), client='',
+                                                 idartmarket=row_header['idartmarket'].strip()
+                                                 , document_date=row_header['datedoc'],
+                                                 nomerartmarket=row_header['docno'])
+
+                isclosed = row_header['closed'] and 1
+                rows_table = get_move_rows(cursor, 1, row_header)
+                row_list = []
+                tovar_list = []
+
+                for row_table in rows_table:
+                    if not row_table['idtovar'].strip().isdigit():
+                        logging.error(["Некорректный код товара", row_table['idtovar']])
+                        row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'],
+                                                       price=row_table['price'], koef=row_table['koef'],
+                                                       sum=row_table['sum'],
+                                                       tovar_filial=row_table['idtovarfil'])
+                    else:
+                        row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                                       price=row_table['price'], koef=row_table['koef'],
+                                                       sum=row_table['sum'],
+                                                       tovar_filial=row_table['idtovarfil'])
+
+                    if row_table['idtovar'] is None:
+                        continue
+                    if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                        tovar_list.append("'" + row_table['idtovar'] + "'")
+                    row_list.append(row_nom)
+
+                rows = wsdl_client.rows_type(rows=row_list)
+                str_id = ",".join(tovar_list)
+                nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                               wsdl_client=wsdl_client, is_filial=1)
+
+                document = wsdl_client.document_type(header=header, rowslist=rows)
+                logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno']]))
+                n = wsdl_client.client.service.load_vvodostatka_tovar(document, isclosed, 1)
+                logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))
+
             continue
         logging.warning(row_header)
 
@@ -99,7 +142,7 @@ def move_tovar_filial(cursor, wsdl_client, prm_row_delta):
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа перемещение', row_header['docno']]))
         n = wsdl_client.client.service.load_peremesh(document, isclosed, 1)
-        logging.info(';'.join(['Загрузка документа перемещение', row_header['docno']]), n)
+        logging.info(['Загрузка документа перемещение', row_header['docno'], n])
 
 
 def move_tovar(cursor, wsdl_client, prm_row_delta):

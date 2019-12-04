@@ -118,7 +118,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                             inner join (select objid,id,date,value from _1SCONST where _1SCONST.id=36) b
                             on a.objid=b.objid and mdate=date ) cdost on elemement1.id= cdost.idtovar
                         where ''' + element_id_str + prm_id_str + '''))'''
-        logging.warning(str_select)
+        #logging.warning(str_select)
     logging.debug(str_select)
     cursor.execute(str_select)
     rows_nom = cursor.fetchall()
@@ -246,7 +246,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         wsdl_client.client.service.load_nom_groups(arrayn_group, prm_update_mode)
 
     arrayn = wsdl_client.arrayn_type(nomenklatura=tovar_list)
-    logging.warning(tovar_list)
+    #logging.warning(tovar_list)
     # print(tovar_group_list)
     if is_filial == 1:
         logging.info('Загрузка номенклатуры начало фил')
