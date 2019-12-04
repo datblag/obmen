@@ -77,7 +77,6 @@ def load_ostatki_sklad_filial(wsdl_client, cursor, prm_firma_list=[], prm_sklad_
                 continue
             #continue
             logging.info('Выборка остатков начало')
-            # TODO sebestoimost поле число для обмена в товаре
             cursor.execute('''SELECT SC84.code as idtovar, SC84.SP8450 as idtovarfil, sum(SP411) as ostatok,
             sum(SP9316) as sebestoimost 
                               from RG405 left join SC84 on RG405.SP408=SC84.id where (period='2018-12-01 00:00:00.000')

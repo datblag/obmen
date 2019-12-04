@@ -133,7 +133,7 @@ def main():
         # ostatki.load_ostatki_sklad_filial(wsdl_client, cursor, filial_config['firma_white_list'],
         #                                     filial_config['sklad_white_list'])
 
-        # TODO Завести в 1С цену приобретения
+        #TODO Завести в 1С цену приобретения
 
 
 if __name__ == '__main__':
