@@ -50,7 +50,7 @@ def main():
                         logging.warning(row_prihod)
                         load_prihod_filial(cursor, wsdl_client, row_prihod)
                 elif row_delta['TYPEID'] == 1611: #реализация
-                    continue
+                    #continue
                     logging.warning(row_delta)
                     rows_rashod = get_rashod_header(cursor, 1, 0, row_delta)
                     for row_rashod in rows_rashod:
