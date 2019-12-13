@@ -85,9 +85,45 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(['Загрузка документа расхода', row['docno'], row['datedoc']])
-        #TODO партии филиала
-        document_partii_rows = wsdl_client.rows_partii_type(rows=[])
+        #document_partii_rows = wsdl_client.rows_partii_type(rows=[])
+        #document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
+
+
+        list_partii = []
+        if isclosed == 1:
+            logging.info('Выборка партий расхода')
+            cursor.execute('''
+                                select 
+                                SC84.code as idtovar_artmarket, SC84.SP8450 as idtovarfil,
+                                ltrim(rtrim(_1sjourn.iddoc)) as prihodid, _1sjourn.iddocdef as prihodtype,
+                                docno as prihodno,CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as prihoddate,
+                                SP342 as ostatok, SP343 as stoimost, SP7685 as prodstoimost, 1 as prodaga
+                                from RA328
+                                left join SC84 WITH (NOLOCK) on RA328.SP331=SC84.id
+                                left join SC214 WITH (NOLOCK) on RA328.SP341=SC214.id
+                                left join _1sjourn WITH (NOLOCK) on ltrim(rtrim(substring(ltrim(rtrim(SP216)),charindex(' ',ltrim(rtrim(SP216))),100)))=ltrim(rtrim(_1sjourn.iddoc))
+                                where RA328.iddoc=%s
+                                ''', row['iddoc'])
+            logging.info('Выборка партий расхода завершена')
+            rows_table_partii = cursor.fetchall()
+            for row_partii in rows_table_partii:
+                row_nom_partii = wsdl_client.row_partii_type(tovar=row_partii['idtovar_artmarket'],
+                                                             prihod_id=row_partii['prihodid'],
+                                                             prihod_type=row_partii['prihodtype'],
+                                                             prihod_no=row_partii['prihodno'],
+                                                             prihod_date=row_partii['prihoddate'],
+                                                             ostatok=row_partii['ostatok'],
+                                                             stoimost=row_partii['stoimost'],
+                                                             prodstoimost=row_partii['prodstoimost'],
+                                                             prodaga=row_partii['prodaga'],
+                                                             tovar_filial=row_partii['idtovarfil'])
+                list_partii.append(row_nom_partii)
+        document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
         document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
+
+
+
+
         n = wsdl_client.client.service.load_rashod_tovar(document, document_partii, isclosed, '', '', 1)
         logging.info(['Загрузка документа расхода', row['docno'], n])
 
