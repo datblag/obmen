@@ -180,7 +180,7 @@ def move_tovar(cursor, wsdl_client, prm_row_delta):
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа перемещение', row_header['docno']]))
-        n = wsdl_client.client.service.load_peremesh(document, isclosed)
+        n = wsdl_client.client.service.load_peremesh(document, isclosed, 0)
         logging.info(';'.join(['Загрузка документа перемещение', row_header['docno'], n]))
 
 

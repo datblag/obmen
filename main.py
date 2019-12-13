@@ -315,7 +315,7 @@ while True:
                                             2 as typedvig, sp4372 as docosnov from ra169
                                             left join sc46 on ltrim(rtrim(SP170)) = '1A   '+ltrim(rtrim(sc46.id))
                                             where ra169.iddoc=%s
-                                            ''',row['iddoc'])
+                                            ''', row['iddoc'])
 
                         rows_table_1 = cursor.fetchall()
 
@@ -327,14 +327,14 @@ while True:
                                         1 as typedvig from ra933
                                         left join sc46 on SP934 = sc46.id
                                         where ra933.iddoc=%s
-                                            ''',row['iddoc'])
+                                            ''', row['iddoc'])
 
                         rows_table_2 = cursor.fetchall()
 
-                        rows_table=rows_table_1+rows_table_2
+                        rows_table = rows_table_1+rows_table_2
 
-                        client_list=[]
-                        row_list=[]
+                        client_list = []
+                        row_list = []
 
 
 
@@ -351,7 +351,8 @@ while True:
 
                             if row_table['client']==None:
                                 continue
-                            row_nom=wsdl_client.row_type(tovar=row_table['client'],quantity=row_table['typedvig'],price=0,koef=debkred,sum=row_table['summa'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['client'],quantity=row_table['typedvig'],
+                                                         price=0,koef=debkred,sum=row_table['summa'])
                             if not "'"+row_table['client']+"'" in client_list:
                                 client_list.append("'"+row_table['client']+"'")
                             row_list.append(row_nom)
