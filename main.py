@@ -7,6 +7,7 @@ import nomenklatura
 import hdb
 import prihod, rashod, sklad
 import ostatki
+from utils import convert_base
 
 
 from tqdm import *
@@ -32,7 +33,7 @@ conn = sql_client.conn
 
 logging.warning('Начало работы')
 
-
+#logging.warning(convert_base('2V8', from_base=36))
 
 
 #client.wsdl.dump()
@@ -293,15 +294,16 @@ while True:
                             #continue
                             pass
 
-                        if row['firma']!='9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+                        if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
                             continue
-                        if row['idartmarket']==None or row['idartmarket'].strip()=='':
-                            if isclosed==1:
-                                logging.error(';'.join(['Пустой ид',row['docno']]))
+                        if row['idartmarket'] == None or row['idartmarket'].strip() == '':
+                            if isclosed == 1:
+                                logging.error(';'.join(['Пустой ид', row['docno']]))
                             continue
 
-                        header=wsdl_client.header_type(document_type=2,firma=row['firma'].strip(),sklad=doc_descr,client='',idartmarket=row['idartmarket'].strip()
-                                            ,document_date=row['datedoc'],nomerartmarket=row['docno'])
+                        header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=doc_descr,
+                                                       client='', idartmarket=row['idartmarket'].strip(),
+                                                       document_date=row['datedoc'], nomerartmarket=row['docno'])
 
                         
                         #расход debkred 1
@@ -343,26 +345,24 @@ while True:
                                 debkred=1
                             else:
                                 debkred=2
-                            
 
+                            if debkred == 1 and row_table['typedvig'] == 1:
+                                logging.error(';'.join(['контроль операции', row['docno']]))
 
-                            if debkred==1 and row_table['typedvig']==1:
-                                logging.error(';'.join(['контроль операции',row['docno']]))
-
-                            if row_table['client']==None:
+                            if row_table['client'] is None:
                                 continue
-                            row_nom=wsdl_client.row_type(tovar=row_table['client'],quantity=row_table['typedvig'],
-                                                         price=0,koef=debkred,sum=row_table['summa'])
+                            row_nom=wsdl_client.row_type(tovar=row_table['client'], quantity=row_table['typedvig'],
+                                                         price=0, koef=debkred, sum=row_table['summa'])
                             if not "'"+row_table['client']+"'" in client_list:
                                 client_list.append("'"+row_table['client']+"'")
                             row_list.append(row_nom)
                         if client_list==[]:
                             continue
-                        str_id=",".join(client_list)
+                        str_id = ",".join(client_list)
                         hdb.get_client_groups(wsdl_client,cursor,str_id)
                         #print(row_list)
-                        rows=wsdl_client.rows_type(rows=row_list)
-                        document=wsdl_client.document_type(header=header,rowslist=rows)
+                        rows = wsdl_client.rows_type(rows=row_list)
+                        document = wsdl_client.document_type(header=header,rowslist=rows)
                         logging.info(';'.join(['Загрузка документа взаиморасчетов',row['docno']]))
                         n=client.service.load_client_rashet(document,isclosed)
                         logging.info(';'.join(['Загрузка документа взаиморасчетов',row['docno'],n]))

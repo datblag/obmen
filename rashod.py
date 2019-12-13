@@ -156,7 +156,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc FROM DH410 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
                             left join sc31 WITH (NOLOCK) on SP412 = sc31.id
@@ -174,7 +174,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc FROM DH469 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef FROM DH469 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP472 = sc46.id
@@ -194,7 +194,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             spragent.descr as agentname,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc FROM DH3716 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef FROM DH3716 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP3718 = sc46.id
@@ -238,7 +238,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         get_client_groups(wsdl_client, cursor, str_id)
         header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
                                          client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
-                                         , document_date=row['datedoc'], nomerartmarket=row['docno'])
+                                         , document_date=row['datedoc'], nomerartmarket=row['docno'],
+                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'])
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
