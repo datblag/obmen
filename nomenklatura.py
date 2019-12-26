@@ -126,7 +126,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
     tovar_group_list = []
     logging.info('Подготовка загрузки номенклатуры')
     for row_nom in rows_nom:
-        logging.info(row_nom)
+        #logging.info(row_nom)
         if prm_with_parent == 1:
             if row_nom['idparent9'] != None:
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent9'].strip(),
