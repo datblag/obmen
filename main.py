@@ -56,25 +56,27 @@ while True:
                                        prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                        wsdl_client=wsdl_client)
     elif k=='цены':
-        #36-доставка 38-приобретение, 4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей, 37 - розничная
-        #выгрузка истории
-        end_date = date(2019, 10,25)
+        # 36-доставка (загружены за 2019й год), 38-приобретение, 4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей, 37 - розничная
+        # выгрузка истории
+        # TODO филиал,
+        start_date_0 = date(2019, 11, 13)
+        end_date = date(2019, 12, 31)
         delta = timedelta(days=1)
 
         #[36, 38, 4549, 35, 4460,3677,37] полный список
-        price_type_to_load=[36,38]
+        price_type_to_load = [38]
         for price_type in price_type_to_load:
-            print(price_type)
-            start_date = date(2019, 10, 2)
+            logging.warning(price_type)
+            start_date = start_date_0
             while start_date <= end_date:
-                k2=start_date.strftime("%Y-%m-%d")
-                print(k2)
+                k2 = start_date.strftime("%Y-%m-%d")
+                logging.warning(k2)
                 start_date += delta
                 nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, prm_unload_price=price_type, prm_unload_price_date=k2,
                                                wsdl_client=wsdl_client)
     elif k == 'документ7':
-        #434 - приход
+        # 434 - приход
         start_date = date(2018, 1, 1)
         end_date = date(2018, 1,31)
         doc_type_list=[{'typeid':434,'typename':'приход','idfield':'SP6059','sumfield':'sp453'}]
