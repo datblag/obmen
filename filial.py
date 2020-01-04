@@ -17,7 +17,7 @@ import ostatki
 
 def main():
     k = 'авто'
-    #k = ''
+    # k = ''
     logs.run(filial_logname, filial_logname_debug, filial_logname_error)
     wsdl_client = WsdlClient(filial_config['server_1c'])
     client = wsdl_client.client
@@ -54,7 +54,7 @@ def main():
                         logging.warning(row_prihod)
                         load_prihod_filial(cursor, wsdl_client, row_prihod)
                 elif row_delta['TYPEID'] == 1611: #реализация
-                    continue
+                    #continue
                     logging.warning(row_delta)
                     rows_rashod = get_rashod_header(cursor, 1, 0, row_delta)
                     for row_rashod in rows_rashod:
@@ -65,7 +65,7 @@ def main():
                         logging.warning(row_rashod)
                         load_rashod_filial(cursor, wsdl_client, row_rashod)
                 elif row_delta['TYPEID'] == 1628: #перемещения
-                    continue
+                    #continue
                     logging.warning(row_delta)
                     move_tovar_filial(cursor, wsdl_client, row_delta)
                 elif row_delta['TYPEID'] == 2106: #оприходование
