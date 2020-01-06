@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import logs
 from datetime import date, timedelta
+import calendar
 import time
 
 import nomenklatura
@@ -76,25 +77,42 @@ while True:
                                                wsdl_client=wsdl_client)
     elif k == 'док':
         # 434 - приход
-        start_date = date(2019, 1, 1)
-        end_date = date(2019, 1, 31)
-        doc_type_list=[{'typeid': 434, 'typename': 'приход', 'idfield': 'SP6059', 'sumfield': 'sp453'}]
-        for doc_type in doc_type_list:
-            print(doc_type['sumfield'])
-            cursor.execute('''select  top 100 _1sjourn.iddoc, docno as docno,
-            CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate, 
-            dt.sm,'''+doc_type['idfield']+''' as idartmarket  from _1sjourn
-            left join dh'''+str(doc_type['typeid'])+''' dh on _1sjourn.iddoc = dh.iddoc
-            left join(select sum('''+doc_type['sumfield']+''') as sm, iddoc from dt'''+str(doc_type['typeid']) +
-                           ''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
-                           where(iddocdef='''+str(doc_type['typeid'])+
-                           ''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between ''' +
-                           "'" + start_date.strftime("%Y-%m-%d") + "'" + ''' and ''' +
-                           "'" + end_date.strftime("%Y-%m-%d") + "'" + ''')''')
-            rows_doc = cursor.fetchall()
-            for row_doc in rows_doc:
-                pass
-                print(row_doc)
+        doc_type_list = [{'typeid': 434, 'typename': 'приход', 'idfield': 'SP6059', 'sumfield': 'sp453'},
+                         {'typeid': 3716, 'typename': 'доставка', 'idfield': 'SP6071', 'sumfield': 'SP3735'}]
+        for month_num in range(1, 12+1):
+            monthrange = calendar.monthrange(2019, month_num)
+            #print(monthrange, month_num)
+            start_date = date(2019, month_num, 1)
+            end_date = date(2019, month_num, monthrange[1])
+            logging.warning([start_date, end_date])
+            for doc_type in doc_type_list:
+                list_partii = []
+                # print(doc_type['sumfield'])
+                cursor.execute('''select  _1sjourn.iddoc, docno as docno,
+                CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate, 
+                dt.sm,'''+doc_type['idfield']+''' as idartmarket  from _1sjourn
+                left join dh'''+str(doc_type['typeid'])+''' dh on _1sjourn.iddoc = dh.iddoc
+                left join(select sum('''+doc_type['sumfield']+''') as sm, iddoc from dt'''+str(doc_type['typeid']) +
+                               ''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
+                               where(iddocdef='''+str(doc_type['typeid'])+
+                               ''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between ''' +
+                               "'" + start_date.strftime("%Y-%m-%d") + "'" + ''' and ''' +
+                               "'" + end_date.strftime("%Y-%m-%d") + "'" + ''')''')
+                rows_doc = cursor.fetchall()
+                for row_partii in rows_doc:
+                    row_nom_partii = wsdl_client.row_partii_type(tovar=0, prihod_id=row_partii['iddoc'],
+                                                                 prihod_no=row_partii['docno'],
+                                                                 prihod_date=row_partii['docdate'],
+                                                                 stoimost=row_partii['sm'],
+                                                                 tovar_filial=row_partii['idartmarket'],
+                                                                 prodaga=0)
+                    list_partii.append(row_nom_partii)
+                document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
+                document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
+
+                n = wsdl_client.client.service.load_doc_list(doc_type['typeid'], start_date.strftime("%Y-%m-%d"), document_partii, 0)
+
+                logging.warning(['Загрузка списка документов'])
     elif k == 'авто':
         white_list = []
         if 1 == 1:
