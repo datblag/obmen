@@ -37,7 +37,7 @@ def main():
             cursor.execute(
                 '''SELECT  * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = %s) and (DWNLDID='1122!!')''', filial_base_code)
             rows_delta = cursor.fetchall()
-            logging.warning(rows_delta)
+            # logging.warning(rows_delta)
             logging.warning('Выборка изменений завершена')
             for row_delta in tqdm(rows_delta):
                 if not (row_delta['TYPEID'] in filial_object_white_list):

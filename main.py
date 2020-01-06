@@ -55,15 +55,15 @@ while True:
         nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
                                        prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                        wsdl_client=wsdl_client)
-    elif k=='цены':
+    elif k == 'цены':
         # 36-доставка (загружены за 2019й год), 38-приобретение(загружены за 2019й год),
         # 4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей (оптовая), 37 - розничная
 
 
         # выгрузка истории
         # TODO филиал, херека (специальная), самбери (акцизного склада)
-        start_date_0 = date(2018, 12, 31)
-        end_date = date(2018, 12, 31)
+        start_date_0 = date(2019, 1, 1)
+        end_date = date(2019, 12, 31)
         delta = timedelta(days=1)
 
         # [36, 38, 4549, 35, 4460, 3677, 37] полный список не хватает три цены
@@ -469,18 +469,18 @@ while True:
                     if row['client']==None:
                         continue
                     if row['SP6065'] == 1:
-                        if  row['ostatok'] < 0:
+                        if row['ostatok'] < 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans.append(row_nom)
-                        elif  row['ostatok'] > 0:
+                        elif row['ostatok'] > 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg.append(row_nom)
-                    elif row['SP6065']==2:
-                        if  row['ostatok'] > 0:
+                    elif row['SP6065'] == 2:
+                        if row['ostatok'] > 0:
                             row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
                             row_list_dolg_post.append(row_nom)
                         elif  row['ostatok'] < 0:
-                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom=wsdl_client.row_type(tovar=row['client'], quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
                             row_list_avans_post.append(row_nom)
                     if not "'"+row['client']+"'" in client_list:
                         client_list.append("'"+row['client']+"'")
