@@ -159,6 +159,7 @@ def get_spisanie_rows(cursor, prm_isfilial, prm_row):
                 select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1783 as kolvo, SP1785 as koef,
                 0 as price,0 as sum from dt1790
                 left join SC84 WITH (NOLOCK) on SP1782=SC84.id
+                        where iddoc=%s
                             ''', prm_row['iddoc'])
     logging.info(';'.join(['Выборка строк списание завершена', prm_row['docno']]))
     return cursor.fetchall()
@@ -199,50 +200,93 @@ def spisanie_filial(cursor, wsdl_client, prm_row_delta):
     for row_header in rows_header:
         logging.warning([check_firma(row_header, 1), check_docid(row_header, 1), check_sklad(row_header, 1)])
         if not check_firma(row_header, 1) or not check_docid(row_header, 1) or not check_sklad(row_header, 1):
-            logging.warning('Загружаем оприходованием')
-            header = wsdl_client.header_type(document_type=2, firma=cb_firma_id,
-                                             sklad=row_header['sklad'].strip(), client='',
-                                             idartmarket=row_header['idartmarket'].strip()
-                                             , document_date=row_header['datedoc'],
-                                             nomerartmarket=row_header['docno'])
+            continue
+        logging.warning('Загружаем списание')
+        header = wsdl_client.header_type(document_type=2, firma=cb_firma_id,
+                                         sklad=row_header['sklad'].strip(), client='',
+                                         idartmarket=row_header['idartmarket'].strip()
+                                         , document_date=row_header['datedoc'],
+                                         nomerartmarket=row_header['docno'])
 
-            isclosed = row_header['closed'] and 1
-            rows_table = get_spisanie_rows(cursor, 1, row_header)
-            row_list = []
-            tovar_list = []
+        isclosed = row_header['closed'] and 1
+        rows_table = get_spisanie_rows(cursor, 1, row_header)
+        row_list = []
+        tovar_list = []
 
-            for row_table in rows_table:
-                if not row_table['idtovar'].strip().isdigit():
-                    logging.error(["Некорректный код товара", row_table['idtovar']])
-                    row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'],
-                                                   price=row_table['price'], koef=row_table['koef'],
-                                                   sum=row_table['sum'],
-                                                   tovar_filial=row_table['idtovarfil'])
+        for row_table in rows_table:
+            if not row_table['idtovar'].strip().isdigit():
+                logging.error(["Некорректный код товара", row_table['idtovar']])
+                row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'],
+                                               price=row_table['price'], koef=row_table['koef'],
+                                               sum=row_table['sum'],
+                                               tovar_filial=row_table['idtovarfil'])
+            else:
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                               price=row_table['price'], koef=row_table['koef'],
+                                               sum=row_table['sum'],
+                                               tovar_filial=row_table['idtovarfil'])
+
+            if row_table['idtovar'] is None:
+                continue
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
+
+        rows = wsdl_client.rows_type(rows=row_list)
+        str_id = ",".join(tovar_list)
+        nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                       wsdl_client=wsdl_client, is_filial=1)
+
+        list_partii = []
+        if isclosed == 1:
+            logging.info('Выборка партий расхода')
+            cursor.execute('''
+                                select 
+                                SC84.code as idtovar_artmarket, SC84.SP8450 as idtovarfil,
+                                ltrim(rtrim(_1sjourn.iddoc)) as prihodid, _1sjourn.iddocdef as prihodtype,
+                                docno as prihodno,CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as prihoddate,
+                                SP342 as ostatok, SP343 as stoimost, SP6818 as prodstoimost, 1 as prodaga
+                                from RA328
+                                left join SC84 WITH (NOLOCK) on RA328.SP331=SC84.id
+                                left join SC214 WITH (NOLOCK) on RA328.SP341=SC214.id
+                                left join _1sjourn WITH (NOLOCK) on ltrim(rtrim(substring(ltrim(rtrim(SP216)),
+                                charindex(' ',ltrim(rtrim(SP216))),100)))=ltrim(rtrim(_1sjourn.iddoc))
+                                where RA328.iddoc=%s
+                                ''', row_header['iddoc'])
+            logging.info('Выборка партий расхода завершена')
+            rows_table_partii = cursor.fetchall()
+            for row_partii in rows_table_partii:
+                if not row_partii['idtovar_artmarket'].strip().isdigit():
+                    row_nom_partii = wsdl_client.row_partii_type(tovar=0,
+                                                                 prihod_id=row_partii['prihodid'],
+                                                                 prihod_type=row_partii['prihodtype'],
+                                                                 prihod_no=row_partii['prihodno'],
+                                                                 prihod_date=row_partii['prihoddate'],
+                                                                 ostatok=row_partii['ostatok'],
+                                                                 stoimost=row_partii['stoimost'],
+                                                                 prodstoimost=row_partii['prodstoimost'],
+                                                                 prodaga=row_partii['prodaga'],
+                                                                 tovar_filial=row_partii['idtovarfil'])
                 else:
-                    row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
-                                                   price=row_table['price'], koef=row_table['koef'],
-                                                   sum=row_table['sum'],
-                                                   tovar_filial=row_table['idtovarfil'])
+                    row_nom_partii = wsdl_client.row_partii_type(tovar=row_partii['idtovar_artmarket'],
+                                                                 prihod_id=row_partii['prihodid'],
+                                                                 prihod_type=row_partii['prihodtype'],
+                                                                 prihod_no=row_partii['prihodno'],
+                                                                 prihod_date=row_partii['prihoddate'],
+                                                                 ostatok=row_partii['ostatok'],
+                                                                 stoimost=row_partii['stoimost'],
+                                                                 prodstoimost=row_partii['prodstoimost'],
+                                                                 prodaga=row_partii['prodaga'],
+                                                                 tovar_filial=row_partii['idtovarfil'])
+                list_partii.append(row_nom_partii)
 
-                if row_table['idtovar'] is None:
-                    continue
-                if not "'" + row_table['idtovar'] + "'" in tovar_list:
-                    tovar_list.append("'" + row_table['idtovar'] + "'")
-                row_list.append(row_nom)
+        document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
+        document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
 
-            rows = wsdl_client.rows_type(rows=row_list)
-            str_id = ",".join(tovar_list)
-            nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
-                                           wsdl_client=wsdl_client, is_filial=1)
-
-            list_partii = []
-            document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
-            document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
-
-            document = wsdl_client.document_type(header=header, rowslist=rows)
-            logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno']]))
-            n = wsdl_client.client.service.load_spisanie(document, document_partii, isclosed, 1)
-            logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(';'.join(['Загрузка документа списание', row_header['docno']]))
+        n = wsdl_client.client.service.load_spisanie(document, document_partii, isclosed, 1)
+        logging.info(';'.join(['Загрузка документа списание', row_header['docno'], n]))
 
 
 
