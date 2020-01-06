@@ -56,18 +56,19 @@ while True:
                                        prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                        wsdl_client=wsdl_client)
     elif k == 'цены':
-        # 36-доставка (загружены за 2019й год), 38-приобретение(загружены за 2019й год),
-        # 4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей (оптовая), 37 - розничная
+        # 36-доставка (загружены за 2019й год), 38-приобретение (загружены за 2019й год),
+        # (4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей (оптовая), 37 - розничная) -
+        # загружены за 2019й год
 
 
         # выгрузка истории
-        # TODO филиал, херека (специальная), самбери (акцизного склада)
-        start_date_0 = date(2019, 1, 1)
-        end_date = date(2019, 12, 31)
+        # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
+        start_date_0 = date(2018, 12, 31)
+        end_date = date(2018, 12, 31)
         delta = timedelta(days=1)
 
-        # [36, 38, 4549, 35, 4460, 3677, 37] полный список не хватает три цены
-        price_type_to_load = [4549, 35, 4460, 3677, 37]
+        # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
+        price_type_to_load = [4340, 3678, 4613]
         for price_type in price_type_to_load:
             logging.warning(price_type)
             start_date = start_date_0
@@ -383,11 +384,12 @@ while True:
                     prihod.load_prihod(cursor, wsdl_client, row_delta)
                 try:
                     cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') 
-                                    and (OBJID=%s)''', row_delta['OBJID'])
+                                    and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
                     conn.commit()
-                    logging.info(';'.join(['Загружен объект',str(row_delta['OBJID']),str(row_delta['TYPEID'])]))
+                    logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
                 except:
-                    logging.error(';'.join(['Ошибка загрузки объекта',str(row_delta['OBJID']),str(row_delta['TYPEID'])]))
+                    logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
+                                            str(row_delta['TYPEID'])]))
 
             logging.warning('Выборка изменений завершена')
             time.sleep(10) 

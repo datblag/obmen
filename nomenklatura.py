@@ -104,7 +104,7 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         # date=('''+"'"+prm_unload_price_date+"'"+''') только изменения за дату
         str_select = str_select + '''
                             (select a.objid as idtovar,value,date from (
-                            select objid,id,max(date) as mdate from _1SCONST where date=(''' + "'" + prm_unload_price_date + "'" + ''')
+                            select objid,id,max(date) as mdate from _1SCONST where date<=(''' + "'" + prm_unload_price_date + "'" + ''')
                             and (_1SCONST.id=''' + str(prm_unload_price) + ''') group by objid,id) a
                             inner join (select objid,id,date,max(value) as value from _1SCONST where _1SCONST.id=''' + str(
             prm_unload_price) + ''' group by objid,id,date) b on a.objid=b.objid

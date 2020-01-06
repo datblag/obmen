@@ -74,7 +74,8 @@ def main():
                     vvodostatka_tovar_filial(cursor, wsdl_client, row_delta)
                 try:
                     cursor.execute('''delete from _1SUPDTS where (DBSIGN = %s) and (DWNLDID='1122!!') 
-                                    and (OBJID=%s)''', (filial_base_code, row_delta['OBJID']))
+                                    and (OBJID=%s) and (TYPEID=%s)''', (filial_base_code, row_delta['OBJID'],
+                                                                        row_delta['TYPEID']))
                     conn.commit()
                     logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
                 except Exception as e:
