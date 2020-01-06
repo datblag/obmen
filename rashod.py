@@ -58,21 +58,21 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
         tovar_list = []
 
         header = wsdl_client.header_type(document_type=2, firma=cb_firma_id, sklad=row['sklad'].strip(),
-                                         client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
-                                         , document_date=row['datedoc'], nomerartmarket=row['docno'])
+                                         client=row['client'].strip(), idartmarket=row['idartmarket'].strip(),
+                                         document_date=row['datedoc'], nomerartmarket=row['docno'],
+                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'])
 
         for row_table in rows_table:
             logging.warning(row_table)
             if not row_table['idtovar'].strip().isdigit():
                 logging.error(["Некорректный код товара", row_table['idtovar']])
                 row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'], price=row_table['price'],
-                                    koef=row_table['koef'], sum=row_table['sum'],
-                                    tovar_filial=row_table['idtovarfil'])
+                                               koef=row_table['koef'], sum=row_table['sum'],
+                                               tovar_filial=row_table['idtovarfil'])
             else:
-                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
-                                    koef=row_table['koef'], sum=row_table['sum'],
-                                    tovar_filial=row_table['idtovarfil'])
-
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                               price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                               tovar_filial=row_table['idtovarfil'])
 
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
@@ -85,9 +85,8 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(['Загрузка документа расхода', row['docno'], row['datedoc']])
-        #document_partii_rows = wsdl_client.rows_partii_type(rows=[])
-        #document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
-
+        # document_partii_rows = wsdl_client.rows_partii_type(rows=[])
+        # document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
 
         list_partii = []
         if isclosed == 1:
@@ -299,12 +298,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             logging.info('Выборка партий расхода')
             cursor.execute('''
                                     select 
-                                    sp4802 as idtovar_artmarket, ltrim(rtrim(_1sjourn.iddoc)) as prihodid, _1sjourn.iddocdef as prihodtype,
-                                    docno as prihodno,CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as prihoddate,
+                                    sp4802 as idtovar_artmarket, ltrim(rtrim(_1sjourn.iddoc)) as prihodid,
+                                    _1sjourn.iddocdef as prihodtype, docno as prihodno,
+                                    CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as prihoddate,
                                     SP1133 as ostatok, SP2655 as stoimost, SP2799 as prodstoimost, SP4307 as prodaga
                                     from ra1130 WITH (NOLOCK)
                                     left join sc33 WITH (NOLOCK) on ra1130.sp1131 = sc33.id
-                                    left join _1sjourn WITH (NOLOCK) on ltrim(rtrim(substring(ltrim(rtrim(sp1132)),charindex(' ',ltrim(rtrim(sp1132))),100)))=ltrim(rtrim(_1sjourn.iddoc))
+                                    left join _1sjourn WITH (NOLOCK) on ltrim(rtrim(substring(ltrim(rtrim(sp1132)),
+                                    charindex(' ',ltrim(rtrim(sp1132))),100)))=ltrim(rtrim(_1sjourn.iddoc))
                                     where ra1130.iddoc=%s
                                 ''', row['iddoc'])
             logging.info('Выборка партий расхода завершена')

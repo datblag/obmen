@@ -44,7 +44,7 @@ logging.warning('Начало работы')
 # try:
 while True:
     k=input('Введите команду:')
-    if k=='0':
+    if k == '0':
         break
     elif k == 'ценынач':
         nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
@@ -58,12 +58,12 @@ while True:
 
         # выгрузка истории
         # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
-        start_date_0 = date(2018, 12, 31)
-        end_date = date(2018, 12, 31)
+        start_date_0 = date(2019, 1, 1)
+        end_date = date(2019, 12, 31)
         delta = timedelta(days=1)
 
         # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
-        price_type_to_load = [4340, 3678, 4613]
+        price_type_to_load = [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613]
         for price_type in price_type_to_load:
             logging.warning(price_type)
             start_date = start_date_0
@@ -74,24 +74,27 @@ while True:
                 nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, prm_unload_price=price_type, prm_unload_price_date=k2,
                                                wsdl_client=wsdl_client)
-    elif k == 'документ7':
+    elif k == 'док':
         # 434 - приход
-        start_date = date(2018, 1, 1)
-        end_date = date(2018, 1,31)
-        doc_type_list=[{'typeid':434,'typename':'приход','idfield':'SP6059','sumfield':'sp453'}]
+        start_date = date(2019, 1, 1)
+        end_date = date(2019, 1, 31)
+        doc_type_list=[{'typeid': 434, 'typename': 'приход', 'idfield': 'SP6059', 'sumfield': 'sp453'}]
         for doc_type in doc_type_list:
             print(doc_type['sumfield'])
-            cursor.execute('''select  closed, _1sjourn.iddocdef as doctype, _1sjourn.iddoc, docno as docno, CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate,
+            cursor.execute('''select  top 100 _1sjourn.iddoc, docno as docno,
+            CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate, 
             dt.sm,'''+doc_type['idfield']+''' as idartmarket  from _1sjourn
             left join dh'''+str(doc_type['typeid'])+''' dh on _1sjourn.iddoc = dh.iddoc
-            left join(select sum('''+doc_type['sumfield']+''') as sm, iddoc from dt'''+str(doc_type['typeid'])+''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
-            where(iddocdef='''+str(doc_type['typeid'])+''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between '''+
-                           "'" + start_date.strftime("%Y-%m-%d") + "'" +''' and '''+
-                           "'" + end_date.strftime("%Y-%m-%d") + "'" +''')''')
-            rows_doc=cursor.fetchall()
+            left join(select sum('''+doc_type['sumfield']+''') as sm, iddoc from dt'''+str(doc_type['typeid']) +
+                           ''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
+                           where(iddocdef='''+str(doc_type['typeid'])+
+                           ''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between ''' +
+                           "'" + start_date.strftime("%Y-%m-%d") + "'" + ''' and ''' +
+                           "'" + end_date.strftime("%Y-%m-%d") + "'" + ''')''')
+            rows_doc = cursor.fetchall()
             for row_doc in rows_doc:
                 pass
-                #print(row_doc)
+                print(row_doc)
     elif k == 'авто':
         white_list = []
         if 1 == 1:
