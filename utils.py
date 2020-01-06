@@ -76,6 +76,4 @@ def check_sklad(prm_row, prm_is_filial):
                 logging.error(';'.join(['Пустой склад получатель', prm_row['docno']]))
                 res = False
 
-
-
     return res

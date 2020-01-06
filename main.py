@@ -38,15 +38,10 @@ logging.warning('Начало работы')
 
 #client.wsdl.dump()
 
-list=[]
+# list = []
 
-#os.environ['TDSDUMP'] = 'stdout'
-
-
-
-
-
-#try:
+# os.environ['TDSDUMP'] = 'stdout'
+# try:
 while True:
     k=input('Введите команду:')
     if k=='0':
@@ -137,122 +132,25 @@ while True:
                 if not (row_delta['TYPEID'] in white_list):
                     continue
                     pass
-                #номенклатура
-                if row_delta['TYPEID']==33: 
+                # номенклатура
+                if row_delta['TYPEID'] == 33:
                     str_id=",".join(["'"+row_delta['OBJID']+"'"])
                     nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                    prm_update_mode=1, wsdl_client=wsdl_client)
                 
-                #перемещение
+                # перемещение
                 elif row_delta['TYPEID'] == 239:
                     sklad.move_tovar(cursor, wsdl_client, row_delta)
 
-
-                #списание
+                # списание
                 elif row_delta['TYPEID'] == 297:
-                #списание
-                    logging.info('Выборка списания заголовки')
-                    cursor.execute('''
-        
-                    SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-                    sc13.sp4805 as firma,sc31.SP5639 as sklad,SP6076 as idartmarket,
-                    _1sjourn.iddoc FROM dh297   as dh WITH (NOLOCK)
-                    left join _1sjourn WITH (NOLOCK)  on dh.iddoc=_1sjourn.iddoc 
-                    left join sc31 WITH (NOLOCK)  on SP300 = sc31.id
-                    left join sc13 WITH (NOLOCK)  on SP1005=sc13.id
+                    sklad.spisanie(cursor, wsdl_client, row_delta)
 
-                    
-                    where _1sjourn.iddoc=%s
-
-        
-                    ''',row_delta['OBJID'])  
-                    logging.info('Выборка списания заголовки завершена')
-
-                    rows_header = cursor.fetchall()
-
-                    for row_header in rows_header:
-                        if row_header['firma']!='9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
-                            continue
-                        if row_header['idartmarket']==None or row_header['idartmarket'].strip()=='':
-                            logging.error(';'.join(['Пустой ид',row_header['docno']]))
-                            continue
-                        if row_header['sklad']==None or row_header['sklad'].strip()=='':
-                            logging.error(';'.join(['Пустой склад',row_header['docno']]))
-                            continue
-
-
-                        header=wsdl_client.header_type(document_type=2,firma=row_header['firma'].strip(),sklad=row_header['sklad'].strip(),client='',idartmarket=row_header['idartmarket'].strip()
-                                            ,document_date=row_header['datedoc'],nomerartmarket=row_header['docno'])
-
-                        isclosed=row_header['closed'] and 1
-
-                        logging.info(';'.join(['Выборка строк списания',row_header['docno']]))
-                        cursor.execute('''
-                                select  sc33.sp4802 as idtovar,SP304 as kolvo,SP306 as koef,0 as price,0 as sum from dt297
-                                left join sc33 on SP303=sc33.id
-                                where iddoc=%s
-                        ''',row_delta['OBJID'])
-                        logging.info(';'.join(['Выборка строк списания завершена',row_header['docno']]))
-                        rows_table = cursor.fetchall()
-                        row_list=[]
-                        tovar_list=[]
-
-                        for row_table in rows_table:
-                            row_nom=wsdl_client.row_type(tovar=row_table['idtovar'],quantity=row_table['kolvo'],price=row_table['price'],koef=row_table['koef'],sum=row_table['sum'])
-                            if row_table['idtovar']==None:
-                                continue
-                            if not "'"+row_table['idtovar']+"'" in tovar_list:
-                                tovar_list.append("'"+row_table['idtovar']+"'")
-                            row_list.append(row_nom)
-
-                        rows=wsdl_client.rows_type(rows=row_list)
-                        str_id=",".join(tovar_list)
-                        nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0,
-                                                       prm_update_mode=0, wsdl_client=wsdl_client)
-
-
-                        list_partii=[]
-                        if isclosed==1:
-                            logging.info('Выборка партий списания')
-                            cursor.execute('''
-                                select 
-                                sp4802 as idtovar_artmarket, ltrim(rtrim(_1sjourn.iddoc)) as prihodid, _1sjourn.iddocdef as prihodtype,
-                                docno as prihodno,CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as prihoddate,
-                                SP1133 as ostatok, SP2655 as stoimost, SP2799 as prodstoimost, SP4307 as prodaga
-                                from ra1130 WITH (NOLOCK)
-                                left join sc33 WITH (NOLOCK) on ra1130.sp1131 = sc33.id
-                                left join _1sjourn WITH (NOLOCK) on ltrim(rtrim(substring(ltrim(rtrim(sp1132)),charindex(' ',ltrim(rtrim(sp1132))),100)))=ltrim(rtrim(_1sjourn.iddoc))
-                                where ra1130.iddoc=%s
-                            ''',row_delta['OBJID'])
-                            logging.info('Выборка партий списаний завершена')
-                            rows_table_partii = cursor.fetchall()
-                            for row_partii in rows_table_partii:
-                                row_nom_partii=wsdl_client.row_partii_type(tovar=row_partii['idtovar_artmarket'],
-                                                               prihod_id=row_partii['prihodid'],
-                                                               prihod_type=row_partii['prihodtype'],
-                                                               prihod_no=row_partii['prihodno'],
-                                                               prihod_date=row_partii['prihoddate'],
-                                                               ostatok=row_partii['ostatok'],
-                                                               stoimost=row_partii['stoimost'],
-                                                               prodstoimost=row_partii['prodstoimost'],
-                                                               prodaga=row_partii['prodaga'])
-                                list_partii.append(row_nom_partii)
-                        document_partii_rows=wsdl_client.rows_partii_type(rows=list_partii)
-                        document_partii=wsdl_client.document_partii_type(rowslist=document_partii_rows)
-
-
-
-                        document=wsdl_client.document_type(header=header,rowslist=rows)
-                        logging.info(';'.join(['Загрузка документа списание',row_header['docno']]))
-                        n=client.service.load_spisanie(document,document_partii,isclosed)
-                        logging.info(';'.join(['Загрузка документа списание',row_header['docno'],n]))
-
-
-                 #оприходование
+                # оприходование
                 elif row_delta['TYPEID'] == 310:
                     sklad.vvodostatka_tovar(cursor, wsdl_client, row_delta)
 
-                #взаиморасчеты
+                # взаиморасчеты
                 elif row_delta['TYPEID'] in [2989, 4308, 2964, 4179, 4225]: #взаиморасчеты
                     #взаиморасчеты
                     #2989 - движенияденежныхсредств

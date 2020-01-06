@@ -8,7 +8,7 @@ from sql import SqlClient
 from wsdl import WsdlClient
 from prihod import load_prihod_filial, get_prihod_rows_filial
 from rashod import load_rashod_filial, get_rashod_header
-from sklad import move_tovar_filial, vvodostatka_tovar_filial
+from sklad import move_tovar_filial, vvodostatka_tovar_filial, spisanie_filial
 import logs
 from tqdm import tqdm
 from hdb import get_region_groups_filial, get_client_groups_filial
@@ -72,6 +72,10 @@ def main():
                     #continue
                     logging.warning(row_delta)
                     vvodostatka_tovar_filial(cursor, wsdl_client, row_delta)
+                elif row_delta['TYPEID'] == 1790: # списание
+                    #continue
+                    logging.warning(row_delta)
+                    spisanie_filial(cursor, wsdl_client, row_delta)
                 try:
                     cursor.execute('''delete from _1SUPDTS where (DBSIGN = %s) and (DWNLDID='1122!!') 
                                     and (OBJID=%s) and (TYPEID=%s)''', (filial_base_code, row_delta['OBJID'],
