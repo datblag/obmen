@@ -34,6 +34,8 @@ conn = sql_client.conn
 
 logging.warning('Начало работы')
 
+
+
 #logging.warning(convert_base('2V8', from_base=36))
 
 
