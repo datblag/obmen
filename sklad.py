@@ -62,7 +62,8 @@ def move_tovar_filial(cursor, wsdl_client, prm_row_delta):
         logging.warning([check_firma(row_header, 1), check_docid(row_header, 1), check_sklad(row_header, 1)])
         if not check_firma(row_header, 1) or not check_docid(row_header, 1) or not check_sklad(row_header, 1):
             logging.warning(row_header['sklad_in'])
-            if row_header['sklad_in'].strip() in filial_sklad_white_list:
+            if check_firma(row_header, 1) and check_docid(row_header, 1) and \
+                    row_header['sklad_in'].strip() in filial_sklad_white_list:
                 logging.warning('Загружаем оприходованием')
                 header = wsdl_client.header_type(document_type=2, firma=cb_firma_id,
                                                  sklad=row_header['sklad_in'].strip(), client='',
@@ -104,7 +105,7 @@ def move_tovar_filial(cursor, wsdl_client, prm_row_delta):
                 n = wsdl_client.client.service.load_vvodostatka_tovar(document, isclosed, 1)
                 logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))
 
-            #continue
+            continue
         logging.warning(row_header)
 
         header = wsdl_client.header_type(document_type=2, firma=cb_firma_id,
