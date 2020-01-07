@@ -15,7 +15,7 @@ def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
                             '' as agent,
                             '' as expeditor,
                             '' as expeditorname,
-                            _1sjourn.iddoc FROM DH1611 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef FROM DH1611 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
                             left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
