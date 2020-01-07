@@ -274,8 +274,10 @@ while True:
 
                             if row_table['client'] is None:
                                 continue
-                            row_nom=wsdl_client.row_type(tovar=row_table['client'], quantity=row_table['typedvig'],
-                                                         price=0, koef=debkred, sum=row_table['summa'])
+                            row_nom = wsdl_client.row_type(tovar=row_table['client'], quantity=row_table['typedvig'],
+                                                           price=convert_base(docosnov_list[0], from_base=36),
+                                                           koef=debkred, sum=row_table['summa'],
+                                                           tovar_filial=docosnov_list[1])
                             if not "'"+row_table['client']+"'" in client_list:
                                 client_list.append("'"+row_table['client']+"'")
                             row_list.append(row_nom)
@@ -286,9 +288,9 @@ while True:
                         # print(row_list)
                         rows = wsdl_client.rows_type(rows=row_list)
                         document = wsdl_client.document_type(header=header,rowslist=rows)
-                        logging.info(';'.join(['Загрузка документа взаиморасчетов',row['docno']]))
-                        n=client.service.load_client_rashet(document,isclosed)
-                        logging.info(';'.join(['Загрузка документа взаиморасчетов',row['docno'],n]))
+                        logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno']]))
+                        n = client.service.load_client_rashet(document, isclosed)
+                        logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno'],n]))
 
 
                 #расход
