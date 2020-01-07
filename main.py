@@ -36,7 +36,7 @@ logging.warning('Начало работы')
 
 
 
-#logging.warning(convert_base('2V8', from_base=36))
+logging.warning(convert_base('BE', from_base=36))
 
 
 #client.wsdl.dump()
