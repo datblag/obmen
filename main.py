@@ -83,7 +83,9 @@ while True:
                          {'typeid': 3716, 'typename': 'доставка', 'idfield': 'SP6071', 'sumfield': 'SP3735'},
                          {'typeid': 410, 'typename': 'расход', 'idfield': 'SP6060', 'sumfield': 'SP428'},
                          {'typeid': 469, 'typename': 'реализатор', 'idfield': 'SP6072', 'sumfield': 'SP487'},
-                         {'typeid': 297, 'typename': 'списание', 'idfield': 'SP6076', 'sumfield': 'SP4178'}
+                         {'typeid': 297, 'typename': 'списание', 'idfield': 'SP6076', 'sumfield': 'SP4178'},
+                         {'typeid': 310, 'typename': 'ввод. ост', 'idfield': 'SP6077', 'sumfield': 'SP4717'},
+                         {'typeid': 239, 'typename': 'перемещ', 'idfield': 'SP6079', 'sumfield': 'SP250'}
                          ]
         for month_num in range(1, 12+1):
             monthrange = calendar.monthrange(2019, month_num)
@@ -116,7 +118,7 @@ while True:
                 document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
                 document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
 
-                n = wsdl_client.client.service.load_doc_list(doc_type['typeid'], start_date.strftime("%Y-%m-%d"), document_partii, 0)
+                n = wsdl_client.client.service.load_doc_list(doc_type['typeid'], start_date.strftime("%Y-%m-%d"), document_partii, 0, doc_type['typename'])
 
                 logging.warning(['Загрузка списка документов'])
     elif k == 'авто':
