@@ -61,7 +61,7 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
                                          client=row['client'].strip(), idartmarket=row['idartmarket'].strip(),
                                          document_date=row['datedoc'], nomerartmarket=row['docno'],
                                          bdid=row['iddoc'].strip(), bdtype=row['iddocdef'])
-
+        logging.info(row['docno'])
         for row_table in rows_table:
             logging.warning(row_table)
             if not row_table['idtovar'].strip().isdigit():
