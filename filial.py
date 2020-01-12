@@ -6,7 +6,7 @@ from config import filial_config, filial_logname, filial_logname_debug, filial_l
 
 from sql import SqlClient
 from wsdl import WsdlClient
-from prihod import load_prihod_filial, get_prihod_rows_filial
+from prihod import load_prihod_filial, get_prihod_rows_filial, get_vozvrat_rows_filial, load_vozvrat_filial
 from rashod import load_rashod_filial, get_rashod_header
 from sklad import move_tovar_filial, vvodostatka_tovar_filial, spisanie_filial
 import logs
@@ -53,6 +53,16 @@ def main():
                             continue
                         logging.warning(row_prihod)
                         load_prihod_filial(cursor, wsdl_client, row_prihod)
+                elif row_delta['TYPEID'] == 1656:  # возврат от покупателя
+                    logging.warning(row_delta)
+                    rows_prihod = get_vozvrat_rows_filial(cursor, row_delta['OBJID'])
+                    for row_prihod in rows_prihod:
+                        if not row_prihod['firma'].strip() in filial_firma_white_list:
+                            continue
+                        if not row_prihod['sklad'].strip() in filial_sklad_white_list:
+                            continue
+                        logging.warning(row_prihod)
+                        load_vozvrat_filial(cursor, wsdl_client, row_prihod)
                 elif row_delta['TYPEID'] == 1611: #реализация
                     #continue
                     logging.warning(row_delta)

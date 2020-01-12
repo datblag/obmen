@@ -22,6 +22,114 @@ def get_prihod_rows_filial(prm_cursor, prm_obj_id):
     return prm_cursor.fetchall()
 
 
+def get_vozvrat_rows_filial(prm_cursor, prm_obj_id):
+    prm_cursor.execute('''
+            select closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+            SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9329 as idartmarket,
+            _1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
+            '0' as isreturn, _1sjourn.iddoc as OBJID
+            from DH1656 as dh WITH (NOLOCK)
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc
+            left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+            left join SC172 WITH (NOLOCK) on SP1629 = SC172.id
+            left join SC55 WITH (NOLOCK) on SP1639 = SC55.id
+            where _1sjourn.iddoc=%s
+    ''', prm_obj_id)
+    return prm_cursor.fetchall()
+
+
+def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
+    logging.info('Выборка приходов заголовки')
+    cursor.execute('''
+            select  closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+            SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9329 as idartmarket,
+            _1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
+            '1' as isreturn
+            from DH1582 as dh WITH (NOLOCK)
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+            left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
+            left join SC172 WITH (NOLOCK) on SP1629 = SC172.id
+            left join SC55 WITH (NOLOCK) on SP1639 = SC55.id
+            where _1sjourn.iddoc=%s
+    ''', prm_row_delta['OBJID'])
+
+    logging.info('Выборка приходов заголовки завершена')
+    rows_header = cursor.fetchall()
+
+    for row_header in rows_header:
+        is_return = 0
+        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+            logging.error(';'.join(['Пустой ид', row_header['docno']]))
+            continue
+        if row_header['sklad'] == None or row_header['sklad'].strip() == '':
+            logging.error(';'.join(['Пустой склад', row_header['docno']]))
+            continue
+        if row_header['client'] == None or row_header['client'].strip() == '':
+            logging.error(';'.join(['Пустой клиент', row_header['docno']]))
+            continue
+
+        header = wsdl_client.header_type(document_type=2, firma=cb_firma_id, sklad=row_header['sklad'].strip(),
+                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
+                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                             zatr_nashi=row_header['zatr_nashi'],
+                             zatr_post=row_header['zatr_post'],
+                             naedinicu=row_header['naedinicu'],
+                             vozvrat=is_return)
+
+        isclosed = row_header['closed'] and 1
+
+        client_list = []
+        if not "'" + row_header['client'] + "'" in client_list:
+            client_list.append("'" + row_header['client'] + "'")
+        if client_list == []:
+            continue
+        str_id = ",".join(client_list)
+        get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
+        logging.info(';'.join(['Выборка строк прихода', row_header['docno']]))
+
+        prm_datedoc = datetime.datetime.strftime(row_header['datedoc'], '%Y-%m-%d')
+        logging.info(prm_datedoc)
+
+        cursor.execute('''
+                        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1645 as kolvo, SP1647 as koef, SP1648 as price,
+                        SP1649 as sum, SP4245 as pricepriobr  from Dt1656
+                        left join SC84 on SP1644 = SC84.id  where iddoc=%s ''', (prm_row_delta['OBJID']))
+
+        logging.info(';'.join(['Выборка строк прихода завершена', row_header['docno']]))
+        rows_table = cursor.fetchall()
+        logging.info(rows_table)
+        row_list = []
+        tovar_list = []
+
+        for row_table in rows_table:
+            if not row_table['idtovar'].strip().isdigit():
+                logging.error(["Некорректный код товара", row_table['idtovar']])
+                row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'], price=row_table['price'],
+                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
+                                    tovar_filial=row_table['idtovarfil'])
+            else:
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
+                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
+                                    tovar_filial=row_table['idtovarfil'])
+            if row_table['idtovar'] == None:
+                 #continue
+                pass
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
+
+        rows = wsdl_client.rows_type(rows=row_list)
+        str_id = ",".join(tovar_list)
+        logging.warning(str_id)
+        nomenklatura.load_nomenklatura(cursor, str_id, prm_id_mode=3, prm_with_parent=0, prm_update_mode=0,
+                                       wsdl_client=wsdl_client, is_filial=1)
+
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(['Загрузка документа прихода', row_header['docno'], row_header['datedoc']])
+        n = wsdl_client.client.service.load_prihod_tovar(document, isclosed, 1)
+        logging.info(['Загрузка документа прихода завершена', row_header['docno'], row_header['datedoc'], n])
+
+
 def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка приходов заголовки')
     cursor.execute('''
