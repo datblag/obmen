@@ -64,7 +64,9 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
         logging.info(row['docno'])
         for row_table in rows_table:
             logging.warning(row_table)
-            if not row_table['idtovar'].strip().isdigit():
+            if row_table['idtovar'] is None:
+                continue
+            elif not row_table['idtovar'].strip().isdigit():
                 logging.error(["Некорректный код товара", row_table['idtovar']])
                 row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'], price=row_table['price'],
                                                koef=row_table['koef'], sum=row_table['sum'],
