@@ -45,7 +45,7 @@ def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
             SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9329 as idartmarket,
             _1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
             '1' as isreturn
-            from DH1582 as dh WITH (NOLOCK)
+            from DH1656 as dh WITH (NOLOCK)
             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
             left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
             left join SC172 WITH (NOLOCK) on SP1629 = SC172.id
