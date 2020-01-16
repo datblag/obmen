@@ -14,6 +14,7 @@ def get_str_select():
     return '''
                             SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.sp4802 as idartmarket,
                             elemement1.SP3024 as fullname, elemement1.isfolder, elemement1.SP3694 as emkost,
+                            elemement1.SP6061 as fasovka,
                             groups1.sp4802 as idparent,groups1.descr as descrparent,
     						groups2.sp4802 as idparent2,groups2.descr as descrparent2,
     						groups3.sp4802 as idparent3,groups3.descr as descrparent3,
@@ -41,6 +42,7 @@ def get_str_select_filial():
     return '''
                             SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.code as idartmarket,
                             elemement1.SP101 as fullname, elemement1.isfolder, elemement1.SP8935 as emkost,
+                            0 as fasovka,
                             groups1.code as idparent,groups1.descr as descrparent,
     						groups2.code as idparent2,groups2.descr as descrparent2,
     						groups3.code as idparent3,groups3.descr as descrparent3,
@@ -230,7 +232,8 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
             if row_nom['code'].strip().isdigit():
                 nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
                                         id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
-                                        emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'])
+                                        emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'],
+                                        fasovka=row_nom['fasovka'])
             else:
                 logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
                 continue
