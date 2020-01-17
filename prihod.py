@@ -279,7 +279,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         if client_list == []:
             continue
         str_id = ",".join(client_list)
-        get_client_groups(wsdl_client,cursor, str_id)
+        get_client_groups(wsdl_client, cursor, str_id)
 
         logging.info(';'.join(['Выборка строк прихода', row_header['docno']]))
 

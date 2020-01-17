@@ -115,7 +115,7 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
     # TODO перенести префикс в конфиг
 
 
-def get_client_groups(wsdl_client = None, prm_cursor = None, prm_id_list = ''):
+def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list=''):
     logging.info('Выборка клиентов')
     if prm_id_list == '':
         prm_cursor.execute('''
