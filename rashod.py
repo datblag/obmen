@@ -15,7 +15,7 @@ def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
                             '' as agent,
                             '' as expeditor,
                             '' as expeditorname,
-                            _1sjourn.iddoc, iddocdef FROM DH1611 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP9143  as skidka FROM DH1611 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
                             left join SC172  WITH (NOLOCK) on SP1583 = SC172.id
@@ -155,7 +155,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef FROM DH410 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP4380 as skidka FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
                             left join sc31 WITH (NOLOCK) on SP412 = sc31.id
@@ -173,7 +173,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef FROM DH469 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP5369 as skidka FROM DH469 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP472 = sc46.id
@@ -193,7 +193,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             spragent.descr as agentname,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef FROM DH3716 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP4383 as skidka FROM DH3716 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP3718 = sc46.id

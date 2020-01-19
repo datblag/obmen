@@ -133,12 +133,12 @@ while True:
             white_list.append(239)      # перемещение
             white_list.append(310)      # ввод остатков
             white_list.append(434)      # приход
-            # white_list.append(2989)     # движенияденежныхсредств
+            white_list.append(2989)     # движенияденежныхсредств
             white_list.append(4308)     # выручкадоставка
             white_list.append(2964)     # ПриходныйОрдерТБ
             white_list.append(4179)     # АктПереоценкиКлиенты
             white_list.append(4225)     # РасходныйОрдерТБ
-            # white_list.append(297)      # списания
+            white_list.append(297)      # списания
 
         if 1 == 0:
             white_list.append(4308)     # выручкадоставка
