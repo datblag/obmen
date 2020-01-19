@@ -60,7 +60,7 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
         header = wsdl_client.header_type(document_type=2, firma=cb_firma_id, sklad=row['sklad'].strip(),
                                          client=row['client'].strip(), idartmarket=row['idartmarket'].strip(),
                                          document_date=row['datedoc'], nomerartmarket=row['docno'],
-                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'])
+                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'], skidka_procent=row['skidka'])
         logging.info(row['docno'])
         for row_table in rows_table:
             logging.warning(row_table)
@@ -238,7 +238,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
                                          client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                          , document_date=row['datedoc'], nomerartmarket=row['docno'],
-                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'])
+                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'], skidka_procent=row['skidka'])
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
