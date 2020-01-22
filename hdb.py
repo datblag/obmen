@@ -85,7 +85,8 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
         nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
                                    idparent=r['regionid'].strip(),
                                    value1=id_prefix+inn, value2=r['kpp'].strip(), value3=r['parentname'].strip(),
-                                   value4=r['adres'].strip(), value5=r['adres_post'].strip())
+                                   value4=r['adres'].strip(), value5=r['adres_post'].strip(),
+                                   value6=r['typett'].strip())
         list_clients.append(nom)
 
     hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
@@ -119,17 +120,16 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list=''):
     logging.info('Выборка клиентов')
     if prm_id_list == '':
         prm_cursor.execute('''
-
-            select  SP56 as inn, sp4603 as kpp, descr, sp48 as parentname, sp4807 as idartmarket, SP6066 as regionid,
-            SP3145 as adres, SP50 as adres_post
-            from sc46 where (isfolder<>'1')                       
+        select top 100 SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
+        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
+        SP5467 = SC5464.id where (isfolder<>'1')  
                            ''')
     else:
         # print(prm_id_list)
         prm_cursor.execute('''
-            select  SP56 as inn, sp4603 as kpp,descr,sp48 as parentname,sp4807 as idartmarket,SP6066 as regionid,
-            SP3145 as adres, SP50 as adres_post
-            from  sc46 where (isfolder<>'1') and (sp4807 in (''' + prm_id_list + '''))''')
+        select top 100 SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
+        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
+        SP5467 = SC5464.id where (isfolder<>'1') and (sp4807 in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
     row = prm_cursor.fetchall()
