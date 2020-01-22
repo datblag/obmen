@@ -105,13 +105,13 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
     if prm_id_list == '':
         prm_cursor.execute('''
             select  SP9312 as inn, SP9313 as kpp, descr, '' as parentname, SP573 as idartmarket, SP9314 as regionid,
-            '' as adres, '' as adres_post
+            '' as adres, '' as adres_post, '' as typett
             from SC172 where (isfolder<>'1')                       
                            ''')
     else:
         prm_cursor.execute('''
             select  SP9312 as inn, SP9313 as kpp,descr,'' as parentname,SP573 as idartmarket, SP9314 as regionid,
-            '' as adres, '' as adres_post
+            '' as adres, '' as adres_post, '' as typett
              from SC172 where (isfolder<>'1') and (SP573 in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
