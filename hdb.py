@@ -82,11 +82,15 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
             inn = '0000000000'
         else:
             inn = r['inn'].strip()
+        if r['typett'] is None:
+            typett = ''
+        else:
+            typett = r['typett']
         nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
                                    idparent=r['regionid'].strip(),
                                    value1=id_prefix+inn, value2=r['kpp'].strip(), value3=r['parentname'].strip(),
                                    value4=r['adres'].strip(), value5=r['adres_post'].strip(),
-                                   value6=r['typett'].strip())
+                                   value6=typett.strip())
         list_clients.append(nom)
 
     hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
