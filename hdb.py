@@ -48,13 +48,13 @@ def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
     logging.info('Подготовка регионов уровень 1')
     row = prm_cursor.fetchall()
     for r in row:
-        nom_region=hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
+        nom_region = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
         list_region.append(nom_region)
 
     logging.info('Выборка регионов уровень 2')
 
     prm_cursor.execute('''select sc46.sp4807 as idartmarket,sc46.descr,scparent.sp4807 as idparent,
-                          scparent.descr as nameparent from sc46 left join sc46 as scparent on sc46.parentid=scparent.id
+                          scparent.descr as nameparent, sc46.id from sc46 left join sc46 as scparent on sc46.parentid=scparent.id
                           where (sc46.parentid in (select id from sc46 where isfolder=1 and ltrim(rtrim(parentid))='0'))
                           and sc46.isfolder=1''')
 
@@ -62,10 +62,22 @@ def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
     logging.info('Подготовка регионов уровень 2')
     row = prm_cursor.fetchall()
     for r in row:
-        nom_region=hdb_type(name=r['descr'].strip(),id=r['idartmarket'].strip(),idparent=r['idparent'])
+        nom_region = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent=r['idparent'])
         list_region.append(nom_region)
 
-    hdb_array=hdb_array_type(hdb_array=list_region)
+        logging.info('Выборка регионов уровень 3')
+        prm_cursor.execute('''select sc46.sp4807 as idartmarket,sc46.descr,scparent.sp4807 as idparent,
+                              scparent.descr as nameparent from sc46 left join sc46 as scparent on sc46.parentid=scparent.id
+                              where sc46.isfolder=1 and ltrim(rtrim(sc46.parentid))=%s''', r['id'].strip())
+        rows_child = prm_cursor.fetchall()
+        logging.info('Подготовка регионов уровень 3')
+        for r_child in rows_child:
+            nom_region = hdb_type(name=r_child['descr'].strip(), id=r_child['idartmarket'].strip(), idparent=r_child['idparent'])
+            list_region.append(nom_region)
+
+
+
+    hdb_array = hdb_array_type(hdb_array=list_region)
     logging.info('Загрузка регионов начало')
     wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'region')
     logging.info('Загрузка регионов завершена')
@@ -124,14 +136,14 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list=''):
     logging.info('Выборка клиентов')
     if prm_id_list == '':
         prm_cursor.execute('''
-        select top 100 SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
+        select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
         SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
         SP5467 = SC5464.id where (isfolder<>'1')  
                            ''')
     else:
         # print(prm_id_list)
         prm_cursor.execute('''
-        select top 100 SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
+        select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
         SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
         SP5467 = SC5464.id where (isfolder<>'1') and (sp4807 in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')

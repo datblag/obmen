@@ -246,7 +246,7 @@ while True:
 
         hdb.get_client_groups(wsdl_client, cursor)
     elif k == 'регион':
-        get_region_groups(cursor)
+        hdb.get_region_groups(cursor,wsdl_client=wsdl_client)
 
     elif k == 'остаткипоставщик':
         logging.info('Выборка фирм')
