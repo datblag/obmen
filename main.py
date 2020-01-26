@@ -123,7 +123,7 @@ while True:
                 logging.warning(['Загрузка списка документов'])
     elif k == 'авто':
         white_list = []
-        if 1 == 1:
+        if 1 == 0:
             white_list.append(3716)     # расходнаядоставка
             white_list.append(410)      # расходнаянакладная
             white_list.append(469)      # расходнаяреализатора
@@ -140,8 +140,8 @@ while True:
             white_list.append(4225)     # РасходныйОрдерТБ
             white_list.append(297)      # списания
 
-        if 1 == 0:
-            white_list.append(4308)     # выручкадоставка
+        if 1 == 1:
+            white_list.append(33)       # номенклатура
 
         while True:
             logging.warning('Выборка изменений')

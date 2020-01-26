@@ -14,27 +14,46 @@ def get_str_select():
     return '''
                             SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.sp4802 as idartmarket,
                             elemement1.SP3024 as fullname, elemement1.isfolder, elemement1.SP3694 as emkost,
-                            elemement1.SP6061 as fasovka,
+                            elemement1.SP6061 as fasovka, post0.sp4807 as postid0,
                             groups1.sp4802 as idparent,groups1.descr as descrparent,
+							post1.sp4807 as postid, post1.descr as postdexcr,
     						groups2.sp4802 as idparent2,groups2.descr as descrparent2,
+							post2.sp4807 as postid2, post2.descr as postdexcr2,
     						groups3.sp4802 as idparent3,groups3.descr as descrparent3,
+							post3.sp4807 as postid3, post3.descr as postdexcr3,
     						groups4.sp4802 as idparent4,groups4.descr as descrparent4,
+							post4.sp4807 as postid4, post4.descr as postdexcr4,
     						groups5.sp4802 as idparent5,groups5.descr as descrparent5,
+							post5.sp4807 as postid5, post5.descr as postdexcr5,
     						groups6.sp4802 as idparent6,groups6.descr as descrparent6,
+							post6.sp4807 as postid6, post6.descr as postdexcr6,
     						groups7.sp4802 as idparent7,groups7.descr as descrparent7,
+							post7.sp4807 as postid7, post7.descr as postdexcr7,
     						groups8.sp4802 as idparent8,groups8.descr as descrparent8,
+							post8.sp4807 as postid8, post8.descr as postdexcr8,
     						groups9.sp4802 as idparent9,groups9.descr as descrparent9,
+							post9.sp4807 as postid9, post9.descr as postdexcr9,
     						cdost.value as pricedost, cdost.date as datedost
     						FROM SC33 elemement1
+    						left join Sc46  post0 on elemement1.SP5257=post0.id
     						left join SC33  groups1 on elemement1.parentid=groups1.id
+    						left join Sc46  post1 on groups1.SP5257=post1.id
     						left join SC33  groups2 on groups1.parentid=groups2.id
+    						left join Sc46  post2 on groups2.SP5257=post2.id
     						left join SC33  groups3 on groups2.parentid=groups3.id
+    						left join Sc46  post3 on groups3.SP5257=post3.id
     						left join SC33  groups4 on groups3.parentid=groups4.id
+    						left join Sc46  post4 on groups4.SP5257=post4.id
     						left join SC33  groups5 on groups4.parentid=groups5.id
+    						left join Sc46  post5 on groups5.SP5257=post5.id
     						left join SC33  groups6 on groups5.parentid=groups6.id
+    						left join Sc46  post6 on groups6.SP5257=post6.id
     						left join SC33  groups7 on groups6.parentid=groups7.id
+    						left join Sc46  post7 on groups7.SP5257=post7.id
     						left join SC33  groups8 on groups7.parentid=groups8.id
+    						left join Sc46  post8 on groups8.SP5257=post8.id
     						left join SC33  groups9 on groups8.parentid=groups9.id
+    						left join Sc46  post9 on groups9.SP5257=post9.id
                             left join '''
 
 
@@ -68,7 +87,7 @@ def get_str_select_filial():
 
 
 def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=0, prm_unload_price=0,
-                      prm_unload_price_date='1900-01-01',wsdl_client=None, is_filial=0):
+                      prm_unload_price_date='1900-01-01', wsdl_client=None, is_filial=0):
     # prm_id_mode 1- by id, 2 - by idartmarket, 3 - by tovar code
     # and (elemement1.sp4802 in ('''+str_id+'''))''')
 
@@ -128,74 +147,118 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
     tovar_group_list = []
     logging.info('Подготовка загрузки номенклатуры')
     for row_nom in rows_nom:
-        #logging.info(row_nom)
+        # logging.info(row_nom)
         if prm_with_parent == 1:
-            if row_nom['idparent9'] != None:
+            if not row_nom['idparent9'] is None:
+                if not row_nom['postid9'] is None:
+                    postid = row_nom['postid9'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent9'].strip(),
-                                              id=row_nom['idparent9'].strip(), idparent='')
+                                                          id=row_nom['idparent9'].strip(), idparent='', postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent9'].strip()
             else:
                 idparent_prev = ''
-            if row_nom['idparent8'] != None:
+            if not row_nom['idparent8'] is None:
+                if not row_nom['postid8'] is None:
+                    postid = row_nom['postid8'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent8'].strip(),
-                                              id=row_nom['idparent8'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent8'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent8'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent7'] != None:
+            if not row_nom['idparent7'] is None:
+                if not row_nom['postid7'] is None:
+                    postid = row_nom['postid7'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent7'].strip(),
-                                              id=row_nom['idparent7'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent7'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent7'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent6'] != None:
+            if not row_nom['idparent6'] is None:
+                if not row_nom['postid6'] is None:
+                    postid = row_nom['postid6'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent6'].strip(),
-                                              id=row_nom['idparent6'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent6'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent6'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent5'] != None:
+            if not row_nom['idparent5'] is None:
+                if not row_nom['postid5'] is None:
+                    postid = row_nom['postid5'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent5'].strip(),
-                                              id=row_nom['idparent5'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent5'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent5'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent4'] != None:
+            if not row_nom['idparent4'] is None:
+                if not row_nom['postid4'] is None:
+                    postid = row_nom['postid4'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent4'].strip(),
-                                              id=row_nom['idparent4'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent4'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent4'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent3'] != None:
+            if not row_nom['idparent3'] is None:
+                if not row_nom['postid3'] is None:
+                    postid = row_nom['postid3'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent3'].strip(),
-                                              id=row_nom['idparent3'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent3'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent3'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent2'] != None:
+            if not row_nom['idparent2'] is None:
+                if not row_nom['postid2'] is None:
+                    postid = row_nom['postid'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent2'].strip(),
-                                              id=row_nom['idparent2'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent2'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
                 idparent_prev = row_nom['idparent2'].strip()
             else:
                 idparent_prev = ''
 
-            if row_nom['idparent'] != None:
+            if not row_nom['idparent'] is None:
+                if not row_nom['postid'] is None:
+                    postid = row_nom['postid'].strip()
+                else:
+                    postid = ''
                 nom_group = wsdl_client.nomenklatura_type(code='', name=row_nom['descrparent'].strip(),
-                                              id=row_nom['idparent'].strip(), idparent=idparent_prev)
+                                                          id=row_nom['idparent'].strip(), idparent=idparent_prev,
+                                                          postid=postid)
                 tovar_group_list.append(nom_group)
 
         if row_nom['idparent'] != None:
@@ -203,11 +266,10 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
         else:
             idparent_prev = ''
 
-        if row_nom['pricedost'] != None:
+        if not row_nom['pricedost'] is None:
             pricedostval = row_nom['pricedost']
         else:
             pricedostval = 0
-
 
         if is_filial == 1:
             if row_nom['code'].strip().isdigit():
@@ -230,10 +292,15 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 tovar_list.append(nom)
         else:
             if row_nom['code'].strip().isdigit():
+                if not row_nom['postid0'] is None:
+                    postid = row_nom['postid0'].strip()
+                else:
+                    postid = ''
+
                 nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
                                         id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
                                         emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'],
-                                        fasovka=row_nom['fasovka'])
+                                        fasovka=row_nom['fasovka'], postid=postid)
             else:
                 logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
                 continue
