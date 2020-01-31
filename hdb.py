@@ -132,14 +132,19 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
     # TODO перенести префикс в конфиг
 
 
-def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list=''):
+def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None):
     logging.info('Выборка клиентов')
-    if prm_id_list == '':
+    if prm_id_list == '' and prm_parent_id_list is None:
         prm_cursor.execute('''
         select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
         SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
         SP5467 = SC5464.id where (isfolder<>'1')  
                            ''')
+    elif not prm_parent_id_list is None:
+        prm_cursor.execute('''
+        select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
+        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
+        SP5467 = SC5464.id where (isfolder<>'1') and (parentid=%s)''', prm_parent_id_list['id'])
     else:
         # print(prm_id_list)
         prm_cursor.execute('''
