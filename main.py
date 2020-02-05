@@ -61,8 +61,8 @@ while True:
 
         # выгрузка истории
         # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
-        start_date_0 = date(2019, 1, 1)
-        end_date = date(2019, 12, 31)
+        start_date_0 = date(2020, 1, 1)
+        end_date = date(2020, 1, 31)
         delta = timedelta(days=1)
 
         # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
@@ -123,7 +123,7 @@ while True:
                 logging.warning(['Загрузка списка документов'])
     elif k == 'авто':
         white_list = []
-        if 1 == 0:
+        if 1 == 1:
             white_list.append(3716)     # расходнаядоставка
             white_list.append(410)      # расходнаянакладная
             white_list.append(469)      # расходнаяреализатора
@@ -251,6 +251,7 @@ while True:
         rows_root = cursor.fetchall()
         for row_root in rows_root:
             logging.warning(row_root)
+            hdb.get_client_groups(wsdl_client, cursor, prm_parent_id_list=row_root)
             cursor.execute('''select sp4807 as idartmarket, id, descr from
                                sc46 where isfolder=1 and parentid=%s''', row_root['id'])
             rows_level1 = cursor.fetchall()
