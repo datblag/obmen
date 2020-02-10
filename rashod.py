@@ -214,31 +214,32 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
             continue
         if row['idartmarket'] == None or row['idartmarket'].strip() == '':
-            if isclosed == 1:
-                logging.error(';'.join(['Пустой ид', row['docno']]))
-            continue
+            # if isclosed == 1:
+            logging.error(';'.join(['Пустой ид', row['docno']]))
+            # continue
 
         if row['sklad'] == None or row['sklad'].strip() == '':
             if isclosed == 1:
                 logging.error(';'.join(['Пустой склад', row['docno']]))
-            continue
+            # continue
 
-        if row['client'] == None or row['client'].strip() == '':
+        if row['client'] is None or row['client'].strip() == '':
             if isclosed == 1:
                 logging.error(';'.join(['Пустой клиент', row['docno']]))
-            continue
+            # continue
 
-        if not "'" + row['client'] + "'" in client_list:
+        if not row['client'] is None and not "'" + row['client'] + "'" in client_list:
             client_list.append("'" + row['client'] + "'")
         if client_list == []:
-            continue
-
-        str_id = ",".join(client_list)
-        get_client_groups(wsdl_client, cursor, str_id)
-        header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
-                                         client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
-                                         , document_date=row['datedoc'], nomerartmarket=row['docno'],
-                                         bdid=row['iddoc'].strip(), bdtype=row['iddocdef'], skidka_procent=row['skidka'])
+            # continue
+            pass
+        else:
+            str_id = ",".join(client_list)
+            get_client_groups(wsdl_client, cursor, str_id)
+            header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
+                                             client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
+                                             , document_date=row['datedoc'], nomerartmarket=row['docno'],
+                                             bdid=row['iddoc'].strip(), bdtype=row['iddocdef'], skidka_procent=row['skidka'])
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''

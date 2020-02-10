@@ -15,6 +15,7 @@ from tqdm import *
 from config import cb_config,logname, logname_debug, logname_error
 from wsdl import *
 from sql import SqlClient
+from doc_control import check_rashod
 
 logs.run(logname, logname_debug, logname_error)
 
@@ -49,6 +50,8 @@ while True:
     k=input('Введите команду:')
     if k == '0':
         break
+    elif k == 'контроль':
+        check_rashod(cursor, wsdl_client)
     elif k == 'ценынач':
         nomenklatura.load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
                                        prm_unload_price=3678, prm_unload_price_date='2018-12-31',
@@ -140,8 +143,8 @@ while True:
             white_list.append(4225)     # РасходныйОрдерТБ
             white_list.append(297)      # списания
 
-        if 1 == 1:
-            white_list.append(33)       # номенклатура
+        if 1 == 0:
+            white_list.append(2989)     # движенияденежныхсредств
 
         while True:
             logging.warning('Выборка изменений')

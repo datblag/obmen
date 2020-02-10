@@ -26,15 +26,27 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
         idartmarket_str = 'SP6082'
         doc_descr = 'Расх.орд.(торг.)'
 
-    select_str = '''
-    SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-    sc13.sp4805 as firma,
-    ''' + idartmarket_str + ''' as idartmarket,
-    _1sjourn.iddoc FROM DH''' + str(prm_row_delta['TYPEID']) + '''  as dh WITH (NOLOCK)
-    left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
-    left join sc13 WITH (NOLOCK) on SP1005=sc13.id
-    where _1sjourn.iddoc=%s and _1sjourn.iddocdef=%s
-    '''
+    if prm_row_delta['TYPEID'] == 2989:
+        select_str = '''
+        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+        sc13.sp4805 as firma,
+        ''' + idartmarket_str + ''' as idartmarket, SP1415 as rschet,
+        _1sjourn.iddoc FROM DH''' + str(prm_row_delta['TYPEID']) + '''  as dh WITH (NOLOCK)
+        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+        left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+        left join SC1414 WITH (NOLOCK) on SP2990=SC1414.id
+        where _1sjourn.iddoc=%s and _1sjourn.iddocdef=%s
+        '''
+    else:
+        select_str = '''
+        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+        sc13.sp4805 as firma,
+        ''' + idartmarket_str + ''' as idartmarket,  '' as rschet,
+        _1sjourn.iddoc FROM DH''' + str(prm_row_delta['TYPEID']) + '''  as dh WITH (NOLOCK)
+        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+        left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+        where _1sjourn.iddoc=%s and _1sjourn.iddocdef=%s
+        '''
     cursor.execute(select_str, (prm_row_delta['OBJID'], prm_row_delta['TYPEID']))
 
     rows_header = cursor.fetchall()
@@ -56,7 +68,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             continue
 
         header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=doc_descr,
-                                         client='', idartmarket=row['idartmarket'].strip(),
+                                         client=row['rschet'].strip(), idartmarket=row['idartmarket'].strip(),
                                          document_date=row['datedoc'], nomerartmarket=row['docno'])
 
         # расход debkred 1
