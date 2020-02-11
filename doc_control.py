@@ -8,7 +8,7 @@ from rashod import load_rashod
 
 def check_rashod(cursor, wsdl_client):
     check_list = []
-    check_list.append({'doctype': 410, 'idartmarket': 'SP6060'})
+    # check_list.append({'doctype': 410, 'idartmarket': 'SP6060'})
     check_list.append({'doctype': 469, 'idartmarket': 'SP6072'})
     check_list.append({'doctype': 3716, 'idartmarket': 'SP6071'})
     logging.warning('rashod control start')
@@ -39,5 +39,5 @@ def check_rashod(cursor, wsdl_client):
                 logging.warning([res, row['datedoc'], row['docno'], isclosed, row['iddoc']])
                 load_rashod(cursor, wsdl_client, {'TYPEID': check_item['doctype'], 'OBJID': row['iddoc']})
             elif res == 200 and not isclosed == 1:
-                logging.warning([res, row['datedoc'], row['docno'], isclosed, row['iddoc']])
+                logging.warning(["Ошибка проведен", res, row['datedoc'], row['docno'], isclosed, row['iddoc']])
         logging.warning('rashod control compete')
