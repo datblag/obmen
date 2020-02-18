@@ -231,7 +231,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         if not row['client'] is None and not "'" + row['client'] + "'" in client_list:
             client_list.append("'" + row['client'] + "'")
         if client_list == []:
-            # continue
+            continue
             pass
         else:
             str_id = ",".join(client_list)
@@ -239,7 +239,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
                                              client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                              , document_date=row['datedoc'], nomerartmarket=row['docno'],
-                                             bdid=row['iddoc'].strip(), bdtype=row['iddocdef'], skidka_procent=row['skidka'])
+                                             bdid=row['iddoc'].strip(), bdtype=row['iddocdef'],
+                                             skidka_procent=row['skidka'])
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''

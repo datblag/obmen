@@ -2,6 +2,38 @@ import logging
 from utils import convert_base
 import hdb
 
+
+def load_partii(cursor, wsdl_client, prm_doc_type, prm_date_begin, prm_date_end):
+    list_partii = []
+    # print(doc_type['sumfield'])
+    cursor.execute('''select  _1sjourn.iddoc, docno as docno,
+    CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate, 
+    dt.sm,''' + prm_doc_type['idfield'] + ''' as idartmarket  from _1sjourn
+    left join dh''' + str(prm_doc_type['typeid']) + ''' dh on _1sjourn.iddoc = dh.iddoc
+    left join(select sum(''' + prm_doc_type['sumfield'] + ''') as sm, iddoc from dt''' + str(prm_doc_type['typeid']) +
+                   ''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
+                   where(iddocdef=''' + str(prm_doc_type['typeid']) +
+                   ''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between ''' +
+                   "'" + prm_date_begin.strftime("%Y-%m-%d") + "'" + ''' and ''' +
+                   "'" + prm_date_end.strftime("%Y-%m-%d") + "'" + ''')''')
+    rows_doc = cursor.fetchall()
+    for row_partii in rows_doc:
+        row_nom_partii = wsdl_client.row_partii_type(tovar=0, prihod_id=row_partii['iddoc'],
+                                                     prihod_no=row_partii['docno'],
+                                                     prihod_date=row_partii['docdate'],
+                                                     stoimost=row_partii['sm'],
+                                                     tovar_filial=row_partii['idartmarket'],
+                                                     prodaga=0)
+        list_partii.append(row_nom_partii)
+    document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
+    document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
+
+    n = wsdl_client.client.service.load_doc_list(prm_doc_type['typeid'], prm_date_begin.strftime("%Y-%m-%d"), document_partii,
+                                                 0, prm_doc_type['typename'])
+
+    logging.warning(['Загрузка списка документов'])
+
+
 def load_dolgi(cursor, wsdl_client, prm_row_delta):
     # взаиморасчеты
     # 2989 - движенияденежныхсредств

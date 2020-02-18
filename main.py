@@ -64,12 +64,14 @@ while True:
 
         # выгрузка истории
         # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
-        start_date_0 = date(2020, 1, 1)
-        end_date = date(2020, 1, 31)
+        start_date_0 = date(2018, 12, 31)
+        end_date = date(2018, 12, 31)
+        # start_date_0 = date(2020, 1, 1)
+        # end_date = date(2020, 1, 31)
         delta = timedelta(days=1)
 
         # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
-        price_type_to_load = [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613]
+        price_type_to_load = [38]
         for price_type in price_type_to_load:
             logging.warning(price_type)
             start_date = start_date_0
@@ -97,33 +99,7 @@ while True:
             end_date = date(2019, month_num, monthrange[1])
             logging.warning([start_date, end_date])
             for doc_type in doc_type_list:
-                list_partii = []
-                # print(doc_type['sumfield'])
-                cursor.execute('''select  _1sjourn.iddoc, docno as docno,
-                CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate, 
-                dt.sm,'''+doc_type['idfield']+''' as idartmarket  from _1sjourn
-                left join dh'''+str(doc_type['typeid'])+''' dh on _1sjourn.iddoc = dh.iddoc
-                left join(select sum('''+doc_type['sumfield']+''') as sm, iddoc from dt'''+str(doc_type['typeid']) +
-                               ''' group by  iddoc) dt on _1sjourn.iddoc = dt.iddoc
-                               where(iddocdef='''+str(doc_type['typeid'])+
-                               ''') and (CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) between ''' +
-                               "'" + start_date.strftime("%Y-%m-%d") + "'" + ''' and ''' +
-                               "'" + end_date.strftime("%Y-%m-%d") + "'" + ''')''')
-                rows_doc = cursor.fetchall()
-                for row_partii in rows_doc:
-                    row_nom_partii = wsdl_client.row_partii_type(tovar=0, prihod_id=row_partii['iddoc'],
-                                                                 prihod_no=row_partii['docno'],
-                                                                 prihod_date=row_partii['docdate'],
-                                                                 stoimost=row_partii['sm'],
-                                                                 tovar_filial=row_partii['idartmarket'],
-                                                                 prodaga=0)
-                    list_partii.append(row_nom_partii)
-                document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
-                document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
-
-                n = wsdl_client.client.service.load_doc_list(doc_type['typeid'], start_date.strftime("%Y-%m-%d"), document_partii, 0, doc_type['typename'])
-
-                logging.warning(['Загрузка списка документов'])
+                dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
     elif k == 'авто':
         white_list = []
         if 1 == 1:
