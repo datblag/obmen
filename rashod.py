@@ -236,6 +236,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         else:
             str_id = ",".join(client_list)
             get_client_groups(wsdl_client, cursor, str_id)
+            logging.warning([row['firma'], row['sklad'], row['client']])
             header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=row['sklad'].strip(),
                                              client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                              , document_date=row['datedoc'], nomerartmarket=row['docno'],
