@@ -221,7 +221,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         if row['sklad'] == None or row['sklad'].strip() == '':
             if isclosed == 1:
                 logging.error(';'.join(['Пустой склад', row['docno']]))
-            # continue
+            continue
 
         if row['client'] is None or row['client'].strip() == '':
             if isclosed == 1:
