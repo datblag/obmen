@@ -98,9 +98,9 @@ while True:
         #     start_date = date(2019, month_num, 1)
         #     end_date = date(2019, month_num, monthrange[1])
         #     logging.warning([start_date, end_date])
-        month_num = 1
+        month_num = 2
         start_date = date(2019, month_num, 1)
-        end_date = date(2019, month_num, 31)
+        end_date = date(2019, month_num, 18)
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
