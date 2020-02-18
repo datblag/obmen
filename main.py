@@ -92,13 +92,17 @@ while True:
                          {'typeid': 310, 'typename': 'ввод. ост', 'idfield': 'SP6077', 'sumfield': 'SP4717'},
                          {'typeid': 239, 'typename': 'перемещ', 'idfield': 'SP6079', 'sumfield': 'SP250'}
                          ]
-        for month_num in range(1, 12+1):
-            monthrange = calendar.monthrange(2019, month_num)
-            #print(monthrange, month_num)
-            start_date = date(2019, month_num, 1)
-            end_date = date(2019, month_num, monthrange[1])
-            logging.warning([start_date, end_date])
-            for doc_type in doc_type_list:
+        # for month_num in range(1, 12+1):
+        #     monthrange = calendar.monthrange(2019, month_num)
+        #     #print(monthrange, month_num)
+        #     start_date = date(2019, month_num, 1)
+        #     end_date = date(2019, month_num, monthrange[1])
+        #     logging.warning([start_date, end_date])
+        month_num = 1
+        start_date = date(2019, month_num, 1)
+        end_date = date(2019, month_num, 31)
+        logging.warning([start_date, end_date])
+        for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
     elif k == 'авто':
         white_list = []

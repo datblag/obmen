@@ -5,7 +5,6 @@ import hdb
 
 def load_partii(cursor, wsdl_client, prm_doc_type, prm_date_begin, prm_date_end):
     list_partii = []
-    # print(doc_type['sumfield'])
     cursor.execute('''select  _1sjourn.iddoc, docno as docno,
     CAST(LEFT(_1sjourn.Date_Time_IDDoc, 8) as DateTime) as docdate, 
     dt.sm,''' + prm_doc_type['idfield'] + ''' as idartmarket  from _1sjourn
@@ -28,10 +27,10 @@ def load_partii(cursor, wsdl_client, prm_doc_type, prm_date_begin, prm_date_end)
     document_partii_rows = wsdl_client.rows_partii_type(rows=list_partii)
     document_partii = wsdl_client.document_partii_type(rowslist=document_partii_rows)
 
-    n = wsdl_client.client.service.load_doc_list(prm_doc_type['typeid'], prm_date_begin.strftime("%Y-%m-%d"), document_partii,
-                                                 0, prm_doc_type['typename'])
+    n = wsdl_client.client.service.load_doc_list(prm_doc_type['typeid'], prm_date_begin.strftime("%Y-%m-%d"),
+                                                 document_partii, 0, prm_doc_type['typename'])
 
-    logging.warning(['Загрузка списка документов'])
+    logging.warning(['Загрузка списка документов', n])
 
 
 def load_dolgi(cursor, wsdl_client, prm_row_delta):
