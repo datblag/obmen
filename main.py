@@ -84,14 +84,14 @@ while True:
                                                wsdl_client=wsdl_client)
     elif k == 'док':
         # 434 - приход
-        doc_type_list = [{'typeid': 434, 'typename': 'приход', 'idfield': 'SP6059', 'sumfield': 'sp453'},
-                         {'typeid': 3716, 'typename': 'доставка', 'idfield': 'SP6071', 'sumfield': 'SP3735'},
-                         {'typeid': 410, 'typename': 'расход', 'idfield': 'SP6060', 'sumfield': 'SP428'},
-                         {'typeid': 469, 'typename': 'реализатор', 'idfield': 'SP6072', 'sumfield': 'SP487'},
-                         {'typeid': 297, 'typename': 'списание', 'idfield': 'SP6076', 'sumfield': 'SP4178'},
-                         {'typeid': 310, 'typename': 'ввод. ост', 'idfield': 'SP6077', 'sumfield': 'SP4717'},
-                         {'typeid': 239, 'typename': 'перемещ', 'idfield': 'SP6079', 'sumfield': 'SP250'}
-                         ]
+        doc_type_list = []
+        doc_type_list.append({'typeid': 434, 'typename': 'приход', 'idfield': 'SP6059', 'sumfield': 'sp453'})
+        doc_type_list.append({'typeid': 3716, 'typename': 'доставка', 'idfield': 'SP6071', 'sumfield': 'SP3735'})
+        doc_type_list.append({'typeid': 410, 'typename': 'расход', 'idfield': 'SP6060', 'sumfield': 'SP428'})
+        doc_type_list.append({'typeid': 469, 'typename': 'реализатор', 'idfield': 'SP6072', 'sumfield': 'SP487'})
+        doc_type_list.append({'typeid': 297, 'typename': 'списание', 'idfield': 'SP6076', 'sumfield': 'SP4178'})
+        doc_type_list.append({'typeid': 310, 'typename': 'ввод. ост', 'idfield': 'SP6077', 'sumfield': 'SP4717'})
+        doc_type_list.append({'typeid': 239, 'typename': 'перемещ', 'idfield': 'SP6079', 'sumfield': 'SP250'})
         # for month_num in range(1, 12+1):
         #     monthrange = calendar.monthrange(2019, month_num)
         #     #print(monthrange, month_num)
@@ -99,8 +99,8 @@ while True:
         #     end_date = date(2019, month_num, monthrange[1])
         #     logging.warning([start_date, end_date])
         month_num = 2
-        start_date = date(2019, month_num, 1)
-        end_date = date(2019, month_num, 18)
+        start_date = date(2020, month_num, 1)
+        end_date = date(2020, month_num, 19)
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
