@@ -36,7 +36,7 @@ def load_partii(cursor, wsdl_client, prm_doc_type, prm_date_begin, prm_date_end)
 def load_dolgi(cursor, wsdl_client, prm_row_delta):
     # взаиморасчеты
     # 2989 - движенияденежныхсредств
-    # 4308 - выручкадоставка SP6083
+    # 4308 - выручкадоставка SP6083; sp4323 переброска
     # 2964 - ПриходныйОрдерТБ Прих.орд.(торг.) SP6084
     # 4179 - АктПереоценкиКлиенты Акт переоц. SP6085
     # 4225 РасходныйОрдерТБ SP6082
@@ -66,6 +66,16 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
         left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
         left join sc13 WITH (NOLOCK) on SP1005=sc13.id
         left join SC1414 WITH (NOLOCK) on SP2990=SC1414.id
+        where _1sjourn.iddoc=%s and _1sjourn.iddocdef=%s
+        '''
+    elif prm_row_delta['TYPEID'] == 4308:
+        select_str = '''
+        SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+        sc13.sp4805 as firma,
+        ''' + idartmarket_str + ''' as idartmarket,  '' as rschet,
+        _1sjourn.iddoc, sp4323 as perebroska FROM DH''' + str(prm_row_delta['TYPEID']) + '''  as dh WITH (NOLOCK)
+        left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+        left join sc13 WITH (NOLOCK) on SP1005=sc13.id
         where _1sjourn.iddoc=%s and _1sjourn.iddocdef=%s
         '''
     else:

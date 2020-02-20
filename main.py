@@ -106,7 +106,7 @@ while True:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
     elif k == 'авто':
         white_list = []
-        if 1 == 1:
+        if 1 == 0:
             white_list.append(3716)     # расходнаядоставка
             white_list.append(410)      # расходнаянакладная
             white_list.append(469)      # расходнаяреализатора
@@ -117,7 +117,7 @@ while True:
             white_list.append(310)      # ввод остатков
             white_list.append(434)      # приход
             white_list.append(2989)     # движенияденежныхсредств
-            white_list.append(4308)     # выручкадоставка
+            white_list.append(4308)     # выручкадоставка  sp4323 переброска
             white_list.append(2964)     # ПриходныйОрдерТБ
             white_list.append(4179)     # АктПереоценкиКлиенты
             white_list.append(4225)     # РасходныйОрдерТБ
