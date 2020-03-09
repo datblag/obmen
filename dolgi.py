@@ -225,3 +225,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             n = wsdl_client.client.service.load_client_rashet(document, isclosed)
             logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno'], n]))
 
+
+def load_order_supplier(cursor, wsdl_client, prm_row_delta):
+    pass
+
