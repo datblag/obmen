@@ -1,6 +1,8 @@
 import logging
 from utils import convert_base
 import hdb
+import nomenklatura
+import datetime
 
 
 def load_partii(cursor, wsdl_client, prm_doc_type, prm_date_begin, prm_date_end):
@@ -227,5 +229,83 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
 
 
 def load_order_supplier(cursor, wsdl_client, prm_row_delta):
-    pass
+    logging.info('Выборка заказ заголовки')
+    cursor.execute('''
+            SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc, docno,
+            sc13.sp4805 as firma, sc46.sp4807 as client, SP6114 as idartmarket,
+            _1sjourn.iddoc,SP4430 as fotgruz, SP4431 as fprihod FROM DH4425 as dh WITH (NOLOCK)
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+            left join sc46 WITH (NOLOCK) on SP4426 = sc46.id
+            left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+            where _1sjourn.iddoc=%s
+                        ''', prm_row_delta['OBJID'])
+    logging.info('Выборка заказ заголовки завершена')
+    rows_header = cursor.fetchall()
+
+    for row_header in rows_header:
+        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+            continue
+        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+            logging.error(';'.join(['Пустой ид', row_header['docno']]))
+            continue
+
+        if row_header['client'] == None or row_header['client'].strip() == '':
+            logging.error(';'.join(['Пустой клиент', row_header['docno']]))
+            continue
+
+        in_road = 1
+        if row_header['fotgruz'] == 0 or row_header['fprihod'] == 1:
+            in_road = 0
+
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad='',
+                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
+                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                                         zatr_nashi=in_road)
+
+        isclosed = row_header['closed'] and 1
+
+        client_list = []
+        if not "'" + row_header['client'] + "'" in client_list:
+            client_list.append("'" + row_header['client'] + "'")
+        if client_list == []:
+            continue
+        str_id = ",".join(client_list)
+        hdb.get_client_groups(wsdl_client, cursor, str_id)
+
+        logging.info(';'.join(['Выборка строк заказ', row_header['docno']]))
+
+        prm_datedoc = datetime.datetime.strftime(row_header['datedoc'], '%Y-%m-%d')
+        logging.info(prm_datedoc)
+
+        cursor.execute('''
+                    select  sc33.sp4802 as idtovar, SP4437 as kolvo, 1 as koef, SP4438 as price,
+                    SP4439 as sum from DT4425
+                    left join sc33 on SP4434=sc33.id
+                    where iddoc=%s
+                            ''', (prm_row_delta['OBJID']))
+
+        logging.info(';'.join(['Выборка строк заказ завершена', row_header['docno']]))
+        rows_table = cursor.fetchall()
+        print(rows_table)
+        row_list = []
+        tovar_list = []
+        # rows_table = []
+
+        for row_table in rows_table:
+            row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
+                               koef=row_table['koef'], sum=row_table['sum'])
+            if row_table['idtovar'] == None:
+                continue
+            if not "'" + row_table['idtovar'] + "'" in tovar_list:
+                tovar_list.append("'" + row_table['idtovar'] + "'")
+            row_list.append(row_nom)
+
+        rows = wsdl_client.rows_type(rows=row_list)
+        str_id = ",".join(tovar_list)
+        nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,wsdl_client=wsdl_client)
+
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(';'.join(['Загрузка документа заказ', row_header['docno']]))
+        n = wsdl_client.client.service.load_order(document, isclosed, 0)
+        logging.info(';'.join(['Загрузка документа заказ', row_header['docno'], n]))
 

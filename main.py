@@ -17,6 +17,98 @@ from wsdl import *
 from sql import SqlClient
 from doc_control import check_rashod
 
+
+def auto_load(prm_cursor):
+    white_list = []
+    if 1 == 1:
+        white_list.append(3716)  # расходнаядоставка
+        white_list.append(410)  # расходнаянакладная
+        white_list.append(469)  # расходнаяреализатора
+
+        white_list.append(33)  # номенклатура
+
+        white_list.append(239)  # перемещение
+        white_list.append(310)  # ввод остатков
+        white_list.append(434)  # приход
+        white_list.append(2989)  # движенияденежныхсредств
+        white_list.append(4308)  # выручкадоставка  sp4323 переброска
+        white_list.append(2964)  # ПриходныйОрдерТБ
+        white_list.append(4179)  # АроченоклактПереоценкиКлиенты
+        white_list.append(4225)  # РасходныйОрдерТБ
+        white_list.append(297)  # списания
+        white_list.append(4425)  # заказ поставщику
+
+    if 1 == 0:
+        white_list.append(4308)  # выручкадоставка  sp4323 переброска
+
+    while True:
+        logging.warning('Выборка изменений')
+        # коды баз 'P1 ','БП '
+        # типы объектов: номенклатура - 33,
+        try:
+            prm_cursor.execute(
+                '''update  _1SUPDTS set DWNLDID='1122!!' where (DBSIGN = 'P1 ') and not (DWNLDID='1122!!')''')
+            conn.commit()
+        except:
+            logging.error('ошибка при обновлении таблицы _1SUPDTS')
+        #    pass
+        prm_cursor.execute('''SELECT  * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')
+        rows_delta = prm_cursor.fetchall()
+        for row_delta in tqdm(rows_delta):
+            if not (row_delta['TYPEID'] in white_list):
+                continue
+                pass
+            # номенклатура
+            if row_delta['TYPEID'] == 33:
+                str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
+                nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
+                                               prm_update_mode=1, wsdl_client=wsdl_client)
+
+            # перемещение
+            elif row_delta['TYPEID'] == 239:
+                sklad.move_tovar(prm_cursor, wsdl_client, row_delta)
+
+            # заказ почтавщику
+            elif row_delta['TYPEID'] == 4425:
+                dolgi.load_order_supplier(prm_cursor, wsdl_client, row_delta)
+
+            # списание
+            elif row_delta['TYPEID'] == 297:
+                sklad.spisanie(prm_cursor, wsdl_client, row_delta)
+
+            # оприходование
+            elif row_delta['TYPEID'] == 310:
+                sklad.vvodostatka_tovar(prm_cursor, wsdl_client, row_delta)
+
+            # взаиморасчеты
+            elif row_delta['TYPEID'] in [2989, 4308, 2964, 4179, 4225]:  # взаиморасчеты
+                dolgi.load_dolgi(prm_cursor, wsdl_client, row_delta)
+
+            # расход
+            elif row_delta['TYPEID'] in [410, 469, 3716]:
+                rashod.load_rashod(prm_cursor, wsdl_client, row_delta)
+
+            # приходы
+            elif row_delta['TYPEID'] == 434:
+                # приходы
+                prihod.load_prihod(prm_cursor, wsdl_client, row_delta)
+            try:
+                prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') 
+                                    and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
+                conn.commit()
+                logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
+            except:
+                logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
+                                        str(row_delta['TYPEID'])]))
+
+        logging.warning('Выборка изменений завершена')
+        time.sleep(10)
+
+
+    #exit()
+
+
+
 logs.run(logname, logname_debug, logname_error)
 
 wsdl_client = WsdlClient(cb_config['server_1c'])
@@ -105,86 +197,8 @@ while True:
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
     elif k == 'авто':
-        white_list = []
-        if 1 == 1:
-            white_list.append(3716)     # расходнаядоставка
-            white_list.append(410)      # расходнаянакладная
-            white_list.append(469)      # расходнаяреализатора
-
-            white_list.append(33)       # номенклатура
-        
-            white_list.append(239)      # перемещение
-            white_list.append(310)      # ввод остатков
-            white_list.append(434)      # приход
-            white_list.append(2989)     # движенияденежныхсредств
-            white_list.append(4308)     # выручкадоставка  sp4323 переброска
-            white_list.append(2964)     # ПриходныйОрдерТБ
-            white_list.append(4179)     # АроченоклактПереоценкиКлиенты
-            white_list.append(4225)     # РасходныйОрдерТБ
-            white_list.append(297)      # списания
-
-        if 1 == 0:
-            white_list.append(4308)     # выручкадоставка  sp4323 переброска
-
-        while True:
-            logging.warning('Выборка изменений')
-            # коды баз 'P1 ','БП '
-            #типы объектов: номенклатура - 33, 
-            try:
-                cursor.execute('''update  _1SUPDTS set DWNLDID='1122!!' where (DBSIGN = 'P1 ') and not (DWNLDID='1122!!')''')  
-                conn.commit()
-            except:
-                logging.error('ошибка при обновлении таблицы _1SUPDTS')
-            #    pass
-            cursor.execute('''SELECT  * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')  
-            rows_delta = cursor.fetchall()
-            for row_delta in tqdm(rows_delta):
-                if not (row_delta['TYPEID'] in white_list):
-                    continue
-                    pass
-                # номенклатура
-                if row_delta['TYPEID'] == 33:
-                    str_id = ",".join(["'"+row_delta['OBJID']+"'"])
-                    nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
-                                                   prm_update_mode=1, wsdl_client=wsdl_client)
-                
-                # перемещение
-                elif row_delta['TYPEID'] == 239:
-                    sklad.move_tovar(cursor, wsdl_client, row_delta)
-
-                # списание
-                elif row_delta['TYPEID'] == 297:
-                    sklad.spisanie(cursor, wsdl_client, row_delta)
-
-                # оприходование
-                elif row_delta['TYPEID'] == 310:
-                    sklad.vvodostatka_tovar(cursor, wsdl_client, row_delta)
-
-                # взаиморасчеты
-                elif row_delta['TYPEID'] in [2989, 4308, 2964, 4179, 4225]: #взаиморасчеты
-                    dolgi.load_dolgi(cursor, wsdl_client, row_delta)
-
-                #расход
-                elif row_delta['TYPEID'] in [410, 469, 3716]:
-                    rashod.load_rashod(cursor, wsdl_client, row_delta)
-
-                #приходы
-                elif row_delta['TYPEID'] == 434:
-                    #приходы
-                    prihod.load_prihod(cursor, wsdl_client, row_delta)
-                try:
-                    cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') 
-                                    and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
-                    conn.commit()
-                    logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
-                except:
-                    logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
-                                            str(row_delta['TYPEID'])]))
-
-            logging.warning('Выборка изменений завершена')
-            time.sleep(10) 
-
-    elif k=='фирма':
+        auto_load(cursor)
+    elif k == 'фирма':
     #загрузка  фирм
         firm_list=[]
         logging.info('Выборка фирм')
@@ -203,7 +217,7 @@ while True:
         client.service.load_hdb_elements(hdb_array,1,'firma')
         logging.info('Загрузка фирм завершена')
     elif k == 'склад':
-    #загрузка  складов
+    # загрузка  складов
         sklad_list=[]
         hdb_type = client.get_type('ns3:hdb_element')
         hdb_array_type = client.get_type('ns3:hdb_array_element')
@@ -402,18 +416,10 @@ while True:
     elif k=='dump':
         client.wsdl.dump()
 
-#except KeyboardInterrupt:
-#        logging.warning('Выполнение автообмена прекращено пользователем')
-
-        
-
-        
 conn.close()
 logging.info('Конец работы')
 
 
-
-#exit()
 
 
 #base_code='M1 '
