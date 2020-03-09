@@ -100,13 +100,13 @@ while True:
         #     logging.warning([start_date, end_date])
         month_num = 2
         start_date = date(2020, month_num, 1)
-        end_date = date(2020, month_num, 19)
+        end_date = date(2020, month_num, 25)
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
     elif k == 'авто':
         white_list = []
-        if 1 == 0:
+        if 1 == 1:
             white_list.append(3716)     # расходнаядоставка
             white_list.append(410)      # расходнаянакладная
             white_list.append(469)      # расходнаяреализатора
@@ -123,7 +123,7 @@ while True:
             white_list.append(4225)     # РасходныйОрдерТБ
             white_list.append(297)      # списания
 
-        if 1 == 1:
+        if 1 == 0:
             white_list.append(4308)     # выручкадоставка  sp4323 переброска
 
         while True:

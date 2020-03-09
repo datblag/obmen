@@ -112,11 +112,37 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             header = wsdl_client.header_type(document_type=2, firma=row['firma'].strip(), sklad=doc_descr,
                                              client=row['rschet'].strip(), idartmarket=row['idartmarket'].strip(),
                                              document_date=row['datedoc'], nomerartmarket=row['docno'])
-            cursor.execute('''select  sc46.sp4807 as client,debkred, sp171 as summa,
-                                                                 2 as typedvig, sp4372 as docosnov from ra3707
-                                                                 left join sc46 on ltrim(rtrim(SP170)) = '1A   '+ltrim(rtrim(sc46.id))
-                                                                 where ra169.iddoc=%s
-                                                                 ''', row['iddoc'])
+            cursor.execute('''select  top 100 sc46.sp4807 as client,debkred, sp3711 as summa, 2 as typedvig,
+                              sp3744 as docosnov from ra3707
+                              left join sc46 on ltrim(rtrim(sp3710)) = ltrim(rtrim(sc46.id))
+                              where ra3707.iddoc=%s''', row['iddoc'])
+            rows_table = cursor.fetchall()
+            row_list = []
+
+            for row_table in rows_table:
+                # docosnov_list = row_table['docosnov'].strip().split(' ')
+                # logging.warning(convert_base(docosnov_list[0], from_base=36))
+                # logging.warning([row_table['docosnov'], docosnov_list])
+                if row_table['debkred']:
+                    debkred = 1
+                else:
+                    debkred = 2
+
+                if debkred == 1 and row_table['typedvig'] == 1:
+                    logging.error(';'.join(['контроль операции', row['docno']]))
+
+                if row_table['client'] is None:
+                    continue
+                row_nom = wsdl_client.row_type(tovar=row_table['client'], quantity=row_table['typedvig'],
+                                               price=3716,
+                                               koef=debkred, sum=row_table['summa'],
+                                               tovar_filial=row_table['docosnov'].strip())
+                row_list.append(row_nom)
+            rows = wsdl_client.rows_type(rows=row_list)
+            document = wsdl_client.document_type(header=header, rowslist=rows)
+            logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno']]))
+            n = wsdl_client.client.service.load_perebroska(document, isclosed)
+            logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno'], n]))
         else:
             client_list = []
             isclosed = row['closed'] and 1
