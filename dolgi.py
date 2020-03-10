@@ -253,14 +253,14 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
 
-        in_road = 1
+        not_in_road = 0
         if row_header['fotgruz'] == 0 or row_header['fprihod'] == 1:
-            in_road = 0
+            not_in_road = 1
 
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad='',
                              client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
                              , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
-                                         zatr_nashi=in_road)
+                                         zatr_nashi=not_in_road)
 
         isclosed = row_header['closed'] and 1
 
