@@ -233,7 +233,9 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
     cursor.execute('''
             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc, docno,
             sc13.sp4805 as firma, sc46.sp4807 as client, SP6114 as idartmarket,
-            _1sjourn.iddoc,SP4430 as fotgruz, SP4431 as fprihod FROM DH4425 as dh WITH (NOLOCK)
+            _1sjourn.iddoc,SP4430 as fotgruz, SP4530 as foplata, SP4431 as fprihod, 
+             SP4427 as shipment_date, SP4428 as payment_date, SP4429 as arrival_date,
+             SP4750 as defer_days FROM DH4425 as dh WITH (NOLOCK)
             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
             left join sc46 WITH (NOLOCK) on SP4426 = sc46.id
             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
@@ -252,15 +254,35 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
         if row_header['client'] == None or row_header['client'].strip() == '':
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
-
+        logging.warning(row_header)
         not_in_road = 0
         if row_header['fotgruz'] == 0 or row_header['fprihod'] == 1:
             not_in_road = 1
 
+        if row_header['shipment_date'] is None or row_header['shipment_date'] == datetime.datetime(1753, 1, 1, 0, 0):
+            shipment_date = datetime.datetime(1, 1, 1, 0, 0)
+        else:
+            shipment_date = row_header['shipment_date']
+
+        if row_header['payment_date'] is None or row_header['payment_date'] == datetime.datetime(1753, 1, 1, 0, 0):
+            payment_date = datetime.datetime(1, 1, 1, 0, 0)
+        else:
+            payment_date = row_header['payment_date']
+
+        if row_header['arrival_date'] is None or row_header['arrival_date'] == datetime.datetime(1753, 1, 1, 0, 0):
+            arrival_date = datetime.datetime(1, 1, 1, 0, 0)
+        else:
+            arrival_date = row_header['arrival_date']
+
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad='',
                              client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
                              , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
-                                         zatr_nashi=not_in_road)
+                                         zatr_nashi=not_in_road, zatr_post=row_header['fotgruz'],
+                                         naedinicu=row_header['foplata'], vozvrat=row_header['fprihod'],
+                                         skidka_procent=row_header['defer_days'],
+                                         field_date=shipment_date,
+                                         field_date2=payment_date,
+                                         field_date3=arrival_date)
 
         isclosed = row_header['closed'] and 1
 
@@ -286,7 +308,7 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
 
         logging.info(';'.join(['Выборка строк заказ завершена', row_header['docno']]))
         rows_table = cursor.fetchall()
-        print(rows_table)
+        # print(rows_table)
         row_list = []
         tovar_list = []
         # rows_table = []

@@ -40,6 +40,7 @@ def auto_load(prm_cursor):
 
     if 1 == 1:
         white_list.append(4425)  # заказ поставщику
+        white_list.append(2989)  # движенияденежныхсредств
 
     while True:
         logging.warning('Выборка изменений')
@@ -156,14 +157,14 @@ while True:
 
         # выгрузка истории
         # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
-        start_date_0 = date(2018, 12, 31)
-        end_date = date(2018, 12, 31)
-        # start_date_0 = date(2020, 1, 1)
-        # end_date = date(2020, 1, 31)
+        # start_date_0 = date(2018, 12, 31)
+        # end_date = date(2018, 12, 31)
+        start_date_0 = date(2020, 2, 1)
+        end_date = date(2020, 3, 1)
         delta = timedelta(days=1)
 
         # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
-        price_type_to_load = [38]
+        price_type_to_load = [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613]
         for price_type in price_type_to_load:
             logging.warning(price_type)
             start_date = start_date_0
@@ -185,15 +186,17 @@ while True:
         doc_type_list.append({'typeid': 310, 'typename': 'ввод. ост', 'idfield': 'SP6077', 'sumfield': 'SP4717'})
         doc_type_list.append({'typeid': 239, 'typename': 'перемещ', 'idfield': 'SP6079', 'sumfield': 'SP250'})
         doc_type_list.append({'typeid': 4425, 'typename': 'заказ', 'idfield': 'SP6114', 'sumfield': 'SP4439'})
-        # for month_num in range(1, 12+1):
+        # for month_num in range(6, 12+1):
         #     monthrange = calendar.monthrange(2019, month_num)
         #     #print(monthrange, month_num)
         #     start_date = date(2019, month_num, 1)
         #     end_date = date(2019, month_num, monthrange[1])
         #     logging.warning([start_date, end_date])
+        #     for doc_type in doc_type_list:
+        #         dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
         month_num = 3
         start_date = date(2020, month_num, 1)
-        end_date = date(2020, month_num, 10)
+        end_date = date(2020, month_num, 15)
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
