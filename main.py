@@ -245,7 +245,8 @@ while True:
         hdb.get_client_groups(wsdl_client, cursor)
     elif k == 'клиентструк':
         cursor.execute('''select sp4807 as idartmarket, id, descr from
-                           sc46 where isfolder=1 and code=20080''')
+                           sc46 where isfolder=1 and code=30''')
+        # 20080 артмаркет опт
         rows_root = cursor.fetchall()
         for row_root in rows_root:
             logging.warning(row_root)
