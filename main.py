@@ -20,7 +20,8 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    if 1 == 1:
+    load_all = 1
+    if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
         white_list.append(469)  # расходнаяреализатора
@@ -38,7 +39,7 @@ def auto_load(prm_cursor):
         white_list.append(297)  # списания
         white_list.append(4425)  # заказ поставщику
 
-    if 1 == 0:
+    if load_all == 0:
         white_list.append(4425)  # заказ поставщику
         white_list.append(2989)  # движенияденежныхсредств
 
@@ -50,15 +51,25 @@ def auto_load(prm_cursor):
             prm_cursor.execute(
                 '''update  _1SUPDTS set DWNLDID='1122!!' where (DBSIGN = 'P1 ') and not (DWNLDID='1122!!')''')
             conn.commit()
-        except:
+        except Exception as e:
             logging.error('ошибка при обновлении таблицы _1SUPDTS')
+            logging.error(e)
         #    pass
-        prm_cursor.execute('''SELECT  top 100 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')
+        prm_cursor.execute('''SELECT  top 10000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             if not (row_delta['TYPEID'] in white_list):
+                if load_all == 1:
+                    try:
+                        prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') 
+                                            and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
+                        conn.commit()
+                        logging.info(';'.join(['Удалены изменения объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
+                    except:
+                        logging.error(';'.join(['Ошибка отмены изменений объекта', str(row_delta['OBJID']),
+                                                str(row_delta['TYPEID'])]))
                 continue
-                pass
+
             # номенклатура
             if row_delta['TYPEID'] == 33:
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
