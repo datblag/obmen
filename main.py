@@ -40,8 +40,7 @@ def auto_load(prm_cursor):
         white_list.append(4425)  # заказ поставщику
 
     if load_all == 0:
-        white_list.append(4425)  # заказ поставщику
-        white_list.append(2989)  # движенияденежныхсредств
+        white_list.append(33)  # номенклатура
 
     while True:
         logging.warning('Выборка изменений')
@@ -55,7 +54,7 @@ def auto_load(prm_cursor):
             logging.error('ошибка при обновлении таблицы _1SUPDTS')
             logging.error(e)
         #    pass
-        prm_cursor.execute('''SELECT  top 10000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')
+        prm_cursor.execute('''SELECT  top 1000000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             if not (row_delta['TYPEID'] in white_list):
@@ -170,8 +169,8 @@ while True:
         # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
         # start_date_0 = date(2018, 12, 31)
         # end_date = date(2018, 12, 31)
-        start_date_0 = date(2020, 2, 1)
-        end_date = date(2020, 3, 1)
+        start_date_0 = date(2020, 4, 2)
+        end_date = date(2020, 5, 1)
         delta = timedelta(days=1)
 
         # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список

@@ -171,8 +171,8 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             # SP4372 - кред документ, документ основание
             # TODO добавить документ основание
             cursor.execute('''select  sc46.sp4807 as client,debkred, sp171 as summa,
-                                2 as typedvig, sp4372 as docosnov from ra169
-                                left join sc46 on ltrim(rtrim(SP170)) = '1A   '+ltrim(rtrim(sc46.id))
+                                2 as typedvig, sp4372 as docosnov from ra169 WITH (NOLOCK)
+                                left join sc46 WITH (NOLOCK) on ltrim(rtrim(SP170)) = '1A   '+ltrim(rtrim(sc46.id))
                                 where ra169.iddoc=%s
                                 ''', row['iddoc'])
 
@@ -183,8 +183,8 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             # debkred 0 увеличение долга клиента
             cursor.execute('''
                             select sc46.sp4807 as client, debkred, SP936 as summa,
-                            1 as typedvig, SP4373 as docosnov from ra933
-                            left join sc46 on SP934 = sc46.id
+                            1 as typedvig, SP4373 as docosnov from ra933 WITH (NOLOCK)
+                            left join sc46 WITH (NOLOCK) on SP934 = sc46.id
                             where ra933.iddoc=%s
                                 ''', row['iddoc'])
 
