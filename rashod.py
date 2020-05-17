@@ -191,6 +191,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             SP6071 as idartmarket,
                             spragent.SP4808 as agent,
                             spragent.descr as agentname,
+                            spragent.parentid as agentparentid,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
                             _1sjourn.iddoc, iddocdef, SP4383 as skidka FROM DH3716 as dh WITH (NOLOCK)
@@ -284,7 +285,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
 
         # hdb_agent=
         if row['agent'] != '' and row['agent'] != None:
-            nom_agent = wsdl_client.hdb_type(name=row['agentname'].strip(), id=row['agent'].strip(), idparent='')
+            nom_agent = wsdl_client.hdb_type(name=row['agentname'].strip(), id=row['agent'].strip(),
+                                             idparent=row['agentparentid'].strip())
             hdb_array = wsdl_client.hdb_array_type(hdb_array=[nom_agent])
             logging.info('Загрузка агента начало')
             wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'agent')

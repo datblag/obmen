@@ -228,8 +228,43 @@ while True:
 
         hdb_array = hdb_array_type(hdb_array=firm_list)
         logging.info('Загрузка фирм начало')
-        client.service.load_hdb_elements(hdb_array,1,'firma')
+        client.service.load_hdb_elements(hdb_array, 1, 'firma')
         logging.info('Загрузка фирм завершена')
+    elif k == 'агентгруппы':
+        agent_list = []
+        hdb_type = client.get_type('ns3:hdb_element')
+        hdb_array_type = client.get_type('ns3:hdb_array_element')
+        logging.info('Выборка агентов группы')
+        cursor.execute('''SELECT  descr, id as idartmarket FROM SC3246 where isfolder = 1''')
+        row = cursor.fetchall()
+        logging.info('Выборка агентов группы завершена')
+        logging.info('подготовка загрузки  агентов группы')
+        for r in row:
+            nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
+            agent_list.append(nom)
+        hdb_array = hdb_array_type(hdb_array=agent_list)
+        logging.info('Загрузка агентов группы начало')
+        client.service.load_hdb_elements(hdb_array, 0, 'agentgroup')
+        logging.info('Загрузка агентов группы завершена')
+    elif k == 'агент':
+        agent_list = []
+        hdb_type = client.get_type('ns3:hdb_element')
+        hdb_array_type = client.get_type('ns3:hdb_array_element')
+        logging.info('Выборка агентов')
+        cursor.execute('''SELECT  descr,SP4808 as idartmarket, parentid as parentid FROM SC3246 where isfolder = 2''')
+        row = cursor.fetchall()
+        logging.info('Выборка агентов завершена')
+        logging.info('подготовка загрузки  агентов')
+        for r in row:
+            if r['idartmarket'].strip() == '':
+                logging.error(';'.join(['Пустой ид агента', r['descr']]))
+                continue
+            nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent=r['parentid'].strip())
+            agent_list.append(nom)
+        hdb_array = hdb_array_type(hdb_array=agent_list)
+        logging.info('Загрузка агентов начало')
+        client.service.load_hdb_elements(hdb_array, 0, 'agent')
+        logging.info('Загрузка агентов завершена')
     elif k == 'склад':
     # загрузка  складов
         sklad_list=[]
@@ -247,7 +282,7 @@ while True:
             nom=hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
             sklad_list.append(nom)
 
-        hdb_array=hdb_array_type(hdb_array=sklad_list)
+        hdb_array = hdb_array_type(hdb_array=sklad_list)
         logging.info('Загрузка складов начало')
         client.service.load_hdb_elements(hdb_array, 0, 'sklad')
         logging.info('Загрузка складов завершена')
