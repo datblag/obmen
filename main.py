@@ -45,7 +45,7 @@ def auto_load(prm_cursor):
 
 
     if load_all == 0:
-        white_list.append(4114)  # приходный ордер Б
+        white_list.append(4132)  # приходный ордер Б
 
     while True:
         logging.warning('Выборка изменений')
@@ -87,8 +87,8 @@ def auto_load(prm_cursor):
 
             # расходный ордер Б
             elif row_delta['TYPEID'] == 4132:
-                # kassa.rashod(prm_cursor, wsdl_client, row_delta)
-                continue
+                kassa.rashod(prm_cursor, wsdl_client, row_delta)
+                # continue
 
             # перемещение
             elif row_delta['TYPEID'] == 239:
