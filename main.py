@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -83,11 +83,11 @@ def auto_load(prm_cursor):
             # приходный ордер Б
             elif row_delta['TYPEID'] == 4114:
                 kassa.prihod(prm_cursor, wsdl_client, row_delta)
-                continue
+                # continue
 
             # расходный ордер Б
             elif row_delta['TYPEID'] == 4132:
-                kassa.rashod(prm_cursor, wsdl_client, row_delta)
+                # kassa.rashod(prm_cursor, wsdl_client, row_delta)
                 continue
 
             # перемещение

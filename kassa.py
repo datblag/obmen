@@ -25,14 +25,15 @@ def prihod(cursor, wsdl_client, prm_row_delta):
 
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad='',
                              client=row_header['priniat_ot'].strip(), idartmarket=row_header['idartmarket'].strip()
-                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
+                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                                         zatr_nashi=row_header['summa'])
 
         isclosed = row_header['closed'] and 1
 
         document = wsdl_client.document_type(header=header, rowslist=[])
         logging.info(';'.join(['Загрузка документа приходный ордер', row_header['docno']]))
-        n = ''
-        # n = wsdl_client.client.service.load_order(document, isclosed, 0)
+        # n = ''
+        n = wsdl_client.client.service.load_prihod_kassa(document, isclosed, 0)
         logging.info(';'.join(['Загрузка документа приходный ордер', row_header['docno'], n]))
 
 
