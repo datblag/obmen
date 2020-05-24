@@ -39,8 +39,12 @@ def auto_load(prm_cursor):
         white_list.append(297)  # списания
         white_list.append(4425)  # заказ поставщику
 
+        white_list.append(4114)  # приходный ордер Б
+        white_list.append(4132)  # расходный ордер Б
+
+
     if load_all == 0:
-        white_list.append(33)  # номенклатура
+        white_list.append(2989)  # движенияденежныхсредств
 
     while True:
         logging.warning('Выборка изменений')
@@ -74,6 +78,14 @@ def auto_load(prm_cursor):
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
+
+            # приходный ордер Б
+            elif row_delta['TYPEID'] == 4114:
+                continue
+
+            # расходный ордер Б
+            elif row_delta['TYPEID'] == 4132:
+                continue
 
             # перемещение
             elif row_delta['TYPEID'] == 239:
@@ -186,6 +198,7 @@ while True:
                                                prm_update_mode=1, prm_unload_price=price_type, prm_unload_price_date=k2,
                                                wsdl_client=wsdl_client)
     elif k == 'док':
+        #TODO перепровести расходы с 01.03.2020
         # 434 - приход
         doc_type_list = []
         doc_type_list.append({'typeid': 434, 'typename': 'приход', 'idfield': 'SP6059', 'sumfield': 'sp453'})
@@ -204,9 +217,9 @@ while True:
         #     logging.warning([start_date, end_date])
         #     for doc_type in doc_type_list:
         #         dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
-        month_num = 3
+        month_num = 5
         start_date = date(2020, month_num, 1)
-        end_date = date(2020, month_num, 15)
+        end_date = date(2020, month_num, 17)
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
@@ -263,7 +276,7 @@ while True:
             agent_list.append(nom)
         hdb_array = hdb_array_type(hdb_array=agent_list)
         logging.info('Загрузка агентов начало')
-        client.service.load_hdb_elements(hdb_array, 0, 'agent')
+        client.service.load_hdb_elements(hdb_array, 1, 'agent')
         logging.info('Загрузка агентов завершена')
     elif k == 'склад':
     # загрузка  складов
