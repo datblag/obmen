@@ -2,7 +2,8 @@ import logging
 import nomenklatura
 from hdb import get_client_groups_filial, get_client_groups
 from config import cb_firma_id
-from utils import check_client, check_firma
+from utils import check_client
+from kassa import load_rashod_kassa
 
 def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
     if prm_isfilial == 1:
@@ -155,6 +156,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
+                            sp3693 as isnal,
                             _1sjourn.iddoc, iddocdef, SP4380 as skidka FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
@@ -170,6 +172,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sc46.sp4807 as client,
                             sc31.SP5639 as sklad,
                             SP6072 as idartmarket,
+                            0 as isnal,
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
@@ -189,6 +192,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sc46.sp4807 as client,
                             sc31.SP5639 as sklad,
                             SP6071 as idartmarket,
+                            0 as isnal,
                             spragent.SP4808 as agent,
                             spragent.descr as agentname,
                             spragent.parentid as agentparentid,
@@ -243,6 +247,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                                              , document_date=row['datedoc'], nomerartmarket=row['docno'],
                                              bdid=row['iddoc'].strip(), bdtype=row['iddocdef'],
                                              skidka_procent=row['skidka'])
+
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
@@ -266,6 +271,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         row_list = []
         tovar_list = []
 
+        sum_total = 0
         for row_table in rows_table:
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
                                            price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
@@ -274,6 +280,21 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
             row_list.append(row_nom)
+            sum_total += row_table['sum']
+
+        if row['isnal'] == 1:
+            header_kassa = {}
+            header_kassa['firma'] = row['firma']
+            header_kassa['priniat_ot'] = row['client']
+            header_kassa['idartmarket'] = row['idartmarket']
+            header_kassa['datedoc'] = row['datedoc']
+            header_kassa['docno'] = row['docno']
+            header_kassa['closed'] = row['closed']
+            header_kassa['summa'] = sum_total
+
+            load_rashod_kassa(wsdl_client, header_kassa)
+
+
 
         rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
