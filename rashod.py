@@ -3,7 +3,7 @@ import nomenklatura
 from hdb import get_client_groups_filial, get_client_groups
 from config import cb_firma_id
 from utils import check_client
-from kassa import load_rashod_kassa
+from kassa import load_prihod_kassa
 
 def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
     if prm_isfilial == 1:
@@ -292,7 +292,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             header_kassa['closed'] = row['closed']
             header_kassa['summa'] = sum_total
 
-            load_rashod_kassa(wsdl_client, header_kassa)
+            load_prihod_kassa(wsdl_client, header_kassa)
 
 
 

@@ -1,5 +1,22 @@
 import logging
 
+
+def load_prihod_kassa(wsdl_client, prm_header):
+    header = wsdl_client.header_type(document_type=2, firma=prm_header['firma'].strip(), sklad='',
+                                     client=prm_header['priniat_ot'].strip(),
+                                     idartmarket=prm_header['idartmarket'].strip()
+                                     , document_date=prm_header['datedoc'], nomerartmarket=prm_header['docno'],
+                                     zatr_nashi=prm_header['summa'])
+
+    isclosed = prm_header['closed'] and 1
+
+    document = wsdl_client.document_type(header=header, rowslist=[])
+    logging.info(';'.join(['Загрузка документа приходный ордер', prm_header['docno']]))
+    # n = ''
+    n = wsdl_client.client.service.load_prihod_kassa(document, isclosed, 0)
+    logging.info(';'.join(['Загрузка документа приходный ордер', prm_header['docno'], n]))
+
+
 def prihod(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка приходный ордер заголовки')
     cursor.execute('''
@@ -23,18 +40,8 @@ def prihod(cursor, wsdl_client, prm_row_delta):
 
         logging.warning(row_header)
 
-        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad='',
-                             client=row_header['priniat_ot'].strip(), idartmarket=row_header['idartmarket'].strip()
-                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
-                                         zatr_nashi=row_header['summa'])
+        load_prihod_kassa(wsdl_client, row_header)
 
-        isclosed = row_header['closed'] and 1
-
-        document = wsdl_client.document_type(header=header, rowslist=[])
-        logging.info(';'.join(['Загрузка документа приходный ордер', row_header['docno']]))
-        # n = ''
-        n = wsdl_client.client.service.load_prihod_kassa(document, isclosed, 0)
-        logging.info(';'.join(['Загрузка документа приходный ордер', row_header['docno'], n]))
 
 
 def load_rashod_kassa(wsdl_client, prm_header):
