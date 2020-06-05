@@ -9,7 +9,7 @@ import hdb
 import kassa
 import prihod, rashod, sklad, dolgi
 import ostatki
-from utils import convert_base
+from utils import convert_base, is_process_doc
 
 
 from tqdm import *
@@ -44,7 +44,11 @@ def auto_load(prm_cursor):
         white_list.append(4132)  # расходный ордер Б
 
     if load_all == 0:
-        white_list.append(410)  # расходнаянакладная
+        # white_list.append(410)  # расходнаянакладная
+        white_list.append(4114)  # приходный ордер Б
+        white_list.append(4132)  # расходный ордер Б
+        white_list.append(2964)  # ПриходныйОрдерТБ
+        white_list.append(4225)  # РасходныйОрдерТБ
 
     while True:
         logging.warning('Выборка изменений')

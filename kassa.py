@@ -1,5 +1,5 @@
 import logging
-
+from utils import is_process_doc
 
 def load_prihod_kassa(wsdl_client, prm_header):
     header = wsdl_client.header_type(document_type=2, firma=prm_header['firma'].strip(), sklad='',
@@ -8,7 +8,7 @@ def load_prihod_kassa(wsdl_client, prm_header):
                                      , document_date=prm_header['datedoc'], nomerartmarket=prm_header['docno'],
                                      zatr_nashi=prm_header['summa'])
 
-    isclosed = prm_header['closed'] and 1
+    isclosed = is_process_doc(prm_header['closed'])
 
     document = wsdl_client.document_type(header=header, rowslist=[])
     logging.info(';'.join(['Загрузка документа приходный ордер', prm_header['docno']]))
@@ -51,7 +51,7 @@ def load_rashod_kassa(wsdl_client, prm_header):
                                      , document_date=prm_header['datedoc'], nomerartmarket=prm_header['docno'],
                                      zatr_nashi=prm_header['summa'])
 
-    isclosed = prm_header['closed'] and 1
+    isclosed = is_process_doc(prm_header['closed'])
 
     document = wsdl_client.document_type(header=header, rowslist=[])
     logging.info(';'.join(['Загрузка расходный  ордер', prm_header['docno']]))

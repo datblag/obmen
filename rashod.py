@@ -2,7 +2,7 @@ import logging
 import nomenklatura
 from hdb import get_client_groups_filial, get_client_groups
 from config import cb_firma_id
-from utils import check_client
+from utils import check_client, is_process_doc
 from kassa import load_prihod_kassa
 
 def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
@@ -42,7 +42,7 @@ def load_rashod_filial(cursor, wsdl_client, prm_row_header):
     #rows_header = get_rashod_header(cursor, 1, 0, prm_row_delta)
     row = prm_row_header
     logging.warning(row)
-    isclosed = row['closed'] and 1
+    isclosed = is_process_doc(row['closed'])
 
     if check_client(row, 1, isclosed):
         client_list = []
@@ -214,7 +214,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
     for row in rows_header:
         client_list = []
         # list_partii=[]
-        isclosed = row['closed'] and 1
+        isclosed = is_process_doc(row['closed'])
 
         if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
             continue

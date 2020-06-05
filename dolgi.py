@@ -1,5 +1,5 @@
 import logging
-from utils import convert_base
+from utils import convert_base, is_process_doc
 import hdb
 import nomenklatura
 import datetime
@@ -99,7 +99,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
     for row in rows_header:
         if prm_row_delta['TYPEID'] == 4308 and row['perebroska'] == 1:
             logging.warning('perebroska')
-            isclosed = row['closed'] and 1
+            isclosed = is_process_doc(row['closed'])
             if isclosed != 1:
                 pass
             logging.info(['Выборка взаиморасчетов опмание объекта', row['datedoc'], row['docno']])
@@ -147,7 +147,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno'], n]))
         else:
             client_list = []
-            isclosed = row['closed'] and 1
+            isclosed = is_process_doc(row['closed'])
             if isclosed != 1:
                 pass
             logging.info(['Выборка взаиморасчетов опмание объекта', row['datedoc'], row['docno']])
@@ -284,7 +284,7 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
                                          field_date2=payment_date,
                                          field_date3=arrival_date)
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
 
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:

@@ -3,7 +3,7 @@ from hdb import get_client_groups, get_client_groups_filial
 import datetime
 import nomenklatura
 from config import cb_firma_id
-
+from utils import is_process_doc
 
 
 def get_prihod_rows_filial(prm_cursor, prm_obj_id):
@@ -76,7 +76,7 @@ def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
                              naedinicu=row_header['naedinicu'],
                              vozvrat=is_return)
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
 
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
@@ -168,7 +168,7 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
                              naedinicu=row_header['naedinicu'],
                              vozvrat=is_return)
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
 
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
@@ -271,7 +271,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
                              naedinicu=row_header['naedinicu'],
                              vozvrat=is_return)
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
 
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:

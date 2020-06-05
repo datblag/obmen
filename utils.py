@@ -2,6 +2,14 @@ import logging
 from config import filial_sklad_white_list, filial_firma_white_list
 
 
+def is_process_doc(prm_closed):
+    return prm_closed & 1
+    # 0-непроведен
+    # 1-проведен
+    # 4-непроведен
+    # 5-проведен
+
+
 def convert_base(num, to_base=10, from_base=10):
     # first convert to decimal number
     if isinstance(num, str):

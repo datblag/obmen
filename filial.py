@@ -11,6 +11,7 @@ from rashod import load_rashod_filial, get_rashod_header
 from sklad import move_tovar_filial, vvodostatka_tovar_filial, spisanie_filial
 import logs
 from tqdm import tqdm
+from utils import is_process_doc
 from hdb import get_region_groups_filial, get_client_groups_filial
 import ostatki
 

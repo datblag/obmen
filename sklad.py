@@ -1,6 +1,6 @@
 import logging
 import nomenklatura
-from utils import check_firma, check_docid, check_sklad
+from utils import check_firma, check_docid, check_sklad, is_process_doc
 from config import cb_firma_id, filial_sklad_white_list
 
 
@@ -71,7 +71,7 @@ def move_tovar_filial(cursor, wsdl_client, prm_row_delta):
                                                  , document_date=row_header['datedoc'],
                                                  nomerartmarket=row_header['docno'])
 
-                isclosed = row_header['closed'] and 1
+                isclosed = is_process_doc(row_header['closed'])
                 rows_table = get_move_rows(cursor, 1, row_header)
                 row_list = []
                 tovar_list = []
@@ -113,7 +113,7 @@ def move_tovar_filial(cursor, wsdl_client, prm_row_delta):
                                          idartmarket=row_header['idartmarket'].strip()
                                          , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
 
         rows_table = get_move_rows(cursor, 1, row_header)
         row_list = []
@@ -209,7 +209,7 @@ def spisanie_filial(cursor, wsdl_client, prm_row_delta):
                                          , document_date=row_header['datedoc'],
                                          nomerartmarket=row_header['docno'])
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
         rows_table = get_spisanie_rows(cursor, 1, row_header)
         row_list = []
         tovar_list = []
@@ -301,7 +301,7 @@ def spisanie(cursor, wsdl_client, prm_row_delta):
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad=row_header['sklad'].strip(),
                                          client='', idartmarket=row_header['idartmarket'].strip()
                                          , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
         rows_table = get_spisanie_rows(cursor, 0, row_header)
         row_list = []
         tovar_list = []
@@ -369,7 +369,7 @@ def move_tovar(cursor, wsdl_client, prm_row_delta):
                                          idartmarket=row_header['idartmarket'].strip()
                                          , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
 
         rows_table = get_move_rows(cursor, 0, row_header)
         row_list = []
@@ -466,7 +466,7 @@ def vvodostatka_tovar_filial(cursor, wsdl_client, prm_row_delta):
                                          idartmarket=row_header['idartmarket'].strip()
                                          , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
         rows_table = get_vvodostatka_rows(cursor, 1, row_header)
         row_list = []
         tovar_list = []
@@ -513,7 +513,7 @@ def vvodostatka_tovar(cursor, wsdl_client, prm_row_delta):
                                          idartmarket=row_header['idartmarket'].strip()
                                          , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'])
 
-        isclosed = row_header['closed'] and 1
+        isclosed = is_process_doc(row_header['closed'])
         rows_table = get_vvodostatka_rows(cursor, 0, row_header)
         row_list = []
         tovar_list = []
