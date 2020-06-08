@@ -225,7 +225,7 @@ while True:
         #         dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
         month_num = 5
         start_date = date(2020, month_num, 1)
-        end_date = date(2020, month_num, 17)
+        end_date = date(2020, month_num, 31)
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)

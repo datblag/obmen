@@ -179,7 +179,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
 
             rows_table_1 = cursor.fetchall()
 
-            if rows_table_1[0]['client'] is None:
+            if not rows_table_1 == [] and rows_table_1[0]['client'] is None:
                 cursor.execute('''select  sc46.sp4807 as client,debkred, sp171 as summa,
                                     2 as typedvig, sp4372 as docosnov from ra169 WITH (NOLOCK)
                                     left join sc46 WITH (NOLOCK) on ltrim(rtrim(SP170)) = '1A    '+ltrim(rtrim(sc46.id))
