@@ -23,6 +23,7 @@ def convert_base(num, to_base=10, from_base=10):
     else:
         return convert_base(n // to_base, to_base) + alphabet[n % to_base]
 
+
 def check_docid(prm_row, prm_is_filial):
     #if prm_is_filial == 0:
     if not prm_row['idartmarket'] == None and not prm_row['idartmarket'].strip() == '':
