@@ -44,11 +44,12 @@ def auto_load(prm_cursor):
         white_list.append(4132)  # расходный ордер Б
 
     if load_all == 0:
-        # white_list.append(410)  # расходнаянакладная
-        white_list.append(4114)  # приходный ордер Б
-        white_list.append(4132)  # расходный ордер Б
-        white_list.append(2964)  # ПриходныйОрдерТБ
-        white_list.append(4225)  # РасходныйОрдерТБ
+        white_list.append(410)  # расходнаянакладная
+        # white_list.append(4425)  # заказ поставщику
+        # white_list.append(4114)  # приходный ордер Б
+        # white_list.append(4132)  # расходный ордер Б
+        # white_list.append(2964)  # ПриходныйОрдерТБ
+        # white_list.append(4225)  # РасходныйОрдерТБ
 
     while True:
         logging.warning('Выборка изменений')

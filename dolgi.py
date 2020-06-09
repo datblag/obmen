@@ -242,13 +242,14 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка заказ заголовки')
     cursor.execute('''
             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc, docno,
-            sc13.sp4805 as firma, sc46.sp4807 as client, SP6114 as idartmarket,
+            sc13.sp4805 as firma, sc31.SP5639 as sklad,sc46.sp4807 as client, SP6114 as idartmarket,
             _1sjourn.iddoc,SP4430 as fotgruz, SP4530 as foplata, SP4431 as fprihod, 
              SP4427 as shipment_date, SP4428 as payment_date, SP4429 as arrival_date,
              SP4750 as defer_days FROM DH4425 as dh WITH (NOLOCK)
             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
             left join sc46 WITH (NOLOCK) on SP4426 = sc46.id
             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+            left join sc31 WITH (NOLOCK) on SP5605=sc31.id
             where _1sjourn.iddoc=%s
                         ''', prm_row_delta['OBJID'])
     logging.info('Выборка заказ заголовки завершена')
@@ -264,6 +265,9 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
         if row_header['client'] == None or row_header['client'].strip() == '':
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
+        sklad = row_header['sklad']
+        if row_header['sklad'] is None or row_header['sklad'].strip() == '':
+            sklad = ''
         logging.warning(row_header)
         not_in_road = 0
         if row_header['fotgruz'] == 0 or row_header['fprihod'] == 1:
@@ -284,9 +288,10 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
         else:
             arrival_date = row_header['arrival_date']
 
-        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad='',
-                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
-                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+                                         sklad=sklad.strip(), client=row_header['client'].strip(),
+                                         idartmarket=row_header['idartmarket'].strip(),
+                                         document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
                                          zatr_nashi=not_in_road, zatr_post=row_header['fotgruz'],
                                          naedinicu=row_header['foplata'], vozvrat=row_header['fprihod'],
                                          skidka_procent=row_header['defer_days'],
