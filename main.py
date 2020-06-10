@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -44,8 +44,9 @@ def auto_load(prm_cursor):
         white_list.append(4132)  # расходный ордер Б
 
     if load_all == 0:
-        white_list.append(410)  # расходнаянакладная
-        # white_list.append(4425)  # заказ поставщику
+        pass
+        # white_list.append(410)  # расходнаянакладная
+        white_list.append(4425)  # заказ поставщику
         # white_list.append(4114)  # приходный ордер Б
         # white_list.append(4132)  # расходный ордер Б
         # white_list.append(2964)  # ПриходныйОрдерТБ
