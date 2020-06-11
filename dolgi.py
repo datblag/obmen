@@ -227,9 +227,11 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
                     client_list.append("'" + row_table['client'] + "'")
                 row_list.append(row_nom)
             if not client_list:
-                continue
-            str_id = ",".join(client_list)
-            hdb.get_client_groups(wsdl_client, cursor, str_id)
+                # continue
+                pass
+            else:
+                str_id = ",".join(client_list)
+                hdb.get_client_groups(wsdl_client, cursor, str_id)
             # print(row_list)
             rows = wsdl_client.rows_type(rows=row_list)
             document = wsdl_client.document_type(header=header, rowslist=rows)
