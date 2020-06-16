@@ -136,7 +136,7 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
             select  closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
             SC4014.SP5011 as firma, SC172.SP573 as client, sc55.SP8452 as sklad, SP9324 as idartmarket,
             _1sjourn.iddoc,0 as zatr_nashi,0 as zatr_post,0 as naedinicu,
-            '0' as isreturn
+            '0' as isreturn, SP3778 as number_in, SP3779 as date_in
             from DH1582 as dh WITH (NOLOCK)
             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
             left join SC4014 WITH (NOLOCK) on SP4056=SC4014.id
@@ -230,7 +230,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
                         SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
                         sc13.sp4805 as firma,sc46.sp4807 as client,sc31.SP5639 as sklad,SP6059 as idartmarket,
                         _1sjourn.iddoc,SP4172 as zatr_nashi,SP4176 as zatr_post,SP4173 as naedinicu,
-                        sp446 as isreturn  FROM dh434 as dh WITH (NOLOCK)
+                        sp446 as isreturn, SP5591 as number_in, SP5592 as date_in  FROM dh434 as dh WITH (NOLOCK)
                         left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                         left join sc46 WITH (NOLOCK) on SP437 = sc46.id
                         left join sc31 WITH (NOLOCK) on SP436 = sc31.id
