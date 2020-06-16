@@ -263,20 +263,27 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
 
+        if row_header['date_in'] is None or row_header['date_in'] == datetime.datetime(1753, 1, 1, 0, 0):
+            date_in = datetime.datetime(1, 1, 1, 0, 0)
+        else:
+            date_in = row_header['date_in']
+
+
+
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad=row_header['sklad'].strip(),
                              client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
                              , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
                              zatr_nashi=row_header['zatr_nashi'],
                              zatr_post=row_header['zatr_post'],
                              naedinicu=row_header['naedinicu'],
-                             vozvrat=is_return)
+                             vozvrat=is_return, bdid=row_header['number_in'], field_date=date_in)
 
         isclosed = is_process_doc(row_header['closed'])
 
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
             client_list.append("'" + row_header['client'] + "'")
-        if client_list == []:
+        if not client_list:
             continue
         str_id = ",".join(client_list)
         get_client_groups(wsdl_client, cursor, str_id)
@@ -318,7 +325,6 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
 
         logging.info(';'.join(['Выборка строк прихода завершена', row_header['docno']]))
         rows_table = cursor.fetchall()
-        print(rows_table)
         row_list = []
         tovar_list = []
 
@@ -338,4 +344,5 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))
         n = wsdl_client.client.service.load_prihod_tovar(document, isclosed, 0)
-        logging.info(';'.join(['Загрузка документа прихода', row_header['docno'], n]))
+        logging.info(';'.join(['Загрузка документа прихода', row_header['docno'], n,
+                               datetime.datetime.strftime(date_in, '%Y-%m-%d'), row_header['number_in']]))
