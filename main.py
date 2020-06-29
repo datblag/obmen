@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -45,7 +45,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(434)  # приход
+        # white_list.append(434)  # приход
         # white_list.append(4308)  # выручкадоставка  sp4323 переброска
         # white_list.append(410)  # расходнаянакладная
         # white_list.append(4425)  # заказ поставщику
@@ -126,7 +126,7 @@ def auto_load(prm_cursor):
                 # приходы
                 prihod.load_prihod(prm_cursor, wsdl_client, row_delta)
             try:
-                prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') 
+                prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
                                     and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
                 conn.commit()
                 logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))

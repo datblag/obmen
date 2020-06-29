@@ -186,6 +186,27 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             ''', prm_row_delta['OBJID'])
     elif prm_row_delta['TYPEID'] == 3716:
         # SP4639 агент
+        logging.debug('''
+                            SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+                            sc13.sp4805 as firma,
+                            sc46.sp4807 as client,
+                            sc31.SP5639 as sklad,
+                            SP6071 as idartmarket,
+                            0 as isnal,
+                            spragent.SP4808 as agent,
+                            spragent.descr as agentname,
+                            spragent.parentid as agentparentid,
+                            sprexpeditor.SP4808 as expeditor,
+                            sprexpeditor.descr as expeditorname,
+                            _1sjourn.iddoc, iddocdef, SP4383 as skidka FROM DH3716 as dh WITH (NOLOCK)
+                            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+                            left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+                            left join sc46 WITH (NOLOCK) on SP3718 = sc46.id
+                            left join sc31 WITH (NOLOCK) on SP3717 = sc31.id
+                            left join SC3246  as spragent WITH (NOLOCK) on SP4639 = spragent.id
+                            left join SC3246  as sprexpeditor WITH (NOLOCK) on SP3745 = sprexpeditor.id
+                            where _1sjourn.iddoc=%s
+                            ''', prm_row_delta['OBJID'])
         cursor.execute('''
                             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
                             sc13.sp4805 as firma,
