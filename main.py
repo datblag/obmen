@@ -288,6 +288,8 @@ while True:
         logging.info('Загрузка агентов начало')
         client.service.load_hdb_elements(hdb_array, 1, 'agent')
         logging.info('Загрузка агентов завершена')
+    elif k == 'минцены':
+        nomenklatura.unload_wholesale_min_price(cursor=cursor, wsdl_client=wsdl_client.client)
     elif k == 'склад':
     # загрузка  складов
         sklad_list=[]
@@ -302,7 +304,7 @@ while True:
             if r['idartmarket'].strip() == '':
                 logging.error(';'.join(['Пустой ид склада', r['descr']]))
                 continue
-            nom=hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
+            nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
             sklad_list.append(nom)
 
         hdb_array = hdb_array_type(hdb_array=sklad_list)

@@ -8,6 +8,36 @@ from config import filial_tovar_group_id
 
 
 #logs.run()
+def unload_wholesale_min_price(cursor=None, wsdl_client=None):
+    price_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка минимальных цен')
+    cursor.execute('''
+            select code as idartmarket, descr, date, value, SP5833 as strength  from SC5646 elemement1 left join
+            (
+                select mdate,a.objid as idtovar,date,value  from ( select objid,id,max(date) as mdate from _1SCONST 
+                where date<='2020-01-01' and (_1SCONST.id=5648) group by objid,id) a inner join
+                (select objid,id,date,max(value) as value from _1SCONST where _1SCONST.id=5648 group by objid,id,date)
+                b on a.objid=b.objid and mdate=date
+            ) cdost on elemement1.id= cdost.idtovar where (isnull(cdost.date,'1978-01-01')<>'1978-01-01') order by descr
+            ''')
+    logging.info('Выборка минимальных цен завершена')
+    logging.info('Подготовка загрузки минимальных цен')
+    row = cursor.fetchall()
+    for r in row:
+        # if r['idartmarket'].strip() == '':
+        #     logging.error(';'.join(['Пустой ид минимальных цен', r['descr']]))
+        #     continue
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='', value1num=r['strength'],
+                       value2num=r['value'], value1date=r['date'])
+        price_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=price_list)
+    logging.info('Загрузка минимальных цен начало')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'minprice')
+    logging.info('Загрузка минимальных цен завершена')
+
 
 
 def get_str_select():
