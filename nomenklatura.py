@@ -339,10 +339,15 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 else:
                     postid = ''
 
+                if not row_nom['idmaker'] is None:
+                    makerid = row_nom['idmaker'].strip()
+                else:
+                    makerid = ''
+
                 nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
                                         id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
                                         emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'],
-                                        fasovka=row_nom['fasovka'], postid=postid)
+                                        fasovka=row_nom['fasovka'], postid=postid, makerid=makerid)
             else:
                 logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
                 continue
