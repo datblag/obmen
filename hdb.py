@@ -2,6 +2,31 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def unload_maker(cursor=None, wsdl_client=None, objid=''):
+    maker_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка производители')
+    cursor.execute('''
+            select SP6120 as idartmarket, SP5470 as inn, SP5471 as kpp, descr  from SC5468
+             where id=%s
+            ''', objid)
+    logging.info('Выборка производители завершена')
+    logging.info('Подготовка загрузки производители')
+    row = cursor.fetchall()
+    for r in row:
+        logging.warning(r)
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='', value1=r['inn'],
+                       value2=r['kpp'])
+        maker_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=maker_list)
+    logging.info('Загрузка начало производители')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'maker')
+    logging.info('Загрузка производители завершена')
+
+
+
 def get_region_groups_filial(prm_cursor, prm_id_list='', wsdl_client=None):
     hdb_type = wsdl_client.client.get_type('ns3:hdb_element')
     hdb_array_type = wsdl_client.client.get_type('ns3:hdb_array_element')

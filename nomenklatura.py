@@ -8,6 +8,17 @@ from config import filial_tovar_group_id
 
 
 #logs.run()
+
+def unload_retail_min_price(cursor=None, wsdl_client=None):
+    return '''
+select code, descr, date,value, SP5902 as krepost from SC5900 elemement1 left join (
+select mdate,a.objid as idtovar,date,value  from (
+select objid,id,max(date) as mdate from _1SCONST where date<='2020-07-01' and (_1SCONST.id=5901) group by objid,id) a
+inner join (select objid,id,date,max(value) as value from _1SCONST where _1SCONST.id=5901 group by objid,id,date) b on a.objid=b.objid
+and mdate=date ) cdost on elemement1.id= cdost.idtovar where    (isnull(cdost.date,'1978-01-01')<>'1978-01-01') order by descr
+'''
+
+
 def unload_wholesale_min_price(cursor=None, wsdl_client=None):
     price_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
@@ -42,49 +53,50 @@ def unload_wholesale_min_price(cursor=None, wsdl_client=None):
 
 def get_str_select():
     return '''
-                            SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.sp4802 as idartmarket,
-                            elemement1.SP3024 as fullname, elemement1.isfolder, elemement1.SP3694 as emkost,
-                            elemement1.SP6061 as fasovka, post0.sp4807 as postid0,
-                            groups1.sp4802 as idparent,groups1.descr as descrparent,
-							post1.sp4807 as postid, post1.descr as postdexcr,
-    						groups2.sp4802 as idparent2,groups2.descr as descrparent2,
-							post2.sp4807 as postid2, post2.descr as postdexcr2,
-    						groups3.sp4802 as idparent3,groups3.descr as descrparent3,
-							post3.sp4807 as postid3, post3.descr as postdexcr3,
-    						groups4.sp4802 as idparent4,groups4.descr as descrparent4,
-							post4.sp4807 as postid4, post4.descr as postdexcr4,
-    						groups5.sp4802 as idparent5,groups5.descr as descrparent5,
-							post5.sp4807 as postid5, post5.descr as postdexcr5,
-    						groups6.sp4802 as idparent6,groups6.descr as descrparent6,
-							post6.sp4807 as postid6, post6.descr as postdexcr6,
-    						groups7.sp4802 as idparent7,groups7.descr as descrparent7,
-							post7.sp4807 as postid7, post7.descr as postdexcr7,
-    						groups8.sp4802 as idparent8,groups8.descr as descrparent8,
-							post8.sp4807 as postid8, post8.descr as postdexcr8,
-    						groups9.sp4802 as idparent9,groups9.descr as descrparent9,
-							post9.sp4807 as postid9, post9.descr as postdexcr9,
-    						cdost.value as pricedost, cdost.date as datedost
-    						FROM SC33 elemement1
-    						left join Sc46  post0 on elemement1.SP5257=post0.id
-    						left join SC33  groups1 on elemement1.parentid=groups1.id
-    						left join Sc46  post1 on groups1.SP5257=post1.id
-    						left join SC33  groups2 on groups1.parentid=groups2.id
-    						left join Sc46  post2 on groups2.SP5257=post2.id
-    						left join SC33  groups3 on groups2.parentid=groups3.id
-    						left join Sc46  post3 on groups3.SP5257=post3.id
-    						left join SC33  groups4 on groups3.parentid=groups4.id
-    						left join Sc46  post4 on groups4.SP5257=post4.id
-    						left join SC33  groups5 on groups4.parentid=groups5.id
-    						left join Sc46  post5 on groups5.SP5257=post5.id
-    						left join SC33  groups6 on groups5.parentid=groups6.id
-    						left join Sc46  post6 on groups6.SP5257=post6.id
-    						left join SC33  groups7 on groups6.parentid=groups7.id
-    						left join Sc46  post7 on groups7.SP5257=post7.id
-    						left join SC33  groups8 on groups7.parentid=groups8.id
-    						left join Sc46  post8 on groups8.SP5257=post8.id
-    						left join SC33  groups9 on groups8.parentid=groups9.id
-    						left join Sc46  post9 on groups9.SP5257=post9.id
-                            left join '''
+            SELECT  elemement1.descr,elemement1.id,elemement1.code,elemement1.sp4802 as idartmarket,
+            elemement1.SP3024 as fullname, elemement1.isfolder, elemement1.SP3694 as emkost,
+            elemement1.SP6061 as fasovka, post0.sp4807 as postid0,
+            groups1.sp4802 as idparent,groups1.descr as descrparent,
+            post1.sp4807 as postid, post1.descr as postdexcr,
+            groups2.sp4802 as idparent2,groups2.descr as descrparent2,
+            post2.sp4807 as postid2, post2.descr as postdexcr2,
+            groups3.sp4802 as idparent3,groups3.descr as descrparent3,
+            post3.sp4807 as postid3, post3.descr as postdexcr3,
+            groups4.sp4802 as idparent4,groups4.descr as descrparent4,
+            post4.sp4807 as postid4, post4.descr as postdexcr4,
+            groups5.sp4802 as idparent5,groups5.descr as descrparent5,
+            post5.sp4807 as postid5, post5.descr as postdexcr5,
+            groups6.sp4802 as idparent6,groups6.descr as descrparent6,
+            post6.sp4807 as postid6, post6.descr as postdexcr6,
+            groups7.sp4802 as idparent7,groups7.descr as descrparent7,
+            post7.sp4807 as postid7, post7.descr as postdexcr7,
+            groups8.sp4802 as idparent8,groups8.descr as descrparent8,
+            post8.sp4807 as postid8, post8.descr as postdexcr8,
+            groups9.sp4802 as idparent9,groups9.descr as descrparent9,
+            post9.sp4807 as postid9, post9.descr as postdexcr9,
+            cdost.value as pricedost, cdost.date as datedost, sc5468.SP6120 as idmaker
+            FROM SC33 elemement1
+            left join Sc46  post0 on elemement1.SP5257=post0.id
+            left join SC33  groups1 on elemement1.parentid=groups1.id
+            left join Sc46  post1 on groups1.SP5257=post1.id
+            left join SC33  groups2 on groups1.parentid=groups2.id
+            left join Sc46  post2 on groups2.SP5257=post2.id
+            left join SC33  groups3 on groups2.parentid=groups3.id
+            left join Sc46  post3 on groups3.SP5257=post3.id
+            left join SC33  groups4 on groups3.parentid=groups4.id
+            left join Sc46  post4 on groups4.SP5257=post4.id
+            left join SC33  groups5 on groups4.parentid=groups5.id
+            left join Sc46  post5 on groups5.SP5257=post5.id
+            left join SC33  groups6 on groups5.parentid=groups6.id
+            left join Sc46  post6 on groups6.SP5257=post6.id
+            left join SC33  groups7 on groups6.parentid=groups7.id
+            left join Sc46  post7 on groups7.SP5257=post7.id
+            left join SC33  groups8 on groups7.parentid=groups8.id
+            left join Sc46  post8 on groups8.SP5257=post8.id
+            left join SC33  groups9 on groups8.parentid=groups9.id
+            left join Sc46  post9 on groups9.SP5257=post9.id
+            left join sc5468   on elemement1.SP5466=sc5468.id
+            left join '''
 
 
 def get_str_select_filial():
