@@ -9,7 +9,7 @@ import hdb
 import kassa
 import prihod, rashod, sklad, dolgi
 import ostatki
-from utils import convert_base, is_process_doc
+from utils import convert_base
 
 
 from tqdm import *

@@ -74,7 +74,9 @@ def get_str_select():
             post8.sp4807 as postid8, post8.descr as postdexcr8,
             groups9.sp4802 as idparent9,groups9.descr as descrparent9,
             post9.sp4807 as postid9, post9.descr as postdexcr9,
-            cdost.value as pricedost, cdost.date as datedost, sc5468.SP6120 as idmaker
+            cdost.value as pricedost, cdost.date as datedost, sc5468.SP6120 as idmaker,
+            SC5646.code as idminprice, SC5900.code as idminprice_retail, elemement1.SP4950 as supplier_code,
+            SC5525.code as alcohol_group_code
             FROM SC33 elemement1
             left join Sc46  post0 on elemement1.SP5257=post0.id
             left join SC33  groups1 on elemement1.parentid=groups1.id
@@ -96,6 +98,9 @@ def get_str_select():
             left join SC33  groups9 on groups8.parentid=groups9.id
             left join Sc46  post9 on groups9.SP5257=post9.id
             left join sc5468   on elemement1.SP5466=sc5468.id
+            left join SC5646 on elemement1.SP5649=SC5646.id
+            left join SC5900 on elemement1.SP5904=SC5900.id
+            left join SC5525 on elemement1.SP5528=SC5525.id
             left join '''
 
 
@@ -344,10 +349,24 @@ def load_nomenklatura(cursor=None, prm_id_str='', prm_id_mode=1, prm_with_parent
                 else:
                     makerid = ''
 
+                if not row_nom['idminprice'] is None:
+                    minpriceid = row_nom['idminprice'].strip()
+                else:
+                    minpriceid = ''
+
+                if not row_nom['idminprice_retail'] is None:
+                    minpriceid_retail = row_nom['idminprice_retail'].strip()
+                else:
+                    minpriceid_retail = ''
+
                 nom = wsdl_client.nomenklatura_type(code=row_nom['code'].strip(), name=row_nom['descr'].strip(),
-                                        id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
-                                        emkost=row_nom['emkost'], pricedost=pricedostval, datedost=row_nom['datedost'],
-                                        fasovka=row_nom['fasovka'], postid=postid, makerid=makerid)
+                                                    id=row_nom['idartmarket'].strip(), idparent=idparent_prev,
+                                                    emkost=row_nom['emkost'], pricedost=pricedostval,
+                                                    datedost=row_nom['datedost'], fasovka=row_nom['fasovka'],
+                                                    postid=postid, makerid=makerid, minpriceid=minpriceid,
+                                                    minpriceid_retail=minpriceid_retail,
+                                                    supplier_code=row_nom['supplier_code'].strip(),
+                                                    alcohol_group_code=row_nom['alcohol_group_code'])
             else:
                 logging.error(['Некорректный код товара', row_nom['code'].strip(), row_nom['descr'].strip()])
                 continue
