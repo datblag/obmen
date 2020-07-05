@@ -47,7 +47,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(33)  # производители импортеры
+        white_list.append(3716)  #
         # white_list.append(434)  # приход
         # white_list.append(4308)  # выручкадоставка  sp4323 переброска
         # white_list.append(410)  # расходнаянакладная

@@ -115,19 +115,33 @@ def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
 def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
     list_clients=[]
     for r in prm_clients_rows:
-        if r['inn'].strip() == '':
-            inn = '0000000000'
-        else:
+        inn = '0000000000'
+        if not r['inn'].strip() == '':
             inn = r['inn'].strip()
-        if r['typett'] is None:
-            typett = ''
-        else:
+
+        typett = ''
+        if r['typett'] is not None:
             typett = r['typett']
+
+        license1 = ''
+        logging.warning(r['license'])
+        if r['license'] is not None:
+            license1 = r['license']
+
+        logging.warning(r['control_license'])
+        control_license = ''
+        if r['control_license'] is not None:
+            control_license = r['control_license']
+
+        logging.warning([license1.strip(), control_license.strip()])
+
         nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
                                    idparent=r['regionid'].strip(),
                                    value1=id_prefix+inn, value2=r['kpp'].strip(), value3=r['parentname'].strip(),
                                    value4=r['adres'].strip(), value5=r['adres_post'].strip(),
-                                   value6=typett.strip())
+                                   value6=typett.strip(), value7=license1.strip(), value8=control_license.strip(),
+                                   value1date=r['license_begin_date'], value2date=r['license_end_date'],
+                                   value1num=r['pernodricard_custtype'])
         list_clients.append(nom)
 
     hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
@@ -163,12 +177,15 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_par
         select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
         SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett,
         SP3691 as license, SP5239 as control_license, SP5422 as license_begin_date, SP5423 as license_end_date,
-        from sc46 left join SC5464 on
-        SP5467 = SC5464.id where (isfolder<>'1')  
+        SC6090.code as pernodricard_custtype
+        from sc46
+        left join SC5464 on  SP5467 = SC5464.id
+        left join SC6090 on  SP6093 = SC6090.id
+        where (isfolder<>'1')  
                            '''
     if prm_id_list == '' and prm_parent_id_list is None:
         prm_cursor.execute(str_base_sql_query)
-    elif not prm_parent_id_list is None:
+    elif  prm_parent_id_list is not None:
         prm_cursor.execute(str_base_sql_query + ''' and (parentid=%s)''', prm_parent_id_list['id'])
     else:
         # print(prm_id_list)
