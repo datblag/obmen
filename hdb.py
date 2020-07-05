@@ -53,7 +53,7 @@ def get_region_groups_filial(prm_cursor, prm_id_list='', wsdl_client=None):
     logging.info('Подготовка регионов уровень 2')
     row = prm_cursor.fetchall()
     for r in row:
-        nom_region=hdb_type(name=r['descr'].strip(),id=r['idartmarket'].strip(),idparent=r['idparent'])
+        nom_region=hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),idparent=r['idparent'])
         list_region.append(nom_region)
 
     hdb_array=hdb_array_type(hdb_array=list_region)
@@ -159,23 +159,20 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
 
 def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None):
     logging.info('Выборка клиентов')
-    if prm_id_list == '' and prm_parent_id_list is None:
-        prm_cursor.execute('''
+    str_base_sql_query = '''
         select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
-        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
+        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett,
+        SP3691 as license, SP5239 as control_license, SP5422 as license_begin_date, SP5423 as license_end_date,
+        from sc46 left join SC5464 on
         SP5467 = SC5464.id where (isfolder<>'1')  
-                           ''')
+                           '''
+    if prm_id_list == '' and prm_parent_id_list is None:
+        prm_cursor.execute(str_base_sql_query)
     elif not prm_parent_id_list is None:
-        prm_cursor.execute('''
-        select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
-        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
-        SP5467 = SC5464.id where (isfolder<>'1') and (parentid=%s)''', prm_parent_id_list['id'])
+        prm_cursor.execute(str_base_sql_query + ''' and (parentid=%s)''', prm_parent_id_list['id'])
     else:
         # print(prm_id_list)
-        prm_cursor.execute('''
-        select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
-        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett from sc46 left join SC5464 on
-        SP5467 = SC5464.id where (isfolder<>'1') and (sp4807 in (''' + prm_id_list + '''))''')
+        prm_cursor.execute(str_base_sql_query + ''' and (sp4807 in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
     row = prm_cursor.fetchall()
