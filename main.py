@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная

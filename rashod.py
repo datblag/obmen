@@ -256,7 +256,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
 
         if not row['client'] is None and not "'" + row['client'] + "'" in client_list:
             client_list.append("'" + row['client'] + "'")
-        if client_list == []:
+        if not client_list:
             continue
             pass
         else:
