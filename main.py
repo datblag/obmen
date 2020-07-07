@@ -240,7 +240,7 @@ while True:
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
-    elif k == 'авто':
+    elif k == 'авто' or k == 'avto':
         auto_load(cursor)
     elif k == 'фирма':
     #загрузка  фирм

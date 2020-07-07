@@ -177,10 +177,14 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_par
         select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
         SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett,
         SP3691 as license, SP5239 as control_license, SP5422 as license_begin_date, SP5423 as license_end_date,
-        SC6090.code as pernodricard_custtype
+        hdb_custtype.code as pernodricard_custtype, hdb_custpositioning.code as pernodricard_custpositioning,
+        hdb_custreason.code as  pernodricard_custreason, hdb_custsegment.code as pernodricard_custsegment
         from sc46
         left join SC5464 on  SP5467 = SC5464.id
-        left join SC6090 on  SP6093 = SC6090.id
+        left join SC6090 hdb_custtype         on  SP6093 = hdb_custtype.id
+        left join SC6094 hdb_custpositioning  on  SP6096 = hdb_custpositioning.id
+        left join SC6097 hdb_custreason       on  SP6099 = hdb_custreason.id
+        left join SC6100 hdb_custsegment      on  SP6102 = hdb_custsegment.id
         where (isfolder<>'1')  
                            '''
     if prm_id_list == '' and prm_parent_id_list is None:
