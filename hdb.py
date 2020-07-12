@@ -8,7 +8,7 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
     logging.info('Выборка даты розлива')
     cursor.execute('''
-                select top 100 SP5641 as idartmarket, SP5194 as produce_date, SP5681 as egais_code, SC5196.descr,
+                select SP5641 as idartmarket, SP5194 as produce_date, SP5681 as egais_code, SC5196.descr,
                 sc33.sp4802 as idartmarket_owner  from SC5196
                 left join sc33 on sc5196.parentext = sc33.id 
                 where SC5196.id=%s

@@ -4,7 +4,7 @@ import datetime
 import nomenklatura
 from config import cb_firma_id
 from utils import is_process_doc
-
+from hdb import unload_production_date
 
 def get_prihod_rows_filial(prm_cursor, prm_obj_id):
     prm_cursor.execute('''
@@ -295,8 +295,10 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
 
         cursor.execute('''
                    			        select  sc33.sp4802 as idtovar,SP449 as kolvo,SP452 as koef,SP451 as price,
-                                    SP453 as sum, value as pricepriobr from dt434
+                                    SP453 as sum, value as pricepriobr, SP5641 as id_pdate, SC5196.id as bdid_pdate 
+                                    from dt434
                                     left join sc33 on sp448=sc33.id
+                                    left join SC5196 on SP5201=SC5196.id
 
     	                            left join 
                                     (select a.objid as idtovar,ISNULL(cast(value as numeric(14,2)),0) as value,date from (
@@ -329,9 +331,12 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         tovar_list = []
 
         for row_table in rows_table:
+            if row_table['id_pdate']:
+                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
-                               koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'])
-            if row_table['idtovar'] == None:
+                               koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
+                                           pdate=row_table['id_pdate'])
+            if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
