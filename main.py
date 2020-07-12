@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -44,10 +44,12 @@ def auto_load(prm_cursor):
         white_list.append(4132)  # расходный ордер Б
 
         white_list.append(5468)  # производители импортеры
+        white_list.append(5196)  # даты розлива
 
     if load_all == 0:
         pass
-        white_list.append(3716)  #
+        white_list.append(33)  #
+        white_list.append(5196)  #
         # white_list.append(434)  # приход
         # white_list.append(4308)  # выручкадоставка  sp4323 переброска
         # white_list.append(410)  # расходнаянакладная
@@ -94,6 +96,9 @@ def auto_load(prm_cursor):
             elif row_delta['TYPEID'] == 5468:
                 hdb.unload_maker(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
+            # даты розлива
+            elif row_delta['TYPEID'] == 5196:
+                hdb.unload_production_date(prm_cursor, wsdl_client.client, row_delta['OBJID'])
             # приходный ордер Б
             elif row_delta['TYPEID'] == 4114:
                 kassa.prihod(prm_cursor, wsdl_client, row_delta)

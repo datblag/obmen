@@ -2,6 +2,32 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def unload_production_date(cursor=None, wsdl_client=None, objid=''):
+    date_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка даты розлива')
+    cursor.execute('''
+                select top 100 SP5641 as idartmarket, SP5194 as produce_date, SP5681 as egais_code, SC5196.descr,
+                sc33.sp4802 as idartmarket_owner  from SC5196
+                left join sc33 on sc5196.parentext = sc33.id 
+                where SC5196.id=%s
+            ''', objid)
+    logging.info('Выборка даты розлива завершена')
+    logging.info('Подготовка загрузки даты розлива')
+    row = cursor.fetchall()
+    for r in row:
+        logging.warning(r)
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='',
+                       value1=r['idartmarket_owner'].strip(), value2=r['egais_code'].strip(),
+                       value1date=r['produce_date'])
+        date_list.append(nom)
+    hdb_array = hdb_array_type(hdb_array=date_list)
+    logging.info('Загрузка начало даты розлива')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'pdate')
+    logging.info('Загрузка даты розлива завершена')
+
+
 def unload_maker(cursor=None, wsdl_client=None, objid=''):
     maker_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
