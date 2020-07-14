@@ -1,6 +1,6 @@
 import logging
 import nomenklatura
-from hdb import get_client_groups_filial, get_client_groups
+from hdb import get_client_groups_filial, get_client_groups, unload_production_date
 from config import cb_firma_id
 from utils import check_client, is_process_doc
 from kassa import load_prihod_kassa
@@ -273,18 +273,24 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
             select  sp4802 as idtovar, SP424 as kolvo, SP427 as koef, SP426 as price, 
+            '' as id_pdate, '' as bdid_pdate,
             SP428 as sum from dt410 WITH (NOLOCK) left join sc33 WITH (NOLOCK) 
             on SP423 = sc33.id where iddoc=%s
                                 ''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 469:
             cursor.execute('''
             select  sp4802 as idtovar, SP483 as kolvo, SP486 as koef, SP485 as price, 
+            '' as id_pdate, '' as bdid_pdate,
             SP487 as sum from dt469 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP482=sc33.id 
             where iddoc=%s''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 3716:
             cursor.execute('''
-            select  sp4802 as idtovar, SP3731 as kolvo, SP3734 as koef, SP3733 as price, SP3735 as sum 
-            from dt3716 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP3730=sc33.id where iddoc=%s
+            select  sp4802 as idtovar, SP3731 as kolvo, SP3734 as koef, SP3733 as price, SP3735 as sum, 
+            SP5641 as id_pdate, SC5196.id as bdid_pdate
+            from dt3716 WITH (NOLOCK)
+            left join sc33 WITH (NOLOCK) on SP3730=sc33.id
+            left join SC5196 on SP5203=SC5196.id
+            where iddoc=%s
                                 ''', row['iddoc'])
         logging.info('Выборка строк расхода завершена')
 
@@ -294,8 +300,11 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
 
         sum_total = 0
         for row_table in rows_table:
+            if row_table['id_pdate']:
+                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
-                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
+                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                           pdate=row_table['id_pdate'])
             if row_table['idtovar'] == None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
