@@ -273,15 +273,19 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
             select  sp4802 as idtovar, SP424 as kolvo, SP427 as koef, SP426 as price, 
-            '' as id_pdate, '' as bdid_pdate,
-            SP428 as sum from dt410 WITH (NOLOCK) left join sc33 WITH (NOLOCK) 
-            on SP423 = sc33.id where iddoc=%s
+            SP5641 as id_pdate, SC5196.id as bdid_pdate,
+            SP428 as sum from dt410 WITH (NOLOCK)
+            left join sc33 WITH (NOLOCK) on SP423 = sc33.id
+            left join SC5196 on SP5205=SC5196.id
+            where iddoc=%s
                                 ''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 469:
             cursor.execute('''
             select  sp4802 as idtovar, SP483 as kolvo, SP486 as koef, SP485 as price, 
-            '' as id_pdate, '' as bdid_pdate,
-            SP487 as sum from dt469 WITH (NOLOCK) left join sc33 WITH (NOLOCK) on SP482=sc33.id 
+            SP5641 as id_pdate, SC5196.id as bdid_pdate,
+            SP487 as sum from dt469 WITH (NOLOCK)
+            left join sc33 WITH (NOLOCK) on SP482=sc33.id 
+            left join SC5196 on SP5207=SC5196.id
             where iddoc=%s''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 3716:
             cursor.execute('''

@@ -2,7 +2,7 @@ import logging
 import nomenklatura
 from utils import check_firma, check_docid, check_sklad, is_process_doc
 from config import cb_firma_id, filial_sklad_white_list
-
+from hdb import unload_production_date
 
 def get_move_header(cursor, prm_isfilial, prm_row_delta):
     logging.info('Выборка перемещение заголовки')
@@ -150,8 +150,11 @@ def get_spisanie_rows(cursor, prm_isfilial, prm_row):
     if prm_isfilial == 0:
         logging.info(';'.join(['Выборка строк списание', prm_row['docno']]))
         cursor.execute('''
-                        select  sc33.sp4802 as idtovar,SP304 as kolvo,SP306 as koef,0 as price,0 as sum from dt297
+                        select  sc33.sp4802 as idtovar,SP304 as kolvo,SP306 as koef,0 as price,0 as sum,
+                        SP5641 as id_pdate, SC5196.id as bdid_pdate
+                        from dt297
                         left join sc33 on SP303=sc33.id
+                        left join SC5196 on SP5209=SC5196.id  
                         where iddoc=%s
                             ''', prm_row['iddoc'])
     if prm_isfilial == 1:
@@ -307,8 +310,11 @@ def spisanie(cursor, wsdl_client, prm_row_delta):
         tovar_list = []
 
         for row_table in rows_table:
+            if row_table['id_pdate']:
+                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
-                                           koef=row_table['koef'], sum=row_table['sum'])
+                                           koef=row_table['koef'], sum=row_table['sum'],
+                                           pdate=row_table['id_pdate'])
             if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
