@@ -2,6 +2,10 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
+    pass
+
+
 def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     date_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
