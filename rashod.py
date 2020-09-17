@@ -1,6 +1,6 @@
 import logging
 import nomenklatura
-from hdb import get_client_groups_filial, get_client_groups, unload_production_date
+from hdb import get_client_groups_filial, get_client_groups, unload_production_date, unload_agents
 from config import cb_firma_id
 from utils import check_client, is_process_doc
 from kassa import load_prihod_kassa
@@ -339,21 +339,13 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         logging.info(';'.join(['Загрузка документа расхода', row['docno']]))
 
         # hdb_agent=
-        if row['agent'] != '' and row['agent'] != None:
-            nom_agent = wsdl_client.hdb_type(name=row['agentname'].strip(), id=row['agent'].strip(),
-                                             idparent=row['agentparentid'].strip())
-            hdb_array = wsdl_client.hdb_array_type(hdb_array=[nom_agent])
-            logging.info('Загрузка агента начало')
-            wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'agent')
-            logging.info('Загрузка агента завершена')
+        if row['agent'] != '' and row['agent'] is not None:
+            unload_agents(wsdl_client, agent_id=row['agent'], agent_parent_id=row['agentparentid'],
+                          agent_name=row['agentname'])
 
-        if row['expeditor'] != '' and row['expeditor'] != None:
-            nom_agent = wsdl_client.hdb_type(name=row['expeditorname'].strip(), id=row['expeditor'].strip(),
-                                             idparent='')
-            hdb_array = wsdl_client.hdb_array_type(hdb_array=[nom_agent])
-            logging.info('Загрузка экспедитора начало')
-            wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'agent')
-            logging.info('Загрузка экспедитора завершена')
+        if row['expeditor'] != '' and row['expeditor'] is not None:
+            unload_agents(wsdl_client, agent_id=row['expeditor'], agent_parent_id='', agent_name=row['expeditorname'])
+
 
         list_partii = []
         if isclosed == 1:

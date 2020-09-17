@@ -2,6 +2,15 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def unload_agents(wsdl_client=None, agent_id='', agent_parent_id='', agent_name=''):
+    nom_agent = wsdl_client.hdb_type(name=agent_name.strip(), id=agent_id.strip(),
+                                     idparent=agent_parent_id.strip())
+    hdb_array = wsdl_client.hdb_array_type(hdb_array=[nom_agent])
+    logging.info('Загрузка агента начало')
+    wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'agent')
+    logging.info('Загрузка агента завершена')
+
+
 def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
     pass
 
@@ -130,16 +139,10 @@ def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
             nom_region = hdb_type(name=r_child['descr'].strip(), id=r_child['idartmarket'].strip(), idparent=r_child['idparent'])
             list_region.append(nom_region)
 
-
-
     hdb_array = hdb_array_type(hdb_array=list_region)
     logging.info('Загрузка регионов начало')
     wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'region')
     logging.info('Загрузка регионов завершена')
-
-
-
-
 
 
 def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
@@ -178,8 +181,6 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
                                    value5num=r['pernodricard_custchannel'],
                                    value6num=r['pernodricard_custsubchannel'])
         list_clients.append(nom)
-
-
 
     hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
     logging.info('Загрузка клиентов начало')

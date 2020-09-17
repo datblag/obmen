@@ -49,7 +49,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        # white_list.append(4840)  # клиенты агента
+        white_list.append(4840)  # клиенты агента
         # white_list.append(3716)  #
         # white_list.append(434)  #
         # white_list.append(434)  # приход
