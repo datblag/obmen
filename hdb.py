@@ -12,7 +12,51 @@ def unload_agents(wsdl_client=None, agent_id='', agent_parent_id='', agent_name=
 
 
 def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
-    pass
+    clients_list = []
+    logging.info('Выборка клиенты агента')
+    cursor.execute('''
+                    select sc4840.id, sc4840.ismark,sp6124 as idartmarket,
+                    spragent.SP4808 as agent,
+                    spragent.descr as agentname,
+                    spragent.parentid as agentparentid,
+                    sprclient.descr as clientname,
+                    sprclient.sp4807 as clientid
+                     from sc4840
+                    left join SC3246  as spragent WITH (NOLOCK) on parentext = spragent.id
+                    left join sc46 as sprclient WITH (NOLOCK) on sp4838 = sprclient.id
+                where sc4840.id=%s
+            ''', objid)
+    logging.info('Выборка клиенты агента завершена')
+    logging.info('Подготовка загрузки клиентов агента')
+    row = cursor.fetchall()
+    for r in row:
+        logging.warning(r)
+        if r['idartmarket'] is None or r['idartmarket'].strip() == '':
+            logging.warning('Не задан идентификатор')
+            continue
+        unload_agents(wsdl_client, r['agent'], r['agentparentid'], r['agentname'])
+
+        client_list_2 = []
+        if not r['clientid'] is None:
+            client_list_2.append("'" + r['clientid'] + "'")
+        if not client_list_2:
+            continue
+        else:
+            str_id = ",".join(client_list_2)
+            get_client_groups(wsdl_client, cursor, str_id)
+
+
+        is_disable = '0'
+        if r['ismark']:
+            is_disable = '1'
+        nom = wsdl_client.hdb_type(name='', id=str(r['idartmarket']).strip(), idparent=r['clientid'].strip(),
+                                   value1=r['agent'].strip(), value2=is_disable)
+        clients_list.append(nom)
+
+    hdb_array = wsdl_client.hdb_array_type(hdb_array=clients_list)
+    logging.info('Загрузка начало клиенты агента')
+    res = wsdl_client.client.service.load_hdb_table_part(hdb_array, 1, 'agentclients')
+    logging.info(['Загрузка конец клиенты агента', res])
 
 
 def unload_production_date(cursor=None, wsdl_client=None, objid=''):

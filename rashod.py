@@ -328,8 +328,6 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
 
             load_prihod_kassa(wsdl_client, header_kassa)
 
-
-
         rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
         nomenklatura.load_nomenklatura(cursor, prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0,
@@ -345,7 +343,6 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
 
         if row['expeditor'] != '' and row['expeditor'] is not None:
             unload_agents(wsdl_client, agent_id=row['expeditor'], agent_parent_id='', agent_name=row['expeditorname'])
-
 
         list_partii = []
         if isclosed == 1:

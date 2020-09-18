@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -50,6 +50,7 @@ def auto_load(prm_cursor):
     if load_all == 0:
         pass
         white_list.append(4840)  # клиенты агента
+        # white_list.append(3716)  # расходнаядоставка
         # white_list.append(3716)  #
         # white_list.append(434)  #
         # white_list.append(434)  # приход
@@ -100,7 +101,7 @@ def auto_load(prm_cursor):
 
             # клиенты агента
             elif row_delta['TYPEID'] == 4840:
-                hdb.unload_agent_clients(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+                hdb.unload_agent_clients(prm_cursor, wsdl_client, row_delta['OBJID'])
 
             # даты розлива
             elif row_delta['TYPEID'] == 5196:
