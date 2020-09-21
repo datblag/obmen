@@ -252,6 +252,7 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
 
     hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
     logging.info('Загрузка клиентов начало')
+    logging.info(hdb_array)
     wsdl_client.client.service.load_client_groups(hdb_array, 1)
     logging.info('Загрузка клиентов завершена')
 
@@ -280,7 +281,7 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
 def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None):
     logging.info('Выборка клиентов')
     str_base_sql_query = '''
-        select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
+        select top 1000 element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
         element1.sp4807 as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
         element1.SP50 as adres_post, SC5464.descr as typett,
         element1.SP3691 as license, element1.SP5239 as control_license, element1.SP5422 as license_begin_date,
