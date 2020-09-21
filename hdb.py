@@ -212,11 +212,18 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
 
         logging.warning([license1.strip(), control_license.strip()])
 
+        idparent = ''
+        parent_descr = ''
+        if r['idparent'] is not None and r['idparent'].strip() != '':
+            idparent = r['idparent'].strip()
+            parent_descr = r['descrparent']
+
         nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
                                    idparent=r['regionid'].strip(),
                                    value1=id_prefix+inn, value2=r['kpp'].strip(), value3=r['parentname'].strip(),
                                    value4=r['adres'].strip(), value5=r['adres_post'].strip(),
                                    value6=typett.strip(), value7=license1.strip(), value8=control_license.strip(),
+                                   value9=idparent, value10=parent_descr,
                                    value1date=r['license_begin_date'], value2date=r['license_end_date'],
                                    value1num=r['pernodricard_custtype'],
                                    value2num=r['pernodricard_custpositioning'],
@@ -256,29 +263,37 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
 def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None):
     logging.info('Выборка клиентов')
     str_base_sql_query = '''
-        select SP56 as inn, sp4603 as kpp, sc46.descr, sp48 as parentname, sp4807 as idartmarket,
-        SP6066 as regionid, SP3145 as adres, SP50 as adres_post, SC5464.descr as typett,
-        SP3691 as license, SP5239 as control_license, SP5422 as license_begin_date, SP5423 as license_end_date,
+        select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
+        element1.sp4807 as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
+        element1.SP50 as adres_post, SC5464.descr as typett,
+        element1.SP3691 as license, element1.SP5239 as control_license, element1.SP5422 as license_begin_date,
+        element1.SP5423 as license_end_date,
         hdb_custtype.code as pernodricard_custtype, hdb_custpositioning.code as pernodricard_custpositioning,
         hdb_custreason.code as  pernodricard_custreason, hdb_custsegment.code as pernodricard_custsegment,
-        hdb_custchannel.code as pernodricard_custchannel, hdb_custsubchannel.code as pernodricard_custsubchannel
-        from sc46
-        left join SC5464 on  SP5467 = SC5464.id
-        left join SC6090 hdb_custtype         on  SP6093 = hdb_custtype.id
-        left join SC6094 hdb_custpositioning  on  SP6096 = hdb_custpositioning.id
-        left join SC6097 hdb_custreason       on  SP6099 = hdb_custreason.id
-        left join SC6100 hdb_custsegment      on  SP6102 = hdb_custsegment.id
-        left join SC6108 hdb_custchannel      on  SP6107 = hdb_custchannel.id
-        left join SC6110 hdb_custsubchannel   on  SP6112 = hdb_custsubchannel.id
-        where (isfolder<>'1')  
+        hdb_custchannel.code as pernodricard_custchannel, hdb_custsubchannel.code as pernodricard_custsubchannel,
+		groups1.sp4807 as idparent,groups1.descr as descrparent,
+		groups2.sp4807 as idparent2,groups2.descr as descrparent2,
+		groups3.sp4807 as idparent3,groups3.descr as descrparent3
+        from sc46 element1
+        left join SC5464 on  element1.SP5467 = SC5464.id
+        left join SC6090 hdb_custtype         on  element1.SP6093 = hdb_custtype.id
+        left join SC6094 hdb_custpositioning  on  element1.SP6096 = hdb_custpositioning.id
+        left join SC6097 hdb_custreason       on  element1.SP6099 = hdb_custreason.id
+        left join SC6100 hdb_custsegment      on  element1.SP6102 = hdb_custsegment.id
+        left join SC6108 hdb_custchannel      on  element1.SP6107 = hdb_custchannel.id
+        left join SC6110 hdb_custsubchannel   on  element1.SP6112 = hdb_custsubchannel.id
+		left join sc46  groups1 on element1.parentid=groups1.id
+		left join sc46  groups2 on groups1.parentid=groups2.id
+		left join sc46  groups3 on groups2.parentid=groups3.id
+        where (element1.isfolder<>'1')  
                            '''
     if prm_id_list == '' and prm_parent_id_list is None:
         prm_cursor.execute(str_base_sql_query)
-    elif  prm_parent_id_list is not None:
-        prm_cursor.execute(str_base_sql_query + ''' and (parentid=%s)''', prm_parent_id_list['id'])
+    elif prm_parent_id_list is not None:
+        prm_cursor.execute(str_base_sql_query + ''' and (element1.parentid=%s)''', prm_parent_id_list['id'])
     else:
         # print(prm_id_list)
-        prm_cursor.execute(str_base_sql_query + ''' and (sp4807 in (''' + prm_id_list + '''))''')
+        prm_cursor.execute(str_base_sql_query + ''' and (element1.sp4807 in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
     row = prm_cursor.fetchall()
