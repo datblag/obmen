@@ -218,12 +218,29 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
             idparent = r['idparent'].strip()
             parent_descr = r['descrparent']
 
+        idparent2 = ''
+        parent2_descr = ''
+        if r['idparent2'] is not None and r['idparent2'].strip() != '':
+            idparent2 = r['idparent2'].strip()
+            parent2_descr = r['descrparent2']
+
+
+        idparent3 = ''
+        parent3_descr = ''
+        if r['idparent3'] is not None and r['idparent3'].strip() != '':
+            idparent3 = r['idparent3'].strip()
+            parent3_descr = r['descrparent3']
+
+
+
         nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
                                    idparent=r['regionid'].strip(),
                                    value1=id_prefix+inn, value2=r['kpp'].strip(), value3=r['parentname'].strip(),
                                    value4=r['adres'].strip(), value5=r['adres_post'].strip(),
                                    value6=typett.strip(), value7=license1.strip(), value8=control_license.strip(),
                                    value9=idparent, value10=parent_descr,
+                                   value11=idparent2, value12=parent2_descr,
+                                   value13=idparent3, value14=parent3_descr,
                                    value1date=r['license_begin_date'], value2date=r['license_end_date'],
                                    value1num=r['pernodricard_custtype'],
                                    value2num=r['pernodricard_custpositioning'],
