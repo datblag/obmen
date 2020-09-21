@@ -28,6 +28,7 @@ def auto_load(prm_cursor):
         white_list.append(469)  # расходнаяреализатора
 
         white_list.append(33)  # номенклатура
+        white_list.append(46)  # контрагенты
 
         white_list.append(239)  # перемещение
         white_list.append(310)  # ввод остатков
@@ -74,16 +75,18 @@ def auto_load(prm_cursor):
             logging.error('ошибка при обновлении таблицы _1SUPDTS')
             logging.error(e)
         #    pass
-        prm_cursor.execute('''SELECT  top 1000000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')''')
+        prm_cursor.execute('''SELECT  top 1000000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and 
+                            (DWNLDID='1122!!')''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             if not (row_delta['TYPEID'] in white_list):
                 if load_all == 1:
                     try:
-                        prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') 
-                                            and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
+                        prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 
+                        (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
                         conn.commit()
-                        logging.info(';'.join(['Удалены изменения объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
+                        logging.info(';'.join(['Удалены изменения объект', str(row_delta['OBJID']),
+                                               str(row_delta['TYPEID'])]))
                     except:
                         logging.error(';'.join(['Ошибка отмены изменений объекта', str(row_delta['OBJID']),
                                                 str(row_delta['TYPEID'])]))
@@ -98,6 +101,10 @@ def auto_load(prm_cursor):
             # производитель импортер
             elif row_delta['TYPEID'] == 5468:
                 hdb.unload_maker(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+
+            # контрагенты
+            elif row_delta['TYPEID'] == 46:
+                hdb.get_client_groups(wsdl_client, cursor, prm_id_list={'id': row_delta['OBJID']})
 
             # клиенты агента
             elif row_delta['TYPEID'] == 4840:

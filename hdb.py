@@ -20,7 +20,8 @@ def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
                     spragent.descr as agentname,
                     spragent.parentid as agentparentid,
                     sprclient.descr as clientname,
-                    sprclient.sp4807 as clientid
+                    sprclient.sp4807 as clientid,
+                    sprclient.isfolder
                      from sc4840
                     left join SC3246  as spragent WITH (NOLOCK) on parentext = spragent.id
                     left join sc46 as sprclient WITH (NOLOCK) on sp4838 = sprclient.id
@@ -45,12 +46,11 @@ def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
             str_id = ",".join(client_list_2)
             get_client_groups(wsdl_client, cursor, str_id)
 
-
         is_disable = '0'
         if r['ismark']:
             is_disable = '1'
         nom = wsdl_client.hdb_type(name='', id=str(r['idartmarket']).strip(), idparent=r['clientid'].strip(),
-                                   value1=r['agent'].strip(), value2=is_disable)
+                                   value1=r['agent'].strip(), value2=is_disable, value1num=r['isfolder'])
         clients_list.append(nom)
 
     hdb_array = wsdl_client.hdb_array_type(hdb_array=clients_list)
@@ -190,8 +190,9 @@ def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
 
 
 def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
-    list_clients=[]
     for r in prm_clients_rows:
+        list_clients = []
+
         inn = '0000000000'
         if not r['inn'].strip() == '':
             inn = r['inn'].strip()
@@ -224,14 +225,11 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
             idparent2 = r['idparent2'].strip()
             parent2_descr = r['descrparent2']
 
-
         idparent3 = ''
         parent3_descr = ''
         if r['idparent3'] is not None and r['idparent3'].strip() != '':
             idparent3 = r['idparent3'].strip()
             parent3_descr = r['descrparent3']
-
-
 
         nom = wsdl_client.hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(),
                                    idparent=r['regionid'].strip(),
@@ -250,15 +248,14 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
                                    value6num=r['pernodricard_custsubchannel'])
         list_clients.append(nom)
 
-    hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
-    logging.info('Загрузка клиентов начало')
-    logging.info(hdb_array)
-    wsdl_client.client.service.load_client_groups(hdb_array, 1)
-    logging.info('Загрузка клиентов завершена')
+        hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
+        logging.info('Загрузка клиентов начало')
+        logging.info(hdb_array)
+        wsdl_client.client.service.load_client_groups(hdb_array, 1)
+        logging.info('Загрузка клиентов завершена')
 
 
-
-def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list = ''):
+def get_client_groups_filial(wsdl_client=None, prm_cursor=None, prm_id_list=''):
     logging.info('Выборка клиентов')
     if prm_id_list == '':
         prm_cursor.execute('''
@@ -281,7 +278,7 @@ def get_client_groups_filial(wsdl_client = None, prm_cursor = None, prm_id_list 
 def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None):
     logging.info('Выборка клиентов')
     str_base_sql_query = '''
-        select top 1000 element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
+        select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
         element1.sp4807 as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
         element1.SP50 as adres_post, SC5464.descr as typett,
         element1.SP3691 as license, element1.SP5239 as control_license, element1.SP5422 as license_begin_date,
