@@ -59,6 +59,55 @@ def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
     logging.info(['Загрузка конец клиенты агента', res])
 
 
+def unload_agent_products(cursor=None, wsdl_client=None, objid=''):
+    clients_list = []
+    logging.info('Выборка ассортимент агента')
+    # cursor.execute('''
+    #                 select sc4840.id, sc4840.ismark,sp6124 as idartmarket,
+    #                 spragent.SP4808 as agent,
+    #                 spragent.descr as agentname,
+    #                 spragent.parentid as agentparentid,
+    #                 sprclient.descr as clientname,
+    #                 sprclient.sp4807 as clientid,
+    #                 sprclient.isfolder
+    #                  from sc4840
+    #                 left join SC3246  as spragent WITH (NOLOCK) on parentext = spragent.id
+    #                 left join sc46 as sprclient WITH (NOLOCK) on sp4838 = sprclient.id
+    #             where sc4840.id=%s
+    #         ''', objid)
+    logging.info('Выборка ассортимент агента завершена')
+    logging.info('Подготовка загрузки ассортимент агента')
+    # row = cursor.fetchall()
+    # for r in row:
+    #     logging.warning(r)
+    #     if r['idartmarket'] is None or r['idartmarket'].strip() == '':
+    #         logging.warning('Не задан идентификатор')
+    #         continue
+    #     unload_agents(wsdl_client, r['agent'], r['agentparentid'], r['agentname'])
+    #
+    #     client_list_2 = []
+    #     if not r['clientid'] is None:
+    #         client_list_2.append("'" + r['clientid'] + "'")
+    #     if not client_list_2:
+    #         continue
+    #     else:
+    #         str_id = ",".join(client_list_2)
+    #         get_client_groups(wsdl_client, cursor, str_id)
+    #
+    #     is_disable = '0'
+    #     if r['ismark']:
+    #         is_disable = '1'
+    #     nom = wsdl_client.hdb_type(name='', id=str(r['idartmarket']).strip(), idparent=r['clientid'].strip(),
+    #                                value1=r['agent'].strip(), value2=is_disable, value1num=r['isfolder'])
+    #     clients_list.append(nom)
+    #
+    # hdb_array = wsdl_client.hdb_array_type(hdb_array=clients_list)
+    # logging.info('Загрузка начало клиенты агента')
+    # res = wsdl_client.client.service.load_hdb_table_part(hdb_array, 1, 'agentclients')
+    res = ''
+    logging.info(['Загрузка конец ассортимент агента', res])
+
+
 def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     date_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
@@ -275,7 +324,7 @@ def get_client_groups_filial(wsdl_client=None, prm_cursor=None, prm_id_list=''):
     # TODO перенести префикс в конфиг
 
 
-def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None):
+def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None, prm_id_list_mode=0):
     logging.info('Выборка клиентов')
     str_base_sql_query = '''
         select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
@@ -307,8 +356,10 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_par
     elif prm_parent_id_list is not None:
         prm_cursor.execute(str_base_sql_query + ''' and (element1.parentid=%s)''', prm_parent_id_list['id'])
     else:
-        # print(prm_id_list)
-        prm_cursor.execute(str_base_sql_query + ''' and (element1.sp4807 in (''' + prm_id_list + '''))''')
+        if prm_id_list_mode == 0:
+            prm_cursor.execute(str_base_sql_query + ''' and (element1.sp4807 in (''' + prm_id_list + '''))''')
+        else:
+            prm_cursor.execute(str_base_sql_query + ''' and (element1.id in (''' + prm_id_list + '''))''')
     logging.info('Выборка клиентов завершена')
     logging.info('Подготовка загрузки клиентов')
     row = prm_cursor.fetchall()

@@ -46,11 +46,12 @@ def auto_load(prm_cursor):
 
         white_list.append(5468)  # производители импортеры
         white_list.append(5196)  # даты розлива
-        # white_list.append(4840)  # клиенты агента
+        white_list.append(4840)  # клиенты агента
+        white_list.append(4843)  # ассортимент агента
 
     if load_all == 0:
         pass
-        white_list.append(4840)  # клиенты агента
+        white_list.append(4843)  # ассортимент агента
         # white_list.append(3716)  # расходнаядоставка
         # white_list.append(3716)  #
         # white_list.append(434)  #
@@ -104,7 +105,16 @@ def auto_load(prm_cursor):
 
             # контрагенты
             elif row_delta['TYPEID'] == 46:
-                hdb.get_client_groups(wsdl_client, cursor, prm_id_list={'id': row_delta['OBJID']})
+
+                # client_list.append("'" + row_delta['OBJID'] + "'")
+                str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
+
+                hdb.get_client_groups(wsdl_client, cursor, prm_id_list=str_id, prm_parent_id_list=None,
+                                      prm_id_list_mode=1)
+
+            # ассортимент агента
+            elif row_delta['TYPEID'] == 4843:
+                hdb.unload_agent_products(prm_cursor, wsdl_client, row_delta['OBJID'])
 
             # клиенты агента
             elif row_delta['TYPEID'] == 4840:
@@ -152,10 +162,13 @@ def auto_load(prm_cursor):
                 # приходы
                 prihod.load_prihod(prm_cursor, wsdl_client, row_delta)
             try:
-                if row_delta['TYPEID'] != 4840:
-                    prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
-                                        and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
-                    conn.commit()
+
+                if row_delta['TYPEID'] == 4843:
+                    continue
+
+                prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
+                                    and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
+                conn.commit()
                 logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
             except:
                 logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
