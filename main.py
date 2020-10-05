@@ -164,7 +164,7 @@ def auto_load(prm_cursor):
             try:
 
                 if row_delta['TYPEID'] == 4843:
-                    continue
+                    pass
 
                 prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
                                     and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
