@@ -49,11 +49,11 @@ def auto_load(prm_cursor):
         white_list.append(4840)  # клиенты агента
         white_list.append(4843)  # ассортимент агента
 
-        # white_list.append(3769)  # подразделения
+        white_list.append(3769)  # подразделения
 
     if load_all == 0:
         pass
-        white_list.append(4843)  # ассортимент агента
+        white_list.append(3769)  # подразделения
         # white_list.append(3716)  # расходнаядоставка
         # white_list.append(3716)  #
         # white_list.append(434)  #
@@ -83,6 +83,7 @@ def auto_load(prm_cursor):
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             if not (row_delta['TYPEID'] in white_list):
+                logging.info(row_delta['TYPEID'])
                 if load_all == 1:
                     try:
                         prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 
@@ -102,7 +103,7 @@ def auto_load(prm_cursor):
                                                prm_update_mode=1, wsdl_client=wsdl_client)
 
             # подразделение
-            elif row_delta['TYPEID'] == 5468:
+            elif row_delta['TYPEID'] == 3769:
                 hdb.unload_unit(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # производитель импортер
