@@ -138,10 +138,12 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
     logging.info('Выборка подразделения')
-    cursor.execute('''select SP6126 as idartmarket, descr  from SC3769 where id=%s  and isfolder=0''', objid)
+    cursor.execute('''select SP6126 as idartmarket, descr  from SC3769 where id=%s  and isfolder=2''', objid)
     logging.info('Выборка подразделения завершена')
     logging.info('Подготовка загрузки подразделения')
     row = cursor.fetchall()
+    logging.info(objid)
+    logging.info(row)
     for r in row:
         logging.warning(r)
         nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='')

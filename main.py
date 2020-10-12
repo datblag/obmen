@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -83,7 +83,6 @@ def auto_load(prm_cursor):
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             if not (row_delta['TYPEID'] in white_list):
-                logging.info(row_delta['TYPEID'])
                 if load_all == 1:
                     try:
                         prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 
@@ -96,6 +95,7 @@ def auto_load(prm_cursor):
                                                 str(row_delta['TYPEID'])]))
                 continue
 
+            logging.info(row_delta['TYPEID'])
             # номенклатура
             if row_delta['TYPEID'] == 33:
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
@@ -104,6 +104,7 @@ def auto_load(prm_cursor):
 
             # подразделение
             elif row_delta['TYPEID'] == 3769:
+                logging.info(row_delta['TYPEID'])
                 hdb.unload_unit(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # производитель импортер
