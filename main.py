@@ -51,9 +51,14 @@ def auto_load(prm_cursor):
 
         white_list.append(3769)  # подразделения
 
+        white_list.append(3773)  # статьи затрат
+
+
     if load_all == 0:
         pass
-        white_list.append(3769)  # подразделения
+        white_list.append(3773)  # статьи затрат
+        # white_list.append(4843)  # ассортимент агента
+        # white_list.append(3769)  # подразделения
         # white_list.append(3716)  # расходнаядоставка
         # white_list.append(3716)  #
         # white_list.append(434)  #
@@ -101,6 +106,11 @@ def auto_load(prm_cursor):
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
+
+            # статьи затрат
+            elif row_delta['TYPEID'] == 3773:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_cost(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # подразделение
             elif row_delta['TYPEID'] == 3769:

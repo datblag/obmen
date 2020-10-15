@@ -83,6 +83,9 @@ def unload_agent_products(cursor=None, wsdl_client=None, objid=''):
         if r['idartmarket'] is None or r['idartmarket'].strip() == '':
             logging.warning('Не задан идентификатор')
             continue
+        if r['agentname'] is None or r['agentname'].strip() == '':
+            logging.warning('Не задано имя агента')
+            continue
         unload_agents(wsdl_client, r['agent'], r['agentparentid'], r['agentname'])
     #
         product_list_2 = []
@@ -131,6 +134,27 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка начало даты розлива')
     wsdl_client.service.load_hdb_elements(hdb_array, 1, 'pdate')
     logging.info('Загрузка даты розлива завершена')
+
+
+def unload_cost(cursor=None, wsdl_client=None, objid=''):
+    cost_list = []
+    parents_id = ['ABD7028F-DACB-4CF0-BD60-D51FC849760B', 'FBE1B007-8050-476D-BD62-962B9D65C19D',
+                  'FE7C24DA-E3D5-4186-A361-A1AEB5C5722E', '280F18F5-4E46-4774-B168-50891A2A765D']
+
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка затраты')
+    cursor.execute('''select sc.id, sc.descr as scname, sc.sp6125 as idartmarket,sc.isfolder, scp.descr  as scpname,
+        scp.sp6125 as idparent from sc3773 sc
+        left join sc3773 scp on sc.parentid = scp.id where sc.isfolder=2 and sc.id=%s''', objid)
+    row = cursor.fetchall()
+
+    logging.info(row)
+
+    for r in row:
+        logging.info(r['idparent'])
+        if r['idparent'] is not None and r['idparent'].strip() in parents_id:
+            logging.info(r)
 
 
 def unload_unit(cursor=None, wsdl_client=None, objid=''):
