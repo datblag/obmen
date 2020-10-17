@@ -21,7 +21,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -70,6 +70,9 @@ def auto_load(prm_cursor):
         # white_list.append(4132)  # расходный ордер Б
         # white_list.append(2964)  # ПриходныйОрдерТБ
         # white_list.append(4225)  # РасходныйОрдерТБ
+
+    commit_limit = 1000
+    commit_count = 0
 
     while True:
         logging.warning('Выборка изменений')
@@ -186,14 +189,18 @@ def auto_load(prm_cursor):
 
                 prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
                                     and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
-                conn.commit()
+                commit_count += 1
+                if commit_count == commit_limit:
+                    conn.commit()
+                    commit_count = 0
+                    logging.warning('commit')
                 logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
             except:
                 logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
                                         str(row_delta['TYPEID'])]))
 
         logging.warning('Выборка изменений завершена')
-        time.sleep(10)
+        # time.sleep(10)
 
 
     #exit()
