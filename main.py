@@ -95,6 +95,7 @@ def auto_load(prm_cursor):
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             if not (row_delta['TYPEID'] in white_list):
+                logging.warning(['TYPEID', row_delta['TYPEID']])
                 if load_all == 1:
                     try:
                         prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 
