@@ -240,6 +240,40 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno'], n]))
 
 
+
+def load_service_invoices(cursor, wsdl_client, prm_row_delta):
+    logging.info('Выборка счет заголовки')
+    cursor.execute('''
+            SELECT closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc, docno,
+            sc13.sp4805 as firma, sc46.sp4807 as client, SP6127 as idartmarket, sP4558 as schf,
+            _1sjourn.iddoc FROM DH4553 as dh WITH (NOLOCK)
+            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+            left join sc46 WITH (NOLOCK) on SP4557 = sc46.id
+            left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+            where _1sjourn.iddoc=%s
+                        ''', prm_row_delta['OBJID'])
+    logging.info('Выборка счет заголовки завершена')
+    rows_header = cursor.fetchall()
+
+    for row_header in rows_header:
+        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+            continue
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
+            logging.error(';'.join(['Пустой ид', row_header['docno']]))
+            continue
+        if row_header['client'] is None or row_header['client'].strip() == '':
+            logging.error(';'.join(['Пустой клиент', row_header['docno']]))
+            continue
+
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+                                         client=row_header['client'].strip(),
+                                         idartmarket=row_header['idartmarket'].strip(),
+                                         document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                                         bdid=row_header['schf'])
+
+        isclosed = is_process_doc(row_header['closed'])
+
+
 def load_order_supplier(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка заказ заголовки')
     cursor.execute('''
@@ -305,7 +339,7 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
             client_list.append("'" + row_header['client'] + "'")
-        if client_list == []:
+        if not client_list:
             continue
         str_id = ",".join(client_list)
         hdb.get_client_groups(wsdl_client, cursor, str_id)

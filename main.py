@@ -56,6 +56,8 @@ def auto_load(prm_cursor):
         white_list.append(5552)  # источник финансирования SP6128
         white_list.append(5554)  # для маркетинга SP6129
 
+        white_list.append(4553)  # счет на услуги service invoices
+
     if load_all == 0:
         pass
         white_list.append(3773)  # статьи затрат
@@ -175,9 +177,13 @@ def auto_load(prm_cursor):
             elif row_delta['TYPEID'] == 239:
                 sklad.move_tovar(prm_cursor, wsdl_client, row_delta)
 
-            # заказ почтавщику
+            # заказ поставщику
             elif row_delta['TYPEID'] == 4425:
                 dolgi.load_order_supplier(prm_cursor, wsdl_client, row_delta)
+
+            # счет на услуги
+            elif row_delta['TYPEID'] == 4553:
+                dolgi.load_service_invoices(prm_cursor, wsdl_client, row_delta)
 
             # списание
             elif row_delta['TYPEID'] == 297:
