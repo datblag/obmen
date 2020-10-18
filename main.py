@@ -120,6 +120,12 @@ def auto_load(prm_cursor):
                 logging.info(row_delta['TYPEID'])
                 hdb.unload_cost(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
+            # для маркетинга
+            elif row_delta['TYPEID'] == 5554:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_for_marketing(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+
+
             # источник финансирования
             elif row_delta['TYPEID'] == 5552:
                 logging.info(row_delta['TYPEID'])

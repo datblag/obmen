@@ -179,6 +179,29 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка подразделения завершена')
 
 
+
+def unload_for_marketing(cursor=None, wsdl_client=None, objid=''):
+    marketing_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка для маркетинга')
+    cursor.execute('''
+            select SP6129 as idartmarket, descr  from SC5554 where id=%s
+            ''', objid)
+    logging.info('Выборка для маркетинга завершена')
+    logging.info('Подготовка загрузки для маркетинга')
+    row = cursor.fetchall()
+    for r in row:
+        logging.warning(r)
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='')
+        marketing_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=marketing_list)
+    logging.info('Загрузка начало для маркетинга')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'marketing')
+    logging.info('Загрузка для маркетинга завершена')
+
+
 def unload_financing(cursor=None, wsdl_client=None, objid=''):
     financing_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
