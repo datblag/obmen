@@ -53,6 +53,8 @@ def auto_load(prm_cursor):
 
         white_list.append(3773)  # статьи затрат
 
+        white_list.append(5552)  # источник финансирования SP6128
+        white_list.append(5554)  # для маркетинга SP6129
 
     if load_all == 0:
         pass
@@ -86,7 +88,7 @@ def auto_load(prm_cursor):
             logging.error('ошибка при обновлении таблицы _1SUPDTS')
             logging.error(e)
         #    pass
-        prm_cursor.execute('''SELECT  top 1000000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and 
+        prm_cursor.execute('''SELECT  top 100000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and 
                             (DWNLDID='1122!!')''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
@@ -94,10 +96,13 @@ def auto_load(prm_cursor):
                 if load_all == 1:
                     try:
                         prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 
-                        (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
+                        (TYPEID=%s)''', row_delta['TYPEID'])
+                        # prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and
+                        # (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
                         conn.commit()
                         logging.info(';'.join(['Удалены изменения объект', str(row_delta['OBJID']),
                                                str(row_delta['TYPEID'])]))
+                        break
                     except:
                         logging.error(';'.join(['Ошибка отмены изменений объекта', str(row_delta['OBJID']),
                                                 str(row_delta['TYPEID'])]))
@@ -114,6 +119,12 @@ def auto_load(prm_cursor):
             elif row_delta['TYPEID'] == 3773:
                 logging.info(row_delta['TYPEID'])
                 hdb.unload_cost(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+
+            # источник финансирования
+            elif row_delta['TYPEID'] == 5552:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_financing(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+
 
             # подразделение
             elif row_delta['TYPEID'] == 3769:

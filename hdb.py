@@ -179,6 +179,28 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка подразделения завершена')
 
 
+def unload_financing(cursor=None, wsdl_client=None, objid=''):
+    financing_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка источник финансирования')
+    cursor.execute('''
+            select SP6128 as idartmarket, descr  from SC5552 where id=%s
+            ''', objid)
+    logging.info('Выборка источник финансирования завершена')
+    logging.info('Подготовка загрузки источник финансирования')
+    row = cursor.fetchall()
+    for r in row:
+        logging.warning(r)
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='')
+        financing_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=financing_list)
+    logging.info('Загрузка начало источник финансирования')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'financing')
+    logging.info('Загрузка источник финансирования завершена')
+
+
 def unload_maker(cursor=None, wsdl_client=None, objid=''):
     maker_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
