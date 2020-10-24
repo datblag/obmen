@@ -1,11 +1,6 @@
 import logging
-import utils
-import tqdm
-import nomenklatura
-from hdb import get_client_groups_filial, get_client_groups
-from config import cb_firma_id
-from utils import check_client, check_firma
-from rashod import load_rashod
+from utils import is_process_doc, check_firma
+
 
 def check_rashod(cursor, wsdl_client):
     check_list = []
@@ -36,10 +31,10 @@ def check_rashod(cursor, wsdl_client):
                 print(counter)
                 counter = 0
             #print(row)
-            if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+            if not check_firma(row, 0):
                 continue
             res = wsdl_client.client.service.doc_check(row['idartmarket'], check_item['doctype'])
-            isclosed = utils.is_process_doc(row['closed'])
+            isclosed = is_process_doc(row['closed'])
             if res == -100 and isclosed == 1 or res == 100 and isclosed == 1:
                 logging.warning([res, row['datedoc'], row['docno'], isclosed, row['iddoc']])
                 # load_rashod(cursor, wsdl_client, {'TYPEID': check_item['doctype'], 'OBJID': row['iddoc']})

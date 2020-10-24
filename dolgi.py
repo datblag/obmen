@@ -1,5 +1,5 @@
 import logging
-from utils import convert_base, is_process_doc
+from utils import convert_base, is_process_doc, check_firma
 import hdb
 import nomenklatura
 import datetime
@@ -104,7 +104,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
                 pass
             logging.info(['Выборка взаиморасчетов опмание объекта', row['datedoc'], row['docno']])
 
-            if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+            if not check_firma(row, 0):
                 continue
             if row['idartmarket'] is None or row['idartmarket'].strip() == '':
                 if isclosed == 1:
@@ -152,7 +152,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
                 pass
             logging.info(['Выборка взаиморасчетов опмание объекта', row['datedoc'], row['docno']])
 
-            if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+            if not check_firma(row, 0):
                 continue
             if row['idartmarket'] is None or row['idartmarket'].strip() == '':
                 if isclosed == 1:
@@ -256,7 +256,7 @@ def load_service_invoices(cursor, wsdl_client, prm_row_delta):
     rows_header = cursor.fetchall()
 
     for row_header in rows_header:
-        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+        if not check_firma(row_header, 0):
             continue
         if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
@@ -292,13 +292,13 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
     rows_header = cursor.fetchall()
 
     for row_header in rows_header:
-        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+        if not check_firma(row_header, 0):
             continue
-        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
             continue
 
-        if row_header['client'] == None or row_header['client'].strip() == '':
+        if row_header['client'] is None or row_header['client'].strip() == '':
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
         sklad = row_header['sklad']

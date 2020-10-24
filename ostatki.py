@@ -1,7 +1,7 @@
 import logging
 import nomenklatura
 from config import cb_firma_id
-from utils import  check_firma
+from utils import check_firma
 
 
 def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_row_sklad, is_filial=0):

@@ -1,5 +1,6 @@
 import logging
-from utils import is_process_doc
+from utils import is_process_doc, check_firma
+
 
 def load_prihod_kassa(wsdl_client, prm_header):
     header = wsdl_client.header_type(document_type=2, firma=prm_header['firma'].strip(), sklad='',
@@ -31,17 +32,16 @@ def prihod(cursor, wsdl_client, prm_row_delta):
     rows_header = cursor.fetchall()
 
     for row_header in rows_header:
-        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+        if not check_firma(row_header, 0):
             logging.warning(row_header['firma'])
             continue
-        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
             continue
 
         logging.warning(row_header)
 
         load_prihod_kassa(wsdl_client, row_header)
-
 
 
 def load_rashod_kassa(wsdl_client, prm_header):
@@ -74,10 +74,10 @@ def rashod(cursor, wsdl_client, prm_row_delta):
     rows_header = cursor.fetchall()
 
     for row_header in rows_header:
-        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+        if not check_firma(row_header, 0):
             logging.warning(row_header['firma'])
             continue
-        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
             continue
 

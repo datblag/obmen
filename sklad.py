@@ -4,6 +4,7 @@ from utils import check_firma, check_docid, check_sklad, is_process_doc
 from config import cb_firma_id, filial_sklad_white_list
 from hdb import unload_production_date
 
+
 def get_move_header(cursor, prm_isfilial, prm_row_delta):
     logging.info('Выборка перемещение заголовки')
     if prm_isfilial == 0:

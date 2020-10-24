@@ -2,8 +2,9 @@ import logging
 import nomenklatura
 from hdb import get_client_groups_filial, get_client_groups, unload_production_date, unload_agents
 from config import cb_firma_id
-from utils import check_client, is_process_doc
+from utils import check_client, is_process_doc, check_firma
 from kassa import load_prihod_kassa
+
 
 def get_rashod_header(cursor, prm_isfilial, prm_doctype, prm_row_delta):
     if prm_isfilial == 1:
@@ -237,14 +238,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         # list_partii=[]
         isclosed = is_process_doc(row['closed'])
 
-        if row['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+        if not check_firma(row, 0):
             continue
-        if row['idartmarket'] == None or row['idartmarket'].strip() == '':
+        if row['idartmarket'] is None or row['idartmarket'].strip() == '':
             # if isclosed == 1:
             logging.error(';'.join(['Пустой ид', row['docno']]))
             # continue
 
-        if row['sklad'] == None or row['sklad'].strip() == '':
+        if row['sklad'] is None or row['sklad'].strip() == '':
             if isclosed == 1:
                 logging.error(';'.join(['Пустой склад', row['docno']]))
             continue
