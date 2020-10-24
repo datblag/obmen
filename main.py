@@ -276,6 +276,7 @@ def main():
             auto_load(cursor)
         elif k == 'фирма':
             # загрузка  фирм
+            hdb_type = client.get_type('ns3:hdb_element')
             firm_list = []
             logging.info('Выборка фирм')
             cursor.execute('''SELECT  descr, sp4805 as idartmarket, sp4805 as firma FROM SC13''')
