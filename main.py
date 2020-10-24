@@ -127,12 +127,10 @@ def auto_load(prm_cursor):
                 logging.info(row_delta['TYPEID'])
                 hdb.unload_for_marketing(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
-
             # источник финансирования
             elif row_delta['TYPEID'] == 5552:
                 logging.info(row_delta['TYPEID'])
                 hdb.unload_financing(prm_cursor, wsdl_client.client, row_delta['OBJID'])
-
 
             # подразделение
             elif row_delta['TYPEID'] == 3769:
@@ -206,9 +204,6 @@ def auto_load(prm_cursor):
                 # приходы
                 prihod.load_prihod(prm_cursor, wsdl_client, row_delta)
             try:
-
-                if row_delta['TYPEID'] == 4843:
-                    pass
 
                 prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
                                     and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
