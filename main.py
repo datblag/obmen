@@ -275,26 +275,7 @@ def main():
         elif k == 'авто' or k == 'avto':
             auto_load(cursor)
         elif k == 'фирма':
-            # загрузка  фирм
-            hdb_type = client.get_type('ns3:hdb_element')
-            firm_list = []
-            logging.info('Выборка фирм')
-            cursor.execute('''SELECT  descr, sp4805 as idartmarket, sp4805 as firma FROM SC13''')
-            logging.info('Выборка фирм завершена')
-            logging.info('Подготовка загрузки фирм')
-            row = cursor.fetchall()
-            for r in row:
-                if not check_firma(r, 0):
-                    continue
-                if r[1].strip() == '':
-                    continue
-                nom = hdb_type(name=r[0].strip(), id=r[1].strip(), idparent='')
-                firm_list.append(nom)
-
-            hdb_array = hdb_array_type(hdb_array=firm_list)
-            logging.info('Загрузка фирм начало')
-            client.service.load_hdb_elements(hdb_array, 1, 'firma')
-            logging.info('Загрузка фирм завершена')
+            hdb.load_firm(client, cursor)
         elif k == 'агентгруппы':
             hdb.unload_agent_groups(client, cursor)
         elif k == 'агент':
@@ -306,25 +287,7 @@ def main():
         elif k == 'клиент':
             hdb.get_client_groups(wsdl_client, cursor)
         elif k == 'клиентструк':
-            cursor.execute('''select sp4807 as idartmarket, id, descr from
-                                       sc46 where isfolder=1 and code=30''')
-            # 20080 артмаркет опт
-            rows_root = cursor.fetchall()
-            for row_root in rows_root:
-                logging.warning(row_root)
-                hdb.get_client_groups(wsdl_client, cursor, prm_parent_id_list=row_root)
-                cursor.execute('''select sp4807 as idartmarket, id, descr from
-                                           sc46 where isfolder=1 and parentid=%s''', row_root['id'])
-                rows_level1 = cursor.fetchall()
-                for row_level1 in rows_level1:
-                    logging.warning(row_level1)
-                    hdb.get_client_groups(wsdl_client, cursor, prm_parent_id_list=row_level1)
-                    cursor.execute('''select sp4807 as idartmarket, id, descr from
-                                               sc46 where isfolder=1 and parentid=%s''', row_level1['id'])
-                    rows_level2 = cursor.fetchall()
-                    for row_level2 in rows_level2:
-                        logging.warning(row_level2)
-                        hdb.get_client_groups(wsdl_client, cursor, prm_parent_id_list=row_level2)
+            hdb.load_client_structure(cursor, wsdl_client)
 
         elif k == 'регион':
             hdb.get_region_groups(cursor, wsdl_client=wsdl_client)
