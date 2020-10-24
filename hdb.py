@@ -247,22 +247,31 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
 def unload_cost(cursor=None, wsdl_client=None, objid=''):
     cost_list = []
     parents_id = ['ABD7028F-DACB-4CF0-BD60-D51FC849760B', 'FBE1B007-8050-476D-BD62-962B9D65C19D',
-                  'FE7C24DA-E3D5-4186-A361-A1AEB5C5722E', '280F18F5-4E46-4774-B168-50891A2A765D']
+                  'FE7C24DA-E3D5-4186-A361-A1AEB5C5722E', '280F18F5-4E46-4774-B168-50891A2A765D',
+                  '7A88694A-4C27-48C5-8425-228363F99F26']
 
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
     logging.info('Выборка затраты')
     cursor.execute('''select sc.id, sc.descr as scname, sc.sp6125 as idartmarket,sc.isfolder, scp.descr  as scpname,
-        scp.sp6125 as idparent from sc3773 sc
+        scp.sp6125 as parentid, scp.descr as parentname from sc3773 sc
         left join sc3773 scp on sc.parentid = scp.id where sc.isfolder=2 and sc.id=%s''', objid)
     row = cursor.fetchall()
 
     logging.info(row)
 
     for r in row:
-        logging.info(r['idparent'])
-        if r['idparent'] is not None and r['idparent'].strip() in parents_id:
+        logging.info(r['parentid'])
+        if r['parentid'] is not None and r['parentid'].strip() in parents_id:
             logging.info(r)
+            nom = hdb_type(name=r['scname'].strip(), id=str(r['idartmarket']).strip(), idparent=r['parentid'],
+                           nameparent=r['scpname'])
+            cost_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=cost_list)
+    logging.info('Загрузка начало затраты')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'cost')
+    logging.info('Загрузка затраты завершена')
 
 
 def unload_unit(cursor=None, wsdl_client=None, objid=''):
@@ -270,7 +279,9 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
     logging.info('Выборка подразделения')
-    cursor.execute('''select SP6126 as idartmarket, descr  from SC3769 where id=%s  and isfolder=2''', objid)
+    cursor.execute('''select el.SP6126 as idartmarket, el.descr, el.parentid, pr.descr as parentname, pr.sp6126 as parentid
+                    from SC3769 el left join sc3769 pr on el.parentid = pr.id 
+                    where el.id=%s  and el.isfolder=2''', objid)
     logging.info('Выборка подразделения завершена')
     logging.info('Подготовка загрузки подразделения')
     row = cursor.fetchall()
@@ -278,7 +289,8 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
     logging.info(row)
     for r in row:
         logging.warning(r)
-        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='')
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent=r['parentid'],
+                       nameparent=r['parentname'])
         unit_list.append(nom)
 
     hdb_array = hdb_array_type(hdb_array=unit_list)
