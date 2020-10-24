@@ -5,6 +5,151 @@ import nomenklatura
 import datetime
 
 
+def load_client_balance(cursor, wsdl_client):
+    # SP6065 тип клиента 1 покупатель 2 поставщик
+    logging.info('Выборка фирм')
+    cursor.execute('''SELECT  descr,sp4805 as idartmarket,id, sp4805 as firma''')
+    logging.info('Выборка фирм завершена')
+    rows_firma = cursor.fetchall()
+    for row_firma in rows_firma:
+        if not check_firma(row_firma, 0):
+            continue
+        if row_firma['idartmarket'].strip() != '':
+
+            logging.info('Выборка остатков начало')
+            cursor.execute('''
+    
+                            SELECT  sc46.sp4807 as client,sum(SP171) as ostatok,SP6065  from RG169
+                            left join sc46 on ltrim(rtrim(SP170)) = '1A   '+ltrim(rtrim(sc46.id))
+                            where (period='2018-12-01 00:00:00.000') and  (SP2671=%s)  group by sc46.sp4807,SP6065
+    
+                            ''', row_firma['id'])
+            # + нам должны, - мы должны
+            # and (sc46.SP6065=1)
+            logging.info('Запрос остатков выполнен')
+            rows = cursor.fetchall()
+            logging.info('Курсор получен')
+            header = wsdl_client.header_type(document_type=1, firma=row_firma['idartmarket'].strip(), sklad='')
+            row_list_dolg_post = []
+            row_list_dolg = []
+            row_list_avans = []
+            row_list_avans_post = []
+            client_list = []
+            for row in rows:
+                if row['client'] is None:
+                    continue
+                if row['SP6065'] == 1:
+                    if row['ostatok'] < 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=-1 * row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_avans.append(row_nom)
+                    elif row['ostatok'] > 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_dolg.append(row_nom)
+                elif row['SP6065'] == 2:
+                    if row['ostatok'] > 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_dolg_post.append(row_nom)
+                    elif row['ostatok'] < 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=-1 * row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_avans_post.append(row_nom)
+                if not "'" + row['client'] + "'" in client_list:
+                    client_list.append("'" + row['client'] + "'")
+            if not client_list:
+                continue
+            str_id = ",".join(client_list)
+            rows = wsdl_client.rows_type(rows=row_list_dolg)
+            document = wsdl_client.document_type(header=header, rowslist=rows)
+            rows = wsdl_client.rows_type(rows=row_list_avans)
+            document2 = wsdl_client.document_type(header=header, rowslist=rows)
+            rows = wsdl_client.rows_type(rows=row_list_dolg_post)
+            document3 = wsdl_client.document_type(header=header, rowslist=rows)
+            rows = wsdl_client.rows_type(rows=row_list_avans_post)
+            document4 = wsdl_client.document_type(header=header, rowslist=rows)
+            logging.info('Загрузка документа остатков')
+            # prmmode    1-долги клиентов (sc46.SP6065=1) row['ostatok']>0
+            #           2 - авнсы клиентов (sc46.SP6065=1) row['ostatok']<0
+            #           3- долги поставщикам
+            #           4 - авансы поставщиков
+            # n=client.service.load_ostatki_client(document3,3)
+
+            # проверено
+            # n=client.service.load_ostatki_client(document,1) 00-00000211
+            # n=client.service.load_ostatki_client(document4,3) 00-00000222
+            # n=client.service.load_ostatki_client(document2,3) 00-00000223
+
+            logging.info('Загрузка документа остатков завершена')
+
+
+def load_supplier_balance(cursor, wsdl_client):
+    logging.info('Выборка фирм')
+    cursor.execute('''SELECT  descr,sp4805 as idartmarket,id, sp4805 as firma  FROM SC13''')
+    logging.info('Выборка фирм завершена')
+    rows_firma = cursor.fetchall()
+    for row_firma in rows_firma:
+        if not check_firma(row_firma, 0):
+            continue
+        if row_firma['idartmarket'].strip() != '':
+
+            logging.info('Выборка остатков начало')
+            cursor.execute('''
+    
+                       SELECT  sc46.sp4807 as client,sum(SP936) as ostatok,SP6065  from RG933
+                            left join sc46 on ltrim(rtrim(SP934)) = ltrim(rtrim(sc46.id))
+                            where (period='2018-12-01 00:00:00.000')  and  (SP2669=%s) group by sc46.sp4807,SP6065
+    
+                            ''', row_firma['id'])
+            # + нам должны, - мы должны
+            logging.info('Запрос остатков выполнен')
+            rows = cursor.fetchall()
+            logging.info('Курсор получен')
+            header = wsdl_client.header_type(document_type=2, firma=row_firma['idartmarket'].strip(), sklad='')
+            row_list_dolg_post = []
+            row_list_dolg = []
+            row_list_avans = []
+            row_list_avans_post = []
+            client_list = []
+            for row in rows:
+                if row['client'] is None:
+                    continue
+                if row['SP6065'] == 1:
+                    if row['ostatok'] < 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=-1 * row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_avans.append(row_nom)
+                    elif row['ostatok'] > 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_dolg.append(row_nom)
+                elif row['SP6065'] == 2:
+                    if row['ostatok'] > 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_dolg_post.append(row_nom)
+                    elif row['ostatok'] < 0:
+                        row_nom = wsdl_client.row_type(tovar=row['client'], quantity=-1 * row['ostatok'], price=0,
+                                                       koef=0, sum=0)
+                        row_list_avans_post.append(row_nom)
+                if not "'" + row['client'] + "'" in client_list:
+                    client_list.append("'" + row['client'] + "'")
+            if not client_list:
+                continue
+            str_id = ",".join(client_list)
+            rows = wsdl_client.rows_type(rows=row_list_dolg)
+            document = wsdl_client.document_type(header=header, rowslist=rows)
+            rows = wsdl_client.rows_type(rows=row_list_avans)
+            document2 = wsdl_client.document_type(header=header, rowslist=rows)
+            rows = wsdl_client.rows_type(rows=row_list_dolg_post)
+            document3 = wsdl_client.document_type(header=header, rowslist=rows)
+            rows = wsdl_client.rows_type(rows=row_list_avans_post)
+            document4 = wsdl_client.document_type(header=header, rowslist=rows)
+            logging.info('Загрузка документа остатков')
+            logging.info('Загрузка документа остатков завершена')
+
+
 def load_docs(cursor, wsdl_client,start_date, end_date):
     # TODO перепровести расходы с 01.03.2020
     # 434 - приход

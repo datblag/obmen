@@ -2,6 +2,29 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def load_storage(client, cursor):
+    # загрузка  складов
+    sklad_list = []
+    hdb_type = client.get_type('ns3:hdb_element')
+    hdb_array_type = client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка складов')
+    cursor.execute('''SELECT  descr,sp5639 as idartmarket FROM SC31 ''')
+    logging.info('Выборка складов завершена')
+    logging.info('Подготовка загрузки складов')
+    row = cursor.fetchall()
+    for r in row:
+        if r['idartmarket'].strip() == '':
+            logging.error(';'.join(['Пустой ид склада', r['descr']]))
+            continue
+        nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
+        sklad_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=sklad_list)
+    logging.info('Загрузка складов начало')
+    client.service.load_hdb_elements(hdb_array, 0, 'sklad')
+    logging.info('Загрузка складов завершена')
+
+
 def unload_agent(client, cursor):
     agent_list = []
     hdb_type = client.get_type('ns3:hdb_element')
@@ -454,29 +477,29 @@ def get_client_groups_filial(wsdl_client=None, prm_cursor=None, prm_id_list=''):
 def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_parent_id_list=None, prm_id_list_mode=0):
     logging.info('Выборка клиентов')
     str_base_sql_query = '''
-        select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
-        element1.sp4807 as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
-        element1.SP50 as adres_post, SC5464.descr as typett,
-        element1.SP3691 as license, element1.SP5239 as control_license, element1.SP5422 as license_begin_date,
-        element1.SP5423 as license_end_date,
-        hdb_custtype.code as pernodricard_custtype, hdb_custpositioning.code as pernodricard_custpositioning,
-        hdb_custreason.code as  pernodricard_custreason, hdb_custsegment.code as pernodricard_custsegment,
-        hdb_custchannel.code as pernodricard_custchannel, hdb_custsubchannel.code as pernodricard_custsubchannel,
-		groups1.sp4807 as idparent,groups1.descr as descrparent,
-		groups2.sp4807 as idparent2,groups2.descr as descrparent2,
-		groups3.sp4807 as idparent3,groups3.descr as descrparent3
-        from sc46 element1
-        left join SC5464 on  element1.SP5467 = SC5464.id
-        left join SC6090 hdb_custtype         on  element1.SP6093 = hdb_custtype.id
-        left join SC6094 hdb_custpositioning  on  element1.SP6096 = hdb_custpositioning.id
-        left join SC6097 hdb_custreason       on  element1.SP6099 = hdb_custreason.id
-        left join SC6100 hdb_custsegment      on  element1.SP6102 = hdb_custsegment.id
-        left join SC6108 hdb_custchannel      on  element1.SP6107 = hdb_custchannel.id
-        left join SC6110 hdb_custsubchannel   on  element1.SP6112 = hdb_custsubchannel.id
-		left join sc46  groups1 on element1.parentid=groups1.id
-		left join sc46  groups2 on groups1.parentid=groups2.id
-		left join sc46  groups3 on groups2.parentid=groups3.id
-        where (element1.isfolder<>'1')  
+            select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
+            element1.sp4807 as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
+            element1.SP50 as adres_post, SC5464.descr as typett,
+            element1.SP3691 as license, element1.SP5239 as control_license, element1.SP5422 as license_begin_date,
+            element1.SP5423 as license_end_date,
+            hdb_custtype.code as pernodricard_custtype, hdb_custpositioning.code as pernodricard_custpositioning,
+            hdb_custreason.code as  pernodricard_custreason, hdb_custsegment.code as pernodricard_custsegment,
+            hdb_custchannel.code as pernodricard_custchannel, hdb_custsubchannel.code as pernodricard_custsubchannel,
+            groups1.sp4807 as idparent,groups1.descr as descrparent,
+            groups2.sp4807 as idparent2,groups2.descr as descrparent2,
+            groups3.sp4807 as idparent3,groups3.descr as descrparent3
+            from sc46 element1
+            left join SC5464 on  element1.SP5467 = SC5464.id
+            left join SC6090 hdb_custtype         on  element1.SP6093 = hdb_custtype.id
+            left join SC6094 hdb_custpositioning  on  element1.SP6096 = hdb_custpositioning.id
+            left join SC6097 hdb_custreason       on  element1.SP6099 = hdb_custreason.id
+            left join SC6100 hdb_custsegment      on  element1.SP6102 = hdb_custsegment.id
+            left join SC6108 hdb_custchannel      on  element1.SP6107 = hdb_custchannel.id
+            left join SC6110 hdb_custsubchannel   on  element1.SP6112 = hdb_custsubchannel.id
+            left join sc46  groups1 on element1.parentid=groups1.id
+            left join sc46  groups2 on groups1.parentid=groups2.id
+            left join sc46  groups3 on groups2.parentid=groups3.id
+            where (element1.isfolder<>'1')  
                            '''
     logging.info(prm_id_list)
     if prm_id_list == '' and prm_parent_id_list is None:
