@@ -58,19 +58,19 @@ def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
 
     for row_header in rows_header:
         is_return = 0
-        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
             continue
-        if row_header['sklad'] == None or row_header['sklad'].strip() == '':
+        if row_header['sklad'] is None or row_header['sklad'].strip() == '':
             logging.error(';'.join(['Пустой склад', row_header['docno']]))
             continue
-        if row_header['client'] == None or row_header['client'].strip() == '':
+        if row_header['client'] is None or row_header['client'].strip() == '':
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
 
         header = wsdl_client.header_type(document_type=2, firma=cb_firma_id, sklad=row_header['sklad'].strip(),
-                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
-                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip(),
+                                         document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
                              zatr_nashi=row_header['zatr_nashi'],
                              zatr_post=row_header['zatr_post'],
                              naedinicu=row_header['naedinicu'],
@@ -81,7 +81,7 @@ def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
             client_list.append("'" + row_header['client'] + "'")
-        if client_list == []:
+        if not client_list:
             continue
         str_id = ",".join(client_list)
         get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
@@ -91,8 +91,8 @@ def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
         logging.info(prm_datedoc)
 
         cursor.execute('''
-                        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1645 as kolvo, SP1647 as koef, SP1648 as price,
-                        SP1649 as sum, SP4245 as pricepriobr  from Dt1656
+                        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1645 as kolvo, SP1647 as koef,
+                        SP1648 as price, SP1649 as sum, SP4245 as pricepriobr  from Dt1656
                         left join SC84 on SP1644 = SC84.id  where iddoc=%s ''', (prm_row_delta['OBJID']))
 
         logging.info(';'.join(['Выборка строк прихода завершена', row_header['docno']]))
@@ -108,11 +108,11 @@ def load_vozvrat_filial(cursor, wsdl_client, prm_row_delta):
                                     koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
                                     tovar_filial=row_table['idtovarfil'])
             else:
-                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
-                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
-                                    tovar_filial=row_table['idtovarfil'])
-            if row_table['idtovar'] == None:
-                 #continue
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                               price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                               pricepriobr=row_table['pricepriobr'],
+                                               tovar_filial=row_table['idtovarfil'])
+            if row_table['idtovar'] is None:
                 pass
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
@@ -150,30 +150,29 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
 
     for row_header in rows_header:
         is_return = 0
-        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
             continue
-        if row_header['sklad'] == None or row_header['sklad'].strip() == '':
+        if row_header['sklad'] is None or row_header['sklad'].strip() == '':
             logging.error(';'.join(['Пустой склад', row_header['docno']]))
             continue
-        if row_header['client'] == None or row_header['client'].strip() == '':
+        if row_header['client'] is None or row_header['client'].strip() == '':
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
 
         header = wsdl_client.header_type(document_type=2, firma=cb_firma_id, sklad=row_header['sklad'].strip(),
-                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
-                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
-                             zatr_nashi=row_header['zatr_nashi'],
-                             zatr_post=row_header['zatr_post'],
-                             naedinicu=row_header['naedinicu'],
-                             vozvrat=is_return)
+                                         client=row_header['client'].strip(),
+                                         idartmarket=row_header['idartmarket'].strip(),
+                                         document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                                         zatr_nashi=row_header['zatr_nashi'], zatr_post=row_header['zatr_post'],
+                                         naedinicu=row_header['naedinicu'], vozvrat=is_return)
 
         isclosed = is_process_doc(row_header['closed'])
 
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
             client_list.append("'" + row_header['client'] + "'")
-        if client_list == []:
+        if not client_list:
             continue
         str_id = ",".join(client_list)
         get_client_groups_filial(wsdl_client=wsdl_client, prm_cursor=cursor, prm_id_list=str_id)
@@ -183,8 +182,8 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
         logging.info(prm_datedoc)
 
         cursor.execute('''
-                        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1570 as kolvo, SP1572 as koef, SP1573 as price,
-                        SP1574 as sum, SP1573 as pricepriobr  from Dt1582
+                        select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1570 as kolvo, SP1572 as koef,
+                        SP1573 as price, SP1574 as sum, SP1573 as pricepriobr  from Dt1582
                         left join SC84 on SP1569 = SC84.id  where iddoc=%s ''', (prm_row_delta['OBJID']))
 
         logging.info(';'.join(['Выборка строк прихода завершена', row_header['docno']]))
