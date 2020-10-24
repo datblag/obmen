@@ -45,7 +45,6 @@ def check_firma(prm_row, prm_is_filial):
         else:
             return False
 
-
 def check_client(prm_row, prm_is_filial, prm_isclosed):
     if not prm_row['client'] is None and not prm_row['client'] == '':
         return True

@@ -2,15 +2,13 @@
 import logs
 from datetime import date, timedelta
 from calendar import monthrange
-import calendar
-import time
 
 import nomenklatura
 import hdb
 import kassa
 import prihod, rashod, sklad, dolgi
 import ostatki
-from utils import convert_base
+from utils import convert_base, check_firma
 
 
 from tqdm import *
@@ -330,14 +328,16 @@ while True:
     #загрузка  фирм
         firm_list=[]
         logging.info('Выборка фирм')
-        cursor.execute('''SELECT  descr, sp4805 as idartmarket FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')
+        cursor.execute('''SELECT  descr, sp4805 as idartmarket, sp4805 as firma FROM SC13''')
         logging.info('Выборка фирм завершена')
         logging.info('Подготовка загрузки фирм')
         row = cursor.fetchall()  
         for r in row:
-            if r[1].strip()=='':
+            if not check_firma(r, 0):
                 continue
-            nom = hdb_type(name=r[0].strip(),id=r[1].strip(),idparent='')
+            if r[1].strip() == '':
+                continue
+            nom = hdb_type(name=r[0].strip(), id=r[1].strip(), idparent='')
             firm_list.append(nom)
 
         hdb_array = hdb_array_type(hdb_array=firm_list)
@@ -430,10 +430,12 @@ while True:
 
     elif k == 'остаткипоставщик':
         logging.info('Выборка фирм')
-        cursor.execute('''SELECT  descr,sp4805 as idartmarket,id FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')  
+        cursor.execute('''SELECT  descr,sp4805 as idartmarket,id, sp4805 as firma  FROM SC13''')
         logging.info('Выборка фирм завершена')
         rows_firma = cursor.fetchall() 
         for row_firma in rows_firma:
+            if not check_firma(row_firma, 0):
+                continue
             if row_firma['idartmarket'].strip() != '':
 
                 logging.info('Выборка остатков начало')
@@ -489,10 +491,12 @@ while True:
     elif k == 'остаткиклиент':
         # SP6065 тип клиента 1 покупатель 2 поставщик
         logging.info('Выборка фирм')
-        cursor.execute('''SELECT  descr,sp4805 as idartmarket,id FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')  
+        cursor.execute('''SELECT  descr,sp4805 as idartmarket,id, sp4805 as firma''')
         logging.info('Выборка фирм завершена')
         rows_firma = cursor.fetchall() 
         for row_firma in rows_firma:
+            if not check_firma(row_firma, 0):
+                continue
             if row_firma['idartmarket'].strip() != '':
 
                 logging.info('Выборка остатков начало')
@@ -502,7 +506,7 @@ while True:
                         left join sc46 on ltrim(rtrim(SP170)) = '1A   '+ltrim(rtrim(sc46.id))
                         where (period='2018-12-01 00:00:00.000') and  (SP2671=%s)  group by sc46.sp4807,SP6065
                         
-                        ''',row_firma['id'])  
+                        ''', row_firma['id'])
                 # + нам должны, - мы должны
                 # and (sc46.SP6065=1)
                 logging.info('Запрос остатков выполнен')
