@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import logs
 from datetime import date, timedelta
+from calendar import monthrange
 import calendar
 import time
 
@@ -316,9 +317,10 @@ while True:
         #     logging.warning([start_date, end_date])
         #     for doc_type in doc_type_list:
         #         dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
-        month_num = 5
-        start_date = date(2020, month_num, 1)
-        end_date = date(2020, month_num, 31)
+        month_num = 10
+        year_num = 2020
+        start_date = date(year_num, month_num, 1)
+        end_date = date(year_num, month_num, monthrange(year_num, month_num)[1])
         logging.warning([start_date, end_date])
         for doc_type in doc_type_list:
                 dolgi.load_partii(cursor, wsdl_client, doc_type, start_date, end_date)
@@ -380,8 +382,8 @@ while True:
     elif k == 'минцены':
         nomenklatura.unload_wholesale_min_price(cursor=cursor, wsdl_client=wsdl_client.client)
     elif k == 'склад':
-    # загрузка  складов
-        sklad_list=[]
+        # загрузка  складов
+        sklad_list = []
         hdb_type = client.get_type('ns3:hdb_element')
         hdb_array_type = client.get_type('ns3:hdb_array_element')
         logging.info('Выборка складов')
@@ -401,9 +403,6 @@ while True:
         client.service.load_hdb_elements(hdb_array, 0, 'sklad')
         logging.info('Загрузка складов завершена')
     elif k == 'клиент':
-        #client_type = client.get_type('ns1:client_group')
-        #array_client_groups=client.get_type('ns1:array_client_groups')
-
         hdb.get_client_groups(wsdl_client, cursor)
     elif k == 'клиентструк':
         cursor.execute('''select sp4807 as idartmarket, id, descr from
@@ -476,38 +475,25 @@ while True:
                         client_list.append("'"+row['client']+"'")
                 if client_list==[]:
                     continue
-                str_id=",".join(client_list)
-                #get_client_groups(cursor,str_id)
-                #print(row_list)
-                rows=wsdl_client.rows_type(rows=row_list_dolg)
-                document=wsdl_client.document_type(header=header,rowslist=rows)
-                rows=wsdl_client.rows_type(rows=row_list_avans)
-                document2=wsdl_client.document_type(header=header,rowslist=rows)
-                rows=wsdl_client.rows_type(rows=row_list_dolg_post)
-                document3=wsdl_client.document_type(header=header,rowslist=rows)
-                rows=wsdl_client.rows_type(rows=row_list_avans_post)
-                document4=wsdl_client.document_type(header=header,rowslist=rows)
+                str_id = ",".join(client_list)
+                rows = wsdl_client.rows_type(rows=row_list_dolg)
+                document = wsdl_client.document_type(header=header,rowslist=rows)
+                rows = wsdl_client.rows_type(rows=row_list_avans)
+                document2 = wsdl_client.document_type(header=header,rowslist=rows)
+                rows = wsdl_client.rows_type(rows=row_list_dolg_post)
+                document3 = wsdl_client.document_type(header=header,rowslist=rows)
+                rows = wsdl_client.rows_type(rows=row_list_avans_post)
+                document4 = wsdl_client.document_type(header=header,rowslist=rows)
                 logging.info('Загрузка документа остатков')
-                #prmmode    1-долги клиентов (sc46.SP6065=1) row['ostatok']>0
-                #           2 - авнсы клиентов (sc46.SP6065=1) row['ostatok']<0
-                #           3- долги поставщикам
-                #           4 - авансы поставщиков
-                #n=client.service.load_ostatki_client(document,2)
-                
-                #проверено
-                #n=client.service.load_ostatki_client(document2,3) 00-00000215
-                #n=client.service.load_ostatki_client(document4,3) 1 00-00000216
-                #n=client.service.load_ostatki_client(document3,4) 00-00000221
-
                 logging.info('Загрузка документа остатков завершена')
-    elif k=='остаткиклиент':
-        #SP6065 тип клиента 1 покупатель 2 поставщик
+    elif k == 'остаткиклиент':
+        # SP6065 тип клиента 1 покупатель 2 поставщик
         logging.info('Выборка фирм')
         cursor.execute('''SELECT  descr,sp4805 as idartmarket,id FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')  
         logging.info('Выборка фирм завершена')
         rows_firma = cursor.fetchall() 
         for row_firma in rows_firma:
-            if row_firma['idartmarket'].strip()!='':
+            if row_firma['idartmarket'].strip() != '':
 
                 logging.info('Выборка остатков начало')
                 cursor.execute('''
@@ -517,43 +503,45 @@ while True:
                         where (period='2018-12-01 00:00:00.000') and  (SP2671=%s)  group by sc46.sp4807,SP6065
                         
                         ''',row_firma['id'])  
-                #+ нам должны, - мы должны
-               #  and (sc46.SP6065=1)
+                # + нам должны, - мы должны
+                # and (sc46.SP6065=1)
                 logging.info('Запрос остатков выполнен')
                 rows = cursor.fetchall()  
                 logging.info('Курсор получен')
-                header=wsdl_client.header_type(document_type=1,firma=row_firma['idartmarket'].strip(),sklad='')
-                row_list_dolg_post=[]
-                row_list_dolg=[]
-                row_list_avans=[]
-                row_list_avans_post=[]
-                client_list=[]
+                header=wsdl_client.header_type(document_type=1, firma=row_firma['idartmarket'].strip(), sklad='')
+                row_list_dolg_post = []
+                row_list_dolg = []
+                row_list_avans = []
+                row_list_avans_post = []
+                client_list = []
                 for row in rows:
-                    if row['client']==None:
+                    if row['client'] is None:
                         continue
                     if row['SP6065']==1:
-                        if  row['ostatok']<0:
-                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                        if row['ostatok'] < 0:
+                            row_nom = wsdl_client.row_type(tovar=row['client'], quantity=-1*row['ostatok'], price=0,
+                                                         koef=0, sum=0)
                             row_list_avans.append(row_nom)
-                        elif  row['ostatok']>0:
-                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
+                        elif row['ostatok'] > 0:
+                            row_nom = wsdl_client.row_type(tovar=row['client'], quantity=row['ostatok'], price=0,
+                                                         koef=0, sum=0)
                             row_list_dolg.append(row_nom)
-                    elif row['SP6065']==2:
-                        if  row['ostatok']>0:
-                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=row['ostatok'],price=0,koef=0,sum=0)
+                    elif row['SP6065'] == 2:
+                        if  row['ostatok'] > 0:
+                            row_nom = wsdl_client.row_type(tovar=row['client'], quantity=row['ostatok'], price=0,
+                                                         koef=0, sum=0)
                             row_list_dolg_post.append(row_nom)
                         elif  row['ostatok']<0:
-                            row_nom=wsdl_client.row_type(tovar=row['client'],quantity=-1*row['ostatok'],price=0,koef=0,sum=0)
+                            row_nom = wsdl_client.row_type(tovar=row['client'], quantity=-1*row['ostatok'], price=0,
+                                                         koef=0, sum=0)
                             row_list_avans_post.append(row_nom)
                     if not "'"+row['client']+"'" in client_list:
                         client_list.append("'"+row['client']+"'")
-                if client_list==[]:
+                if not client_list:
                     continue
-                str_id=",".join(client_list)
-                #get_client_groups(cursor,str_id)
-                #print(row_list)
-                rows=wsdl_client.rows_type(rows=row_list_dolg)
-                document=wsdl_client.document_type(header=header,rowslist=rows)
+                str_id = ",".join(client_list)
+                rows = wsdl_client.rows_type(rows=row_list_dolg)
+                document = wsdl_client.document_type(header=header,rowslist=rows)
                 rows=wsdl_client.rows_type(rows=row_list_avans)
                 document2=wsdl_client.document_type(header=header,rowslist=rows)
                 rows=wsdl_client.rows_type(rows=row_list_dolg_post)
@@ -561,23 +549,22 @@ while True:
                 rows=wsdl_client.rows_type(rows=row_list_avans_post)
                 document4=wsdl_client.document_type(header=header,rowslist=rows)
                 logging.info('Загрузка документа остатков')
-                #prmmode    1-долги клиентов (sc46.SP6065=1) row['ostatok']>0
+                # prmmode    1-долги клиентов (sc46.SP6065=1) row['ostatok']>0
                 #           2 - авнсы клиентов (sc46.SP6065=1) row['ostatok']<0
                 #           3- долги поставщикам
                 #           4 - авансы поставщиков
-                #n=client.service.load_ostatki_client(document3,3)
+                # n=client.service.load_ostatki_client(document3,3)
                 
-                #проверено
-                #n=client.service.load_ostatki_client(document,1) 00-00000211
-                #n=client.service.load_ostatki_client(document4,3) 00-00000222
-                #n=client.service.load_ostatki_client(document2,3) 00-00000223
+                # проверено
+                # n=client.service.load_ostatki_client(document,1) 00-00000211
+                # n=client.service.load_ostatki_client(document4,3) 00-00000222
+                # n=client.service.load_ostatki_client(document2,3) 00-00000223
                 
                 logging.info('Загрузка документа остатков завершена')
 
-
-    elif k=='остаткисклад':
+    elif k == 'остаткисклад':
         ostatki.load_ostatki_sklad(wsdl_client,cursor)
-    elif k=='dump':
+    elif k == 'dump':
         client.wsdl.dump()
 
 conn.close()
