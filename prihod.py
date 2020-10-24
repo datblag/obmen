@@ -3,8 +3,9 @@ from hdb import get_client_groups, get_client_groups_filial
 import datetime
 import nomenklatura
 from config import cb_firma_id
-from utils import is_process_doc
+from utils import is_process_doc, check_firma
 from hdb import unload_production_date
+
 
 def get_prihod_rows_filial(prm_cursor, prm_obj_id):
     prm_cursor.execute('''
@@ -247,7 +248,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         is_return = 0
         if row_header['isreturn'] == '    3J   ':
             is_return = 1
-        if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+        if not check_firma(row_header, 0):
             continue
         if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))

@@ -1,7 +1,7 @@
 import logging
 import nomenklatura
 from config import cb_firma_id
-
+from utils import  check_firma
 
 
 def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_row_sklad, is_filial=0):
@@ -50,7 +50,6 @@ def send_ostatki_sklad(wsdl_client, cursor, prm_ostatki_list, prm_row_firma,prm_
 def load_ostatki_sklad_filial(wsdl_client, cursor, prm_firma_list=[], prm_sklad_list=[]):
     # загрузка остатков товаров
     # rg99 остатки товаров sp3603 - фирма ("     1   " - артмаркет?); sp101 - товар; sp100 - склад ('    12БЛ '); SP5183 - дата розлива; SP102 - количество
-    # фирма sc13 АРТмаркет sp4805 - "9CD36F19-B8BD-49BC-BED4-A3335D2175C2    "; id - "     1   "
     #филиал Зея RG405  - SP4062 фирма, SP408 - номенклатура, SP418 - склад, SP3117 - цена прод, SP8981 - дата розлива, SP411 - количество
     logging.info('Выборка фирм')
     str_id = ', '.join(["'%s'" % w for w in prm_firma_list])
@@ -94,14 +93,15 @@ def load_ostatki_sklad_filial(wsdl_client, cursor, prm_firma_list=[], prm_sklad_
 def load_ostatki_sklad(wsdl_client, cursor):
     # загрузка остатков товаров
     # rg99 остатки товаров sp3603 - фирма ("     1   " - артмаркет?); sp101 - товар; sp100 - склад ('    12БЛ '); SP5183 - дата розлива; SP102 - количество
-    # фирма sc13 АРТмаркет sp4805 - "9CD36F19-B8BD-49BC-BED4-A3335D2175C2    "; id - "     1   "
     #филиал Зея RG405  - SP4062 фирма, SP408 - номенклатура, SP418 - склад, SP3117 - цена прод, SP8981 - дата розлива, SP411 - количество
     logging.info('Выборка фирм')
     cursor.execute(
-        '''SELECT  descr,sp4805 as idartmarket FROM SC13 where (sp4805 = '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ')''')
+        '''SELECT  descr,sp4805 as idartmarket, sp4805 as firma FROM SC13''')
     logging.info('Выборка фирм завершена')
     rows_firma = cursor.fetchall()
     for row_firma in rows_firma:
+        if not check_firma(row_firma, 0):
+            continue
         if row_firma['idartmarket'].strip() == '':
             continue
         logging.info('Выборка складов')
