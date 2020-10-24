@@ -345,21 +345,7 @@ while True:
         client.service.load_hdb_elements(hdb_array, 1, 'firma')
         logging.info('Загрузка фирм завершена')
     elif k == 'агентгруппы':
-        agent_list = []
-        hdb_type = client.get_type('ns3:hdb_element')
-        hdb_array_type = client.get_type('ns3:hdb_array_element')
-        logging.info('Выборка агентов группы')
-        cursor.execute('''SELECT  descr, id as idartmarket FROM SC3246 where isfolder = 1''')
-        row = cursor.fetchall()
-        logging.info('Выборка агентов группы завершена')
-        logging.info('подготовка загрузки  агентов группы')
-        for r in row:
-            nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
-            agent_list.append(nom)
-        hdb_array = hdb_array_type(hdb_array=agent_list)
-        logging.info('Загрузка агентов группы начало')
-        client.service.load_hdb_elements(hdb_array, 0, 'agentgroup')
-        logging.info('Загрузка агентов группы завершена')
+        hdb.unload_agent_groups(client, cursor)
     elif k == 'агент':
         agent_list = []
         hdb_type = client.get_type('ns3:hdb_element')

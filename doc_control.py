@@ -3,7 +3,7 @@ from utils import is_process_doc, check_firma
 
 
 def check_rashod(cursor, wsdl_client):
-    check_list = []
+    check_list = list()
     # check_list.append({'doctype': 410, 'idartmarket': 'SP6060'})
     # check_list.append({'doctype': 469, 'idartmarket': 'SP6072'})
     # check_list.append({'doctype': 3716, 'idartmarket': 'SP6071'})
@@ -28,9 +28,9 @@ def check_rashod(cursor, wsdl_client):
         for row in rows:
             counter = counter+1
             if counter == 1000:
-                print(counter)
+                logging.warning(counter)
                 counter = 0
-            #print(row)
+            # print(row)
             if not check_firma(row, 0):
                 continue
             res = wsdl_client.client.service.doc_check(row['idartmarket'], check_item['doctype'])

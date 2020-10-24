@@ -2,6 +2,24 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def unload_agent_groups(client, cursor):
+    agent_list = []
+    hdb_type = client.get_type('ns3:hdb_element')
+    hdb_array_type = client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка агентов группы')
+    cursor.execute('''SELECT  descr, id as idartmarket FROM SC3246 where isfolder = 1''')
+    row = cursor.fetchall()
+    logging.info('Выборка агентов группы завершена')
+    logging.info('подготовка загрузки  агентов группы')
+    for r in row:
+        nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent='')
+        agent_list.append(nom)
+    hdb_array = hdb_array_type(hdb_array=agent_list)
+    logging.info('Загрузка агентов группы начало')
+    client.service.load_hdb_elements(hdb_array, 0, 'agentgroup')
+    logging.info('Загрузка агентов группы завершена')
+
+
 def unload_agents(wsdl_client=None, agent_id='', agent_parent_id='', agent_name=''):
     nom_agent = wsdl_client.hdb_type(name=agent_name.strip(), id=agent_id.strip(),
                                      idparent=agent_parent_id.strip())
@@ -177,7 +195,6 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка начало подразделения')
     wsdl_client.service.load_hdb_elements(hdb_array, 1, 'unit')
     logging.info('Загрузка подразделения завершена')
-
 
 
 def unload_for_marketing(cursor=None, wsdl_client=None, objid=''):
