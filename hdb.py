@@ -2,6 +2,27 @@ import logging
 from config import filial_region_id, filial_region_name
 
 
+def unload_agent(client, cursor):
+    agent_list = []
+    hdb_type = client.get_type('ns3:hdb_element')
+    hdb_array_type = client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка агентов')
+    cursor.execute('''SELECT  descr,SP4808 as idartmarket, parentid as parentid FROM SC3246 where isfolder = 2''')
+    row = cursor.fetchall()
+    logging.info('Выборка агентов завершена')
+    logging.info('подготовка загрузки  агентов')
+    for r in row:
+        if r['idartmarket'].strip() == '':
+            logging.error(';'.join(['Пустой ид агента', r['descr']]))
+            continue
+        nom = hdb_type(name=r['descr'].strip(), id=r['idartmarket'].strip(), idparent=r['parentid'].strip())
+        agent_list.append(nom)
+    hdb_array = hdb_array_type(hdb_array=agent_list)
+    logging.info('Загрузка агентов начало')
+    client.service.load_hdb_elements(hdb_array, 1, 'agent')
+    logging.info('Загрузка агентов завершена')
+
+
 def unload_agent_groups(client, cursor):
     agent_list = []
     hdb_type = client.get_type('ns3:hdb_element')
