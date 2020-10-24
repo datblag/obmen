@@ -196,13 +196,15 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
             if not row_table['idtovar'].strip().isdigit():
                 logging.error(["Некорректный код товара", row_table['idtovar']])
                 row_nom = wsdl_client.row_type(tovar=0, quantity=row_table['kolvo'], price=row_table['price'],
-                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
-                                    tovar_filial=row_table['idtovarfil'])
+                                               koef=row_table['koef'], sum=row_table['sum'],
+                                               pricepriobr=row_table['pricepriobr'],
+                                               tovar_filial=row_table['idtovarfil'])
             else:
-                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
-                                    koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
-                                    tovar_filial=row_table['idtovarfil'])
-            if row_table['idtovar'] == None:
+                row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
+                                               price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                               pricepriobr=row_table['pricepriobr'],
+                                               tovar_filial=row_table['idtovarfil'])
+            if row_table['idtovar'] is None:
                  #continue
                 pass
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
@@ -221,7 +223,6 @@ def load_prihod_filial(cursor, wsdl_client, prm_row_delta):
         logging.info(['Загрузка документа прихода завершена', row_header['docno'], row_header['datedoc'], n])
 
 
-
 def load_prihod(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка приходов заголовки')
     cursor.execute('''
@@ -235,8 +236,6 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
                         left join sc31 WITH (NOLOCK) on SP436 = sc31.id
                         left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                         where _1sjourn.iddoc=%s
-
-
                         ''', prm_row_delta['OBJID'])
 
     #SP446 pr_nakl
@@ -250,11 +249,11 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
             is_return = 1
         if row_header['firma'] != '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
             continue
-        if row_header['idartmarket'] == None or row_header['idartmarket'].strip() == '':
+        if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
             continue
 
-        if row_header['sklad'] == None or row_header['sklad'].strip() == '':
+        if row_header['sklad'] is None or row_header['sklad'].strip() == '':
             logging.error(';'.join(['Пустой склад', row_header['docno']]))
             continue
 
