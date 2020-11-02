@@ -402,7 +402,6 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
             logging.info(';'.join(['Загрузка документа взаиморасчетов', row['docno'], n]))
 
 
-
 def load_service_invoices(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка счет заголовки')
     cursor.execute('''
@@ -428,12 +427,30 @@ def load_service_invoices(cursor, wsdl_client, prm_row_delta):
             continue
 
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+                                         sklad=row_header['schf'],
                                          client=row_header['client'].strip(),
                                          idartmarket=row_header['idartmarket'].strip(),
                                          document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
-                                         bdid=row_header['schf'])
+                                         bdid=row_header['iddoc'])
 
         isclosed = is_process_doc(row_header['closed'])
+
+        isclosed = is_process_doc(row_header['closed'])
+
+        client_list = []
+        if not "'" + row_header['client'] + "'" in client_list:
+            client_list.append("'" + row_header['client'] + "'")
+        if not client_list:
+            continue
+        str_id = ",".join(client_list)
+        hdb.get_client_groups(wsdl_client, cursor, str_id)
+
+        rows = wsdl_client.rows_type(rows=[])
+
+        document = wsdl_client.document_type(header=header, rowslist=rows)
+        logging.info(';'.join(['Загрузка документа счет на услуги', row_header['docno']]))
+        n = wsdl_client.client.service.load_invoice(document, isclosed, 0)
+        logging.info(';'.join(['Загрузка документа на услуги', row_header['docno'], n]))
 
 
 def load_order_supplier(cursor, wsdl_client, prm_row_delta):

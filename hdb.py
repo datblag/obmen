@@ -233,7 +233,7 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Подготовка загрузки даты розлива')
     row = cursor.fetchall()
     for r in row:
-        logging.warning(r)
+        logging.info(r)
         nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='',
                        value1=r['idartmarket_owner'].strip(), value2=r['egais_code'].strip(),
                        value1date=r['produce_date'])

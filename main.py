@@ -93,6 +93,7 @@ def auto_load(prm_cursor):
                             (DWNLDID='1122!!')''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
+            logging.info(['typeid', row_delta['TYPEID']])
             if not (row_delta['TYPEID'] in white_list):
                 logging.warning(['TYPEID', row_delta['TYPEID']])
                 if load_all == 1:
@@ -213,9 +214,10 @@ def auto_load(prm_cursor):
                     commit_count = 0
                     logging.warning('commit')
                 logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
-            except:
+            except Exception as e:
                 logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
                                         str(row_delta['TYPEID'])]))
+                logging.error(e)
 
         logging.warning('Выборка изменений завершена')
         # time.sleep(10)
