@@ -435,8 +435,6 @@ def load_service_invoices(cursor, wsdl_client, prm_row_delta):
 
         isclosed = is_process_doc(row_header['closed'])
 
-        isclosed = is_process_doc(row_header['closed'])
-
         client_list = []
         if not "'" + row_header['client'] + "'" in client_list:
             client_list.append("'" + row_header['client'] + "'")
@@ -444,6 +442,54 @@ def load_service_invoices(cursor, wsdl_client, prm_row_delta):
             continue
         str_id = ",".join(client_list)
         hdb.get_client_groups(wsdl_client, cursor, str_id)
+
+        logging.info(';'.join(['Выборка строк счет', row_header['docno']]))
+
+        cursor.execute('''
+                        select sp4556 as usluga, sp4559 as sum,
+                        SP6128 as finance_id, SP6129 as for_market_id, sc46.sp4807 as client_row_id, 
+                        SP6126 as unit_id, sp6125 as cost_id
+                        from DT4553 
+                        left join SC5552 on DT4553.SP5556 = SC5552.id
+                        left join SC5554 on  DT4553.SP5557 = SC5554.id
+                        left join sc46 on SP5558 = sc46.id
+                        left join SC3769 on SP6134 = SC3769.id
+                        left join sc3773 on SP6135 = sc3773.id
+                        where iddoc=%s
+                            ''', (prm_row_delta['OBJID']))
+
+        logging.info(';'.join(['Выборка строк заказ завершена', row_header['docno']]))
+        rows_table = cursor.fetchall()
+        # print(rows_table)
+        row_list = []
+        tovar_list = []
+        # rows_table = []
+
+        for row_table in rows_table:
+            logging.info(row_table)
+
+            finance_id = ''
+            if row_table['finance_id'] is not None:
+                finance_id = row_table['finance_id']
+
+            for_market_id = ''
+            if row_table['for_market_id'] is not None:
+                for_market_id = row_table['for_market_id']
+
+            client_row_id = ''
+            if row_table['client_row_id'] is not None:
+                client_row_id = row_table['client_row_id']
+
+            unit_id = ''
+            if row_table['unit_id'] is not None:
+                unit_id = row_table['unit_id']
+
+            cost_id = ''
+            if row_table['cost_id'] is not None:
+                cost_id = row_table['cost_id']
+
+
+
 
         rows = wsdl_client.rows_type(rows=[])
 
@@ -545,7 +591,7 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
         for row_table in rows_table:
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
                                koef=row_table['koef'], sum=row_table['sum'])
-            if row_table['idtovar'] == None:
+            if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
