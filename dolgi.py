@@ -479,6 +479,13 @@ def load_service_invoices(cursor, wsdl_client, prm_row_delta):
             client_row_id = ''
             if row_table['client_row_id'] is not None:
                 client_row_id = row_table['client_row_id']
+                client_list = []
+                if not "'" + client_row_id + "'" in client_list:
+                    client_list.append("'" + client_row_id + "'")
+                if not client_list:
+                    continue
+                str_id = ",".join(client_list)
+                hdb.get_client_groups(wsdl_client, cursor, str_id)
 
             unit_id = ''
             if row_table['unit_id'] is not None:
@@ -488,10 +495,13 @@ def load_service_invoices(cursor, wsdl_client, prm_row_delta):
             if row_table['cost_id'] is not None:
                 cost_id = row_table['cost_id']
 
+            row_nom = wsdl_client.row_type(tovar=row_table['usluga'], quantity=0, price=0, koef=0, sum=row_table['sum'],
+                                           field_str1=finance_id, field_str2=for_market_id,
+                                           field_str3=client_row_id, field_str4=unit_id,
+                                           field_str5=cost_id)
+            row_list.append(row_nom)
 
-
-
-        rows = wsdl_client.rows_type(rows=[])
+        rows = wsdl_client.rows_type(rows=row_list)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа счет на услуги', row_header['docno']]))

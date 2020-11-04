@@ -59,7 +59,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(4553)  # статьи затрат
+        white_list.append(33)  # статьи затрат
         # white_list.append(4843)  # ассортимент агента
         # white_list.append(3769)  # подразделения
         # white_list.append(3716)  # расходнаядоставка
@@ -90,7 +90,7 @@ def auto_load(prm_cursor):
             logging.error(e)
         #    pass
         prm_cursor.execute('''SELECT  top 100000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and 
-                            (DWNLDID='1122!!')''')
+                            (DWNLDID='1122!!') ''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
             logging.info(['typeid', row_delta['TYPEID']])
