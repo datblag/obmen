@@ -3,7 +3,7 @@ from hdb import get_client_groups, get_client_groups_filial
 import datetime
 import nomenklatura
 from config import cb_firma_id
-from utils import is_process_doc, check_firma
+from utils import is_process_doc, check_firma, convert_base
 from hdb import unload_production_date
 
 
@@ -231,7 +231,8 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
                         SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
                         sc13.sp4805 as firma,sc46.sp4807 as client,sc31.SP5639 as sklad,SP6059 as idartmarket,
                         _1sjourn.iddoc,SP4172 as zatr_nashi,SP4176 as zatr_post,SP4173 as naedinicu,
-                        sp446 as isreturn, SP5591 as number_in, SP5592 as date_in  FROM dh434 as dh WITH (NOLOCK)
+                        sp446 as isreturn, SP5591 as number_in, SP5592 as date_in, sp2698 as doc_base
+                        FROM dh434 as dh WITH (NOLOCK)
                         left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                         left join sc46 WITH (NOLOCK) on SP437 = sc46.id
                         left join sc31 WITH (NOLOCK) on SP436 = sc31.id
@@ -258,7 +259,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
             logging.error(';'.join(['Пустой склад', row_header['docno']]))
             continue
 
-        if row_header['client'] == None or row_header['client'].strip() == '':
+        if row_header['client'] is None or row_header['client'].strip() == '':
             logging.error(';'.join(['Пустой клиент', row_header['docno']]))
             continue
 
@@ -267,15 +268,21 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         else:
             date_in = row_header['date_in']
 
+        base_type = 0
+        base_id = ''
+        if row_header['doc_base'] != '   0     0   ':
+            docosnov_list = row_header['doc_base'].strip().split(' ')
+            base_type = convert_base(docosnov_list[0], from_base=36)
+            base_id = docosnov_list[1]
 
-
-        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(), sklad=row_header['sklad'].strip(),
-                             client=row_header['client'].strip(), idartmarket=row_header['idartmarket'].strip()
-                             , document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
-                             zatr_nashi=row_header['zatr_nashi'],
-                             zatr_post=row_header['zatr_post'],
-                             naedinicu=row_header['naedinicu'],
-                             vozvrat=is_return, bdid=row_header['number_in'], field_date=date_in)
+        header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),
+                                         sklad=row_header['sklad'].strip(), client=row_header['client'].strip(),
+                                         idartmarket=row_header['idartmarket'].strip(),
+                                         document_date=row_header['datedoc'], nomerartmarket=row_header['docno'],
+                                         zatr_nashi=row_header['zatr_nashi'], zatr_post=row_header['zatr_post'],
+                                         naedinicu=row_header['naedinicu'], vozvrat=is_return,
+                                         bdid=row_header['number_in'], field_date=date_in,
+                                         base_type=base_type, base_id=base_id)
 
         isclosed = is_process_doc(row_header['closed'])
 
@@ -292,14 +299,12 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         prm_datedoc = datetime.datetime.strftime(row_header['datedoc'], '%Y-%m-%d')
         logging.info(prm_datedoc)
 
-        cursor.execute('''
-                   			        select  sc33.sp4802 as idtovar,SP449 as kolvo,SP452 as koef,SP451 as price,
+        cursor.execute('''select  sc33.sp4802 as idtovar,SP449 as kolvo,SP452 as koef,SP451 as price,
                                     SP453 as sum, value as pricepriobr, SP5641 as id_pdate, SC5196.id as bdid_pdate 
                                     from dt434
                                     left join sc33 on sp448=sc33.id
                                     left join SC5196 on SP5201=SC5196.id
-
-    	                            left join 
+                                    left join 
                                     (select a.objid as idtovar,ISNULL(cast(value as numeric(14,2)),0) as value,date from (
                                     select objid,id,
 
@@ -343,7 +348,8 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
 
         rows = wsdl_client.rows_type(rows=row_list)
         str_id = ",".join(tovar_list)
-        nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,wsdl_client=wsdl_client)
+        nomenklatura.load_nomenklatura(cursor,prm_id_str=str_id, prm_id_mode=2, prm_with_parent=0, prm_update_mode=0,
+                                       wsdl_client=wsdl_client)
 
         document = wsdl_client.document_type(header=header, rowslist=rows)
         logging.info(';'.join(['Загрузка документа прихода', row_header['docno']]))

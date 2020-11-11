@@ -264,7 +264,7 @@ def main():
             nomenklatura.unload_price(wsdl_client, cursor, start_date_0, end_date)
 
         elif k == 'док':
-            month_num = 10
+            month_num = 11
             year_num = 2020
             start_date = date(year_num, month_num, 1)
             end_date = date(year_num, month_num, monthrange(year_num, month_num)[1])
