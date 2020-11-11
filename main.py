@@ -59,7 +59,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(33)  # статьи затрат
+        white_list.append(4308)  # статьи затрат
         # white_list.append(4843)  # ассортимент агента
         # white_list.append(3769)  # подразделения
         # white_list.append(3716)  # расходнаядоставка
