@@ -20,7 +20,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -95,7 +95,7 @@ def auto_load(prm_cursor):
         for row_delta in tqdm(rows_delta):
             logging.info(['typeid', row_delta['TYPEID']])
             if not (row_delta['TYPEID'] in white_list):
-                logging.warning(['TYPEID', row_delta['TYPEID']])
+                logging.info(['TYPEID', row_delta['TYPEID']])
                 if load_all == 1:
                     try:
                         prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 

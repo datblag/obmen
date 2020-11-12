@@ -459,16 +459,16 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
             typett = r['typett']
 
         license1 = ''
-        logging.warning(r['license'])
+        logging.info(r['license'])
         if r['license'] is not None:
             license1 = r['license']
 
-        logging.warning(r['control_license'])
+        logging.info(r['control_license'])
         control_license = ''
         if r['control_license'] is not None:
             control_license = r['control_license']
 
-        logging.warning([license1.strip(), control_license.strip()])
+        logging.info([license1.strip(), control_license.strip()])
 
         idparent = ''
         parent_descr = ''
