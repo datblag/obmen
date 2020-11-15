@@ -20,7 +20,7 @@ from doc_control import check_rashod
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -262,6 +262,9 @@ def main():
             start_date_0 = date(2020, 4, 2)
             end_date = date(2020, 5, 1)
             nomenklatura.unload_price(wsdl_client, cursor, start_date_0, end_date)
+
+        elif k == 'штрихкода':
+            nomenklatura.unload_ean_codes(cursor=cursor, wsdl_client=wsdl_client.client)
 
         elif k == 'док':
             month_num = 11
