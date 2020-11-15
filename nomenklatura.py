@@ -1,6 +1,7 @@
 import logging
 from config import filial_tovar_group_id
 from datetime import timedelta
+from tqdm import *
 #import logs
 #from sql import cursor
 #from wsdl import nomenklatura_type,arrayn_type,client
@@ -50,24 +51,27 @@ def unload_ean_codes(cursor=None, wsdl_client=None):
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
     logging.info('Выборка штрихкодов')
     cursor.execute('''
-            select sp3558 as ean_code, sp133 as coefficient, sp4802 as idartmarket, sc33.descr from SC131 
+            select sp3558 as ean_code, sp134 as coefficient, sp4802 as idartmarket, sc33.descr from SC131 
             left join sc33 on sc131.parentext = sc33.id
             where SP3558 > 0
             ''')
     logging.info('Выборка штрихкодов завершена')
     logging.info('Подготовка загрузки штрихкодов')
     row = cursor.fetchall()
-    for r in row:
+    for r in tqdm(row):
+        ean_list = []
+        coefficient = 1
+        if str(r['coefficient']).isdigit():
+            coefficient = r['coefficient']
         nom = hdb_type(name=str(r['ean_code']), id=str(r['idartmarket']).strip(), idparent='',
-                       value1num=r['coefficient'])
+                       value1num=coefficient)
         ean_list.append(nom)
         logging.info(r)
 
-    hdb_array = hdb_array_type(hdb_array=ean_list)
-    logging.info('Загрузка штрихкодов начало')
-    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'ean')
-    logging.info('Загрузка штрихкодов завершена')
-
+        hdb_array = hdb_array_type(hdb_array=ean_list)
+        logging.info('Загрузка штрихкодов начало')
+        wsdl_client.service.load_hdb_elements(hdb_array, 1, 'ean')
+        logging.info('Загрузка штрихкодов завершена')
 
 
 def unload_wholesale_min_price(cursor=None, wsdl_client=None):
