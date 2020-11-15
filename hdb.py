@@ -454,6 +454,10 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
         if not r['inn'].strip() == '':
             inn = r['inn'].strip()
 
+        parent_kpp = ''
+        if r['parent_kpp'] is not None:
+            parent_kpp = r['parent_kpp']
+
         typett = ''
         if r['typett'] is not None:
             typett = r['typett']
@@ -499,7 +503,7 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
                                    value6=typett.strip(), value7=license1.strip(), value8=control_license.strip(),
                                    value9=idparent, value10=parent_descr,
                                    value11=idparent2, value12=parent2_descr,
-                                   value13=idparent3, value14=parent3_descr, value15=okpo,
+                                   value13=idparent3, value14=parent3_descr, value15=okpo, value16=parent_kpp,
                                    value1date=r['license_begin_date'], value2date=r['license_end_date'],
                                    value1num=r['pernodricard_custtype'],
                                    value2num=r['pernodricard_custpositioning'],
@@ -549,7 +553,8 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_par
             hdb_custchannel.code as pernodricard_custchannel, hdb_custsubchannel.code as pernodricard_custsubchannel,
             groups1.sp4807 as idparent,groups1.descr as descrparent,
             groups2.sp4807 as idparent2,groups2.descr as descrparent2,
-            groups3.sp4807 as idparent3,groups3.descr as descrparent3, element1.SP5532 as okpo
+            groups3.sp4807 as idparent3,groups3.descr as descrparent3, element1.SP5532 as okpo,
+            element1.SP5585 as parent_kpp
             from sc46 element1
             left join SC5464 on  element1.SP5467 = SC5464.id
             left join SC6090 hdb_custtype         on  element1.SP6093 = hdb_custtype.id
