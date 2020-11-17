@@ -16,6 +16,17 @@ from config import cb_config, logname, logname_debug, logname_error
 from wsdl import *
 from sql import SqlClient
 from doc_control import check_rashod
+from os import path, remove
+
+
+def load_chicago():
+    if path.exists(r'\\new8srv\zakaz\flg.flg'):
+        answ = wsdl_client.client.service.unload_client_orders()
+        logging.info(answ)
+        file = open(r'\\new8srv\zakaz\flg.txt', "w")
+        file.write(answ)
+        file.close()
+        remove(r'\\new8srv\zakaz\flg.flg')
 
 
 def auto_load(prm_cursor):
@@ -93,6 +104,10 @@ def auto_load(prm_cursor):
                             (DWNLDID='1122!!') ''')
         rows_delta = prm_cursor.fetchall()
         for row_delta in tqdm(rows_delta):
+            try:
+                load_chicago()
+            except:
+                pass
             logging.info(['typeid', row_delta['TYPEID']])
             if not (row_delta['TYPEID'] in white_list):
                 logging.info(['TYPEID', row_delta['TYPEID']])
@@ -252,6 +267,9 @@ def main():
         k = input('Введите команду:')
         if k == '0':
             break
+        elif k == 'ч':
+            load_chicago()
+
         elif k == 'контроль':
             check_rashod(cursor, wsdl_client)
         elif k == 'ценынач':
