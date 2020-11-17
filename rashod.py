@@ -158,7 +158,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
                             sp3693 as isnal,
-                            _1sjourn.iddoc, iddocdef, SP4380 as skidka FROM DH410 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP4380 as skidka,
+                             SP5573 as road_number
+                             FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
                             left join sc31 WITH (NOLOCK) on SP412 = sc31.id
@@ -177,7 +179,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef, SP5369 as skidka FROM DH469 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP5369 as skidka,
+                             SP5574 as road_number
+                             FROM DH469 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP472 = sc46.id
@@ -199,7 +203,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             spragent.parentid as agentparentid,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef, SP4383 as skidka FROM DH3716 as dh WITH (NOLOCK)
+                            _1sjourn.iddoc, iddocdef, SP4383 as skidka,
+                             SP5572  as road_number
+                             FROM DH3716 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP3718 = sc46.id
@@ -268,7 +274,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                                              client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                              , document_date=row['datedoc'], nomerartmarket=row['docno'],
                                              bdid=row['iddoc'].strip(), bdtype=row['iddocdef'],
-                                             skidka_procent=row['skidka'])
+                                             skidka_procent=row['skidka'], base_id=row['road_number'])
 
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:

@@ -74,7 +74,7 @@ def auto_load(prm_cursor):
         # white_list.append(2964)  # ПриходныйОрдерТБ
         # white_list.append(4225)  # РасходныйОрдерТБ
 
-    commit_limit = 1000
+    commit_limit = 100
     commit_count = 0
 
     while True:
