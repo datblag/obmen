@@ -244,6 +244,21 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка даты розлива завершена')
 
 
+def unload_analytics(cursor=None, wsdl_client=None, objid=''):
+    analytic_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка аналитика')
+    cursor.execute('''select sc.id, sc.descr as scname, sc.SP6137 as idartmarket, sc.isfolder
+                        from SC5510 sc  where sc.isfolder=2 and sc.id=%s''', objid)
+    row = cursor.fetchall()
+
+    logging.info(row)
+
+    for r in row:
+        logging.info(r['scname'])
+
+
 def unload_cost(cursor=None, wsdl_client=None, objid=''):
     cost_list = []
     parents_id = ['ABD7028F-DACB-4CF0-BD60-D51FC849760B', 'FBE1B007-8050-476D-BD62-962B9D65C19D',

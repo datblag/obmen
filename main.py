@@ -68,6 +68,8 @@ def auto_load(prm_cursor):
 
         white_list.append(4553)  # счет на услуги service invoices
 
+        white_list.append(5510)  # аналитики
+
     if load_all == 0:
         pass
         white_list.append(3716)  # статьи затрат
@@ -133,6 +135,10 @@ def auto_load(prm_cursor):
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
 
+            # аналитика
+            elif row_delta['TYPEID'] == 5510:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_analytics(prm_cursor, wsdl_client.client, row_delta['OBJID'])
             # статьи затрат
             elif row_delta['TYPEID'] == 3773:
                 logging.info(row_delta['TYPEID'])
@@ -277,8 +283,8 @@ def main():
                                            prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                            wsdl_client=wsdl_client)
         elif k == 'цены':
-            start_date_0 = date(2020, 4, 2)
-            end_date = date(2020, 5, 1)
+            start_date_0 = date(2020, 5, 1)
+            end_date = date(2020, 11, 18)
             nomenklatura.unload_price(wsdl_client, cursor, start_date_0, end_date)
 
         elif k == 'штрихкода':
