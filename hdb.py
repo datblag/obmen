@@ -244,19 +244,29 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка даты розлива завершена')
 
 
+# доверенности
 def unload_attorney(cursor=None, wsdl_client=None, objid=''):
     attorney_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
-    logging.info('Выборка аналитика')
+    logging.info('Выборка доверенности')
     cursor.execute('''
                         select  sp6139 as idartmarket, sc5584.code as number, sp5579 as date_in, sp5580 as date_out,
                         sp5581 as fio, sp5582 as status, sp4807 as patentid from sc5584
                         left join sc46 on sc5584.parentext = sc46.id
-                        where sc5584.isfolder=2 and sc5584.id=%s''', objid)
+                        where sc5584.id=%s''', objid)
     row = cursor.fetchall()
-
     logging.info(row)
+    for r in row:
+        nom = hdb_type(name=r'', id=str(r['idartmarket']).strip(), idparent='', value1=r['number'],
+                       value1date=r['date_in'], value2date=r['date_out'], value2=r['fio'], value3=r['status'],
+                       value4=r['patentid'])
+        attorney_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=attorney_list)
+    logging.info('Загрузка начало доверенности')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'attorney')
+    logging.info('Загрузка доверенности завершена')
 
 
 def unload_analytics(cursor=None, wsdl_client=None, objid=''):
@@ -279,7 +289,6 @@ def unload_analytics(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка начало аналитика')
     wsdl_client.service.load_hdb_elements(hdb_array, 1, 'analytic')
     logging.info('Загрузка аналитика завершена')
-
 
 
 def unload_cost(cursor=None, wsdl_client=None, objid=''):
