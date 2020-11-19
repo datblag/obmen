@@ -244,6 +244,21 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка даты розлива завершена')
 
 
+def unload_attorney(cursor=None, wsdl_client=None, objid=''):
+    attorney_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка аналитика')
+    cursor.execute('''
+                        select  sp6139 as idartmarket, sc5584.code as number, sp5579 as date_in, sp5580 as date_out,
+                        sp5581 as fio, sp5582 as status, sp4807 as patentid from sc5584
+                        left join sc46 on sc5584.parentext = sc46.id
+                        where sc5584.isfolder=2 and sc5584.id=%s''', objid)
+    row = cursor.fetchall()
+
+    logging.info(row)
+
+
 def unload_analytics(cursor=None, wsdl_client=None, objid=''):
     analytic_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')

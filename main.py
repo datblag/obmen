@@ -31,7 +31,7 @@ def load_chicago():
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -70,22 +70,11 @@ def auto_load(prm_cursor):
 
         white_list.append(5510)  # аналитики
 
+        white_list.append(5584)  # доверенности
+
     if load_all == 0:
         pass
-        white_list.append(5510)  # статьи затрат
-        # white_list.append(4843)  # ассортимент агента
-        # white_list.append(3769)  # подразделения
-        # white_list.append(3716)  # расходнаядоставка
-        # white_list.append(3716)  #
-        # white_list.append(434)  #
-        # white_list.append(434)  # приход
-        # white_list.append(4308)  # выручкадоставка  sp4323 переброска
-        # white_list.append(410)  # расходнаянакладная
-        # white_list.append(4425)  # заказ поставщику
-        # white_list.append(4114)  # приходный ордер Б
-        # white_list.append(4132)  # расходный ордер Б
-        # white_list.append(2964)  # ПриходныйОрдерТБ
-        # white_list.append(4225)  # РасходныйОрдерТБ
+        white_list.append(5584)
 
     commit_limit = 100
     commit_count = 0
@@ -135,6 +124,10 @@ def auto_load(prm_cursor):
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
 
+            # доверенности
+            elif row_delta['TYPEID'] == 5584:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_attorney(prm_cursor, wsdl_client.client, row_delta['OBJID'])
             # аналитика
             elif row_delta['TYPEID'] == 5510:
                 logging.info(row_delta['TYPEID'])
