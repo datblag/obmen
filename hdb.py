@@ -257,6 +257,14 @@ def unload_analytics(cursor=None, wsdl_client=None, objid=''):
 
     for r in row:
         logging.info(r['scname'])
+        nom = hdb_type(name=r['scname'].strip(), id=str(r['idartmarket']).strip(), idparent='')
+        analytic_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=analytic_list)
+    logging.info('Загрузка начало аналитика')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'analytic')
+    logging.info('Загрузка аналитика завершена')
+
 
 
 def unload_cost(cursor=None, wsdl_client=None, objid=''):
