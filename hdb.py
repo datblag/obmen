@@ -225,8 +225,8 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Выборка даты розлива')
     cursor.execute('''
                 select SP5641 as idartmarket, SP5194 as produce_date, SP5681 as egais_code, SC5196.descr,
-                sc33.sp4802 as idartmarket_owner  from SC5196
-                left join sc33 on sc5196.parentext = sc33.id 
+                sc33.sp4802 as idartmarket_owner  from SC5196 WITH (NOLOCK)
+                left join sc33 WITH (NOLOCK) on sc5196.parentext = sc33.id 
                 where SC5196.id=%s
             ''', objid)
     logging.info('Выборка даты розлива завершена')
@@ -252,8 +252,8 @@ def unload_attorney(cursor=None, wsdl_client=None, objid=''):
     logging.info('Выборка доверенности')
     cursor.execute('''
                         select  sp6139 as idartmarket, sc5584.code as number, sp5579 as date_in, sp5580 as date_out,
-                        sp5581 as fio, sp5582 as status, sp4807 as patentid from sc5584
-                        left join sc46 on sc5584.parentext = sc46.id
+                        sp5581 as fio, sp5582 as status, sp4807 as patentid from sc5584 WITH (NOLOCK)
+                        left join sc46 WITH (NOLOCK) on sc5584.parentext = sc46.id
                         where sc5584.id=%s''', objid)
     row = cursor.fetchall()
     logging.info(row)
@@ -275,7 +275,7 @@ def unload_analytics(cursor=None, wsdl_client=None, objid=''):
     hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
     logging.info('Выборка аналитика')
     cursor.execute('''select sc.id, sc.descr as scname, sc.SP6137 as idartmarket, sc.isfolder
-                        from SC5510 sc  where sc.isfolder=2 and sc.id=%s''', objid)
+                        from SC5510 WITH (NOLOCK) sc  where sc.isfolder=2 and sc.id=%s''', objid)
     row = cursor.fetchall()
 
     logging.info(row)
