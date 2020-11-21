@@ -72,6 +72,8 @@ def auto_load(prm_cursor):
 
         white_list.append(5584)  # доверенности
 
+        white_list.append(5529)  # транспортное средство
+
     if load_all == 0:
         pass
         white_list.append(5584)
@@ -123,6 +125,11 @@ def auto_load(prm_cursor):
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
+
+            # транспорт
+            elif row_delta['TYPEID'] == 5529:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_transport(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # доверенности
             elif row_delta['TYPEID'] == 5584:

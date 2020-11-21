@@ -269,6 +269,30 @@ def unload_attorney(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка доверенности завершена')
 
 
+def unload_transport(cursor=None, wsdl_client=None, objid=''):
+    analytic_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка транспортные средства')
+    cursor.execute('''
+                        select descr as name, sp6140 as idartmarket, sp5531 as number, sp5539 as capacity,
+                        sp5570 as volume  from sc5529 sc WITH (NOLOCK)  
+                        where sc.id=%s''', objid)
+    row = cursor.fetchall()
+
+    logging.info(row)
+
+    for r in row:
+        nom = hdb_type(name=r['name'].strip(), id=str(r['idartmarket']).strip(), idparent='', value1=r['number'],
+                       value1num=r['capacity'], value2num=r['volume'])
+        analytic_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=analytic_list)
+    logging.info('Загрузка начало транспортные средства')
+    # wsdl_client.service.load_hdb_elements(hdb_array, 1, 'transport')
+    logging.info('Загрузка транспортные средства завершена')
+
+
 def unload_analytics(cursor=None, wsdl_client=None, objid=''):
     analytic_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
