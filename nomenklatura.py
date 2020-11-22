@@ -23,13 +23,13 @@ def unload_price(wsdl_client, cursor, start_date_0, end_date):
     delta = timedelta(days=1)
 
     # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
-    price_type_to_load = [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613]
+    price_type_to_load = [4549]
     for price_type in price_type_to_load:
         logging.warning(price_type)
         start_date = start_date_0
         while start_date <= end_date:
             k2 = start_date.strftime("%Y-%m-%d")
-            logging.warning(k2)
+            logging.warning([price_type, k2])
             start_date += delta
             load_nomenklatura(cursor, prm_id_str='', prm_id_mode=1, prm_with_parent=0, prm_update_mode=1,
                               prm_unload_price=price_type, prm_unload_price_date=k2, wsdl_client=wsdl_client)

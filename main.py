@@ -76,7 +76,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(5584)
+        white_list.append(5529)
 
     commit_limit = 100
     commit_count = 0
@@ -101,7 +101,7 @@ def auto_load(prm_cursor):
                 load_chicago()
             except:
                 pass
-            logging.info(['typeid', row_delta['TYPEID']])
+            # logging.info(['typeid', row_delta['TYPEID']])
             if not (row_delta['TYPEID'] in white_list):
                 logging.info(['TYPEID', row_delta['TYPEID']])
                 if load_all == 1:
@@ -283,7 +283,8 @@ def main():
                                            prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                            wsdl_client=wsdl_client)
         elif k == 'цены':
-            start_date_0 = date(2020, 5, 1)
+            # start_date_0 = date(2020, 5, 1)
+            start_date_0 = date(2020, 8, 1)
             end_date = date(2020, 11, 18)
             nomenklatura.unload_price(wsdl_client, cursor, start_date_0, end_date)
 

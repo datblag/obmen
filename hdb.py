@@ -110,9 +110,15 @@ def unload_agent_groups(client, cursor):
     logging.info('Загрузка агентов группы завершена')
 
 
-def unload_agents(wsdl_client=None, agent_id='', agent_parent_id='', agent_name=''):
+def unload_agents(wsdl_client=None, agent_id='', agent_parent_id='', agent_name='', transport_id=None):
+
+    transport = ''
+    if transport_id is not None:
+        transport = transport_id
+
     nom_agent = wsdl_client.hdb_type(name=agent_name.strip(), id=agent_id.strip(),
-                                     idparent=agent_parent_id.strip())
+                                     idparent=agent_parent_id.strip(), value1=transport.strip())
+
     hdb_array = wsdl_client.hdb_array_type(hdb_array=[nom_agent])
     logging.info('Загрузка агента начало')
     wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'agent')
@@ -289,7 +295,7 @@ def unload_transport(cursor=None, wsdl_client=None, objid=''):
 
     hdb_array = hdb_array_type(hdb_array=analytic_list)
     logging.info('Загрузка начало транспортные средства')
-    # wsdl_client.service.load_hdb_elements(hdb_array, 1, 'transport')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'transport')
     logging.info('Загрузка транспортные средства завершена')
 
 

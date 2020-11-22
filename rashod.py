@@ -159,13 +159,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.descr as expeditorname,
                             sp3693 as isnal,
                             _1sjourn.iddoc, iddocdef, SP4380 as skidka,
-                             SP5573 as road_number
+                             SP5573 as road_number, sp6140 as transportid
                              FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
                             left join sc31 WITH (NOLOCK) on SP412 = sc31.id
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join SC3246  as sprexpeditor WITH (NOLOCK) on SP4485 = sprexpeditor.id
+                            left join sc5529 as sprtransport WITH (NOLOCK) on sprexpeditor.sp5533 = sprtransport.id
                             where _1sjourn.iddoc=%s
                             ''', prm_row_delta['OBJID'])
     elif prm_row_delta['TYPEID'] == 469:
@@ -180,13 +181,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
                             _1sjourn.iddoc, iddocdef, SP5369 as skidka,
-                             SP5574 as road_number
+                             SP5574 as road_number, sp6140 as transportid
                              FROM DH469 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
                             left join sc46 WITH (NOLOCK) on SP472 = sc46.id
                             left join sc31 WITH (NOLOCK) on SP471 = sc31.id
                             left join SC3246  as sprexpeditor WITH (NOLOCK) on SP4487 = sprexpeditor.id
+                            left join sc5529 as sprtransport WITH (NOLOCK) on sprexpeditor.sp5533 = sprtransport.id
                             where _1sjourn.iddoc=%s
                             ''', prm_row_delta['OBJID'])
     elif prm_row_delta['TYPEID'] == 3716:
@@ -227,7 +229,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
                             _1sjourn.iddoc, iddocdef, SP4383 as skidka,
-                             SP5572  as road_number
+                             SP5572  as road_number, sp6140 as transportid
                              FROM DH3716 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
@@ -235,6 +237,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             left join sc31 WITH (NOLOCK) on SP3717 = sc31.id
                             left join SC3246  as spragent WITH (NOLOCK) on SP4639 = spragent.id
                             left join SC3246  as sprexpeditor WITH (NOLOCK) on SP3745 = sprexpeditor.id
+                            left join sc5529 as sprtransport WITH (NOLOCK) on sprexpeditor.sp5533 = sprtransport.id
                             where _1sjourn.iddoc=%s
                             ''', prm_row_delta['OBJID'])
 
@@ -351,7 +354,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                           agent_name=row['agentname'])
 
         if row['expeditor'] != '' and row['expeditor'] is not None:
-            unload_agents(wsdl_client, agent_id=row['expeditor'], agent_parent_id='', agent_name=row['expeditorname'])
+            unload_agents(wsdl_client, agent_id=row['expeditor'], agent_parent_id='', agent_name=row['expeditorname'],
+                          transport_id=row['transportid'])
 
         list_partii = []
         if isclosed == 1:
