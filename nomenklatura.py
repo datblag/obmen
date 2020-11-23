@@ -23,7 +23,7 @@ def unload_price(wsdl_client, cursor, start_date_0, end_date):
     delta = timedelta(days=1)
 
     # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
-    price_type_to_load = [4549]
+    price_type_to_load = [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613]
     for price_type in price_type_to_load:
         logging.warning(price_type)
         start_date = start_date_0

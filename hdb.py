@@ -231,7 +231,7 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     logging.info('Выборка даты розлива')
     cursor.execute('''
                 select SP5641 as idartmarket, SP5194 as produce_date, SP5681 as egais_code, SC5196.descr,
-                sc33.sp4802 as idartmarket_owner  from SC5196 WITH (NOLOCK)
+                sc33.sp4802 as idartmarket_owner, SP5520 as gtd, SP5684 as gtd_date  from SC5196 WITH (NOLOCK)
                 left join sc33 WITH (NOLOCK) on sc5196.parentext = sc33.id 
                 where SC5196.id=%s
             ''', objid)
@@ -242,7 +242,7 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
         logging.info(r)
         nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='',
                        value1=r['idartmarket_owner'].strip(), value2=r['egais_code'].strip(),
-                       value1date=r['produce_date'])
+                       value3=r['gtd'].strip(), value1date=r['produce_date'], value2date=r['gtd_date'])
         date_list.append(nom)
     hdb_array = hdb_array_type(hdb_array=date_list)
     logging.info('Загрузка начало даты розлива')

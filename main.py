@@ -283,8 +283,7 @@ def main():
                                            prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                            wsdl_client=wsdl_client)
         elif k == 'цены':
-            # start_date_0 = date(2020, 5, 1)
-            start_date_0 = date(2020, 8, 1)
+            start_date_0 = date(2020, 5, 1)
             end_date = date(2020, 11, 18)
             nomenklatura.unload_price(wsdl_client, cursor, start_date_0, end_date)
 
