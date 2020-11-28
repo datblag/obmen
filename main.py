@@ -31,7 +31,7 @@ def load_chicago():
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -76,7 +76,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(5529)
+        white_list.append(3716)
 
     commit_limit = 100
     commit_count = 0

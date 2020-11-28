@@ -148,9 +148,31 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка расходов заголовки')
 
     if prm_row_delta['TYPEID'] == 410:
+        logging.info('''
+                            SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
+                            sc13.sp4805 as firma,                            
+                            sc46.sp4807 as client,
+                            sc31.SP5639 as sklad,
+                            SP6060 as idartmarket,
+                            '' as agent,
+                            sprexpeditor.SP4808 as expeditor,
+                            sprexpeditor.descr as expeditorname,
+                            sp3693 as isnal,
+                            _1sjourn.iddoc, iddocdef, SP4380 as skidka,
+                             SP5573 as road_number, sp6140 as transportid
+                             FROM DH410 as dh WITH (NOLOCK)
+                            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
+                            left join sc46 WITH (NOLOCK) on SP413 = sc46.id
+                            left join sc31 WITH (NOLOCK) on SP412 = sc31.id
+                            left join sc13 WITH (NOLOCK) on SP1005=sc13.id
+                            left join SC3246  as sprexpeditor WITH (NOLOCK) on SP4485 = sprexpeditor.id
+                            left join sc5529 as sprtransport WITH (NOLOCK) on sprexpeditor.sp5533 = sprtransport.id
+                            where _1sjourn.iddoc=%s
+                            ''')
         cursor.execute('''
                             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-                            sc13.sp4805 as firma,
+                            sc13.sp4805 as firma,a
+                            
                             sc46.sp4807 as client,
                             sc31.SP5639 as sklad,
                             SP6060 as idartmarket,
