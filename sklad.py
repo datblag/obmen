@@ -440,8 +440,10 @@ def get_vvodostatka_rows(cursor, prm_isfilial, prm_row):
     if prm_isfilial == 0:
         logging.info(';'.join(['Выборка строк ввод остатка', prm_row['docno']]))
         cursor.execute('''
-                select  sc33.sp4802 as idtovar,SP316 as kolvo,SP318 as koef,SP4716 as price,SP4717 as sum from dt310
+                select  sc33.sp4802 as idtovar,SP316 as kolvo,SP318 as koef,SP4716 as price,SP4717 as sum,
+                 SP5641 as id_pdate, SC5196.id as bdid_pdate from dt310
                 left join sc33 on sp315=sc33.id
+                left join SC5196 on SP5197=SC5196.id
                 where iddoc=%s
         ''', prm_row['iddoc'])
         logging.info(';'.join(['Выборка строк ввод остатка завершена', prm_row['docno']]))
@@ -506,7 +508,6 @@ def vvodostatka_tovar_filial(cursor, wsdl_client, prm_row_delta):
         logging.info(';'.join(['Загрузка документа ввод остатка', row_header['docno'], n]))
 
 
-
 def vvodostatka_tovar(cursor, wsdl_client, prm_row_delta):
     # оприходование
     rows_header = get_vvodostatka_header(cursor, 0, prm_row_delta)
@@ -527,11 +528,14 @@ def vvodostatka_tovar(cursor, wsdl_client, prm_row_delta):
 
         for row_table in rows_table:
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
-                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
+                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                           pdate=row_table['id_pdate'])
             if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
+            if row_table['id_pdate']:
+                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
             row_list.append(row_nom)
 
         rows = wsdl_client.rows_type(rows=row_list)
