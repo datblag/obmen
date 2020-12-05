@@ -80,7 +80,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(310)
+        white_list.append(239)
 
     commit_limit = 100
     commit_count = 0
