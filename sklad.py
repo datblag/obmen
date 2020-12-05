@@ -41,14 +41,17 @@ def get_move_rows(cursor, prm_isfilial, prm_row):
     if prm_isfilial == 0:
         logging.info(';'.join(['Выборка строк перемещение', prm_row['docno']]))
         cursor.execute('''
-                            select  sc33.sp4802 as idtovar,SP250 as kolvo,SP1034 as koef,0 as price,0 as sum from dt239
+                            select  sc33.sp4802 as idtovar,SP250 as kolvo,SP1034 as koef,0 as price,0 as sum,
+                             SP5641 as id_pdate, SC5196.id as bdid_pdate from dt239
                             left join sc33 WITH (NOLOCK) on SP249=sc33.id
+                            left join SC5196 WITH (NOLOCK) on SP5199=SC5196.id
                             where iddoc=%s
                             ''', prm_row['iddoc'])
     if prm_isfilial == 1:
         logging.info(';'.join(['Выборка строк перемещение', prm_row['docno']]))
         cursor.execute('''
-                            select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1621 as kolvo,SP1623 as koef,0 as price,0 as sum from dt1628
+                            select  SC84.code as idtovar, SC84.SP8450 as idtovarfil, SP1621 as kolvo,SP1623 as koef,
+                            0 as price,0 as sum from dt1628
                             left join SC84 WITH (NOLOCK) on SP1620=SC84.id
                             where iddoc=%s
                             ''', prm_row['iddoc'])
@@ -384,11 +387,14 @@ def move_tovar(cursor, wsdl_client, prm_row_delta):
 
         for row_table in rows_table:
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
-                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'])
-            if row_table['idtovar'] == None:
+                                           price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
+                                           pdate=row_table['id_pdate'])
+            if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
+            if row_table['id_pdate']:
+                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
             row_list.append(row_nom)
 
         rows = wsdl_client.rows_type(rows=row_list)
