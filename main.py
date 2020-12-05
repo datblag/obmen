@@ -8,7 +8,7 @@ import hdb
 import kassa
 import prihod, rashod, sklad, dolgi
 import ostatki
-from utils import convert_base, check_firma
+from utils import convert_base
 
 
 from tqdm import *
@@ -74,9 +74,13 @@ def auto_load(prm_cursor):
 
         white_list.append(5529)  # транспортное средство
 
+        white_list.append(1183)  # счета контрагентов
+
+
+
     if load_all == 0:
         pass
-        white_list.append(3716)
+        white_list.append(1183)
 
     commit_limit = 100
     commit_count = 0
@@ -125,6 +129,11 @@ def auto_load(prm_cursor):
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
+
+            # счета контрагентов
+            elif row_delta['TYPEID'] == 1183:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_bank_accounts(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # транспорт
             elif row_delta['TYPEID'] == 5529:

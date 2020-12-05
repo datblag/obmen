@@ -171,8 +171,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             ''')
         cursor.execute('''
                             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-                            sc13.sp4805 as firma,a
-                            
+                            sc13.sp4805 as firma,                            
                             sc46.sp4807 as client,
                             sc31.SP5639 as sklad,
                             SP6060 as idartmarket,

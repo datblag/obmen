@@ -321,6 +321,35 @@ def unload_analytics(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка аналитика завершена')
 
 
+def unload_bank_accounts(cursor=None, wsdl_client=None, objid=''):
+    accounts_list = []
+
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка счета клиентов')
+    cursor.execute('''select SP6144 as idartmarket, sp1188 as bik, sp1184 as rs, SC1183.descr as name, sp4807  as parentid   from sc1183 
+                    left join sc46 on sc1183.parentext = sc46.id where ltrim(rtrim(sp1184)) <> '' 
+                    and ltrim(rtrim(sp1184)) <> 'новый' and len(ltrim(rtrim(sp1184)))=20  and 
+                    len(ltrim(rtrim(sp1188))) = 9  and sc1183.id=%s ''', objid)
+    row = cursor.fetchall()
+
+    logging.info(row)
+
+    for r in row:
+        logging.info(r)
+        nom = hdb_type(name=r['name'].strip(), id=r['idartmarket'].strip(), idparent=r['parentid'],
+                       value1=r['bik'], value2=r['rs'].strip())
+        accounts_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=accounts_list)
+    logging.info('Загрузка начало счета клиентов')
+    # wsdl_client.service.load_hdb_elements(hdb_array, 1, 'accounts')
+    logging.info('Загрузка счета клиентов завершена')
+
+
+
+
+
 def unload_cost(cursor=None, wsdl_client=None, objid=''):
     cost_list = []
     parents_id = ['ABD7028F-DACB-4CF0-BD60-D51FC849760B', 'FBE1B007-8050-476D-BD62-962B9D65C19D',
