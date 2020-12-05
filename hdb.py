@@ -343,7 +343,7 @@ def unload_bank_accounts(cursor=None, wsdl_client=None, objid=''):
 
     hdb_array = hdb_array_type(hdb_array=accounts_list)
     logging.info('Загрузка начало счета клиентов')
-    # wsdl_client.service.load_hdb_elements(hdb_array, 1, 'accounts')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'accounts')
     logging.info('Загрузка счета клиентов завершена')
 
 
