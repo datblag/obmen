@@ -11,18 +11,42 @@ from tqdm import *
 
 #logs.run()
 
-def unload_price(wsdl_client, cursor, start_date_0, end_date):
-    # 36-доставка (загружены за 2019й год), 38-приобретение (загружены за 2019й год),
-    # (4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей (оптовая), 37 - розничная) -
-    # загружены за 2019й год
 
-    # выгрузка истории
-    # TODO филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
-    # start_date_0 = date(2018, 12, 31)
-    # end_date = date(2018, 12, 31)
+# получает из кода перечисления ТипРасхЦен соответствующий код в справочнике типыцен
+def get_price_code_from_enumeration(enumeration_code):
+    if enumeration_code.strip() == '2U8':
+        return 36
+    elif enumeration_code.strip() == '3KO':
+        return 38
+    elif enumeration_code.strip() == '2U7':
+        return 35
+    elif enumeration_code.strip() == '3FY':
+        return 4460
+    elif enumeration_code.strip() == '4B':
+        return 3677
+    elif enumeration_code.strip() == '49':
+        return 37
+    elif enumeration_code.strip() == '3CJ':
+        return 4340
+    elif enumeration_code.strip() == '4A':
+        return 3678
+    elif enumeration_code.strip() == '3KE':
+        return 4613
+    elif enumeration_code.strip() == '4O5':
+        return 6051
+    else:
+        logging.error(['Неизвестный тип расходной цены', enumeration_code])
+        return 0
+
+
+def unload_price(wsdl_client, cursor, start_date_0, end_date):
+    # 36-доставка, 38-приобретение,
+    # (4549 закуп, 35 киоск, 4460 - индивидуальная, 3677 - для сетей (оптовая), 37 - розничная) -
+    # филиал - 4340, херека (специальная) - 3678 , самбери (акцизного склада) - 4613
+    # TODO выгрузить желтый ценник 6051
     delta = timedelta(days=1)
 
-    # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список
+    # [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613] полный список (без желтого ценника)
     price_type_to_load = [36, 38, 4549, 35, 4460, 3677, 37, 4340, 3678, 4613]
     for price_type in price_type_to_load:
         logging.warning(price_type)

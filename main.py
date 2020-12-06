@@ -31,7 +31,7 @@ def load_chicago():
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
@@ -270,7 +270,7 @@ conn = sql_client.conn
 def main():
     logging.warning('Начало работы')
 
-    logging.warning(convert_base('BE', from_base=36))
+    logging.warning(convert_base('6053', to_base=36))
 
     # client.wsdl.dump()
 
@@ -292,8 +292,10 @@ def main():
                                            prm_unload_price=3678, prm_unload_price_date='2018-12-31',
                                            wsdl_client=wsdl_client)
         elif k == 'цены':
-            start_date_0 = date(2020, 5, 1)
-            end_date = date(2020, 11, 18)
+            # start_date_0 = date(2020, 5, 1)
+            # end_date = date(2020, 11, 18)
+            start_date_0 = date(2020, 11, 19)
+            end_date = date(2020, 11, 19)
             nomenklatura.unload_price(wsdl_client, cursor, start_date_0, end_date)
 
         elif k == 'штрихкода':
