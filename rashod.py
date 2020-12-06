@@ -260,14 +260,16 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                                              client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                              , document_date=row['datedoc'], nomerartmarket=row['docno'],
                                              bdid=row['iddoc'].strip(), bdtype=row['iddocdef'],
-                                             skidka_procent=row['percentage_discount'], base_id=row['road_number'])
+                                             skidka_procent=row['percentage_discount'], base_id=row['road_number'],
+                                             price_type=price_code, discount_amount=row['discount_amount'],
+                                             discount_total=row['total_discount'])
 
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
             select  sp4802 as idtovar, SP424 as kolvo, SP427 as koef, SP426 as price, 
             SP5641 as id_pdate, SC5196.id as bdid_pdate,
-            SP428 as sum, SP6074 price_goods from dt410 WITH (NOLOCK)
+            SP428 as sum, SP6074 as price_goods from dt410 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP423 = sc33.id
             left join SC5196 on SP5205=SC5196.id
             where iddoc=%s
@@ -276,14 +278,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             cursor.execute('''
             select  sp4802 as idtovar, SP483 as kolvo, SP486 as koef, SP485 as price, 
             SP5641 as id_pdate, SC5196.id as bdid_pdate,
-            SP487 as sum, SP6075 price_goods from dt469 WITH (NOLOCK)
+            SP487 as sum, SP6075 as price_goods from dt469 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP482=sc33.id 
             left join SC5196 on SP5207=SC5196.id
             where iddoc=%s''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 3716:
             cursor.execute('''
             select  sp4802 as idtovar, SP3731 as kolvo, SP3734 as koef, SP3733 as price, SP3735 as sum, 
-            SP5641 as id_pdate, SC5196.id as bdid_pdate, SP4917 price_goods
+            SP5641 as id_pdate, SC5196.id as bdid_pdate, SP4917 as price_goods
             from dt3716 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP3730=sc33.id
             left join SC5196 on SP5203=SC5196.id
@@ -301,8 +303,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                 unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
                                            price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
-                                           pdate=row_table['id_pdate'])
-            if row_table['idtovar'] == None:
+                                           pdate=row_table['id_pdate'], price_goods=row_table['price_goods'])
+            if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")

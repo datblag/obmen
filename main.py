@@ -300,7 +300,7 @@ def main():
             nomenklatura.unload_ean_codes(cursor=cursor, wsdl_client=wsdl_client.client)
 
         elif k == 'док':
-            month_num = 11
+            month_num = 12
             year_num = 2020
             start_date = date(year_num, month_num, 1)
             end_date = date(year_num, month_num, monthrange(year_num, month_num)[1])
