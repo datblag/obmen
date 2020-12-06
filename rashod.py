@@ -40,7 +40,6 @@ def get_rashod_rows(cursor, prm_isfilial, prm_doctype, prm_row):
 
 
 def load_rashod_filial(cursor, wsdl_client, prm_row_header):
-    #rows_header = get_rashod_header(cursor, 1, 0, prm_row_delta)
     row = prm_row_header
     logging.warning(row)
     isclosed = is_process_doc(row['closed'])
@@ -148,27 +147,6 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
     logging.info('Выборка расходов заголовки')
 
     if prm_row_delta['TYPEID'] == 410:
-        logging.info('''
-                            SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-                            sc13.sp4805 as firma,                            
-                            sc46.sp4807 as client,
-                            sc31.SP5639 as sklad,
-                            SP6060 as idartmarket,
-                            '' as agent,
-                            sprexpeditor.SP4808 as expeditor,
-                            sprexpeditor.descr as expeditorname,
-                            sp3693 as isnal,
-                            _1sjourn.iddoc, iddocdef, SP4380 as skidka,
-                             SP5573 as road_number, sp6140 as transportid
-                             FROM DH410 as dh WITH (NOLOCK)
-                            left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
-                            left join sc46 WITH (NOLOCK) on SP413 = sc46.id
-                            left join sc31 WITH (NOLOCK) on SP412 = sc31.id
-                            left join sc13 WITH (NOLOCK) on SP1005=sc13.id
-                            left join SC3246  as sprexpeditor WITH (NOLOCK) on SP4485 = sprexpeditor.id
-                            left join sc5529 as sprtransport WITH (NOLOCK) on sprexpeditor.sp5533 = sprtransport.id
-                            where _1sjourn.iddoc=%s
-                            ''')
         cursor.execute('''
                             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
                             sc13.sp4805 as firma,                            
@@ -179,8 +157,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
                             sp3693 as isnal,
-                            _1sjourn.iddoc, iddocdef, SP4380 as skidka,
-                             SP5573 as road_number, sp6140 as transportid
+                            _1sjourn.iddoc, iddocdef, SP4380 as percentage_discount,
+                             SP5573 as road_number, sp6140 as transportid,
+                             SP3634 as price_type, SP5977 as discount_amount, SP4381 as total_discount
                              FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
@@ -201,8 +180,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             '' as agent,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef, SP5369 as skidka,
-                             SP5574 as road_number, sp6140 as transportid
+                            _1sjourn.iddoc, iddocdef, SP5369 as percentage_discount,
+                             SP5574 as road_number, sp6140 as transportid,
+                             SP3635 as price_type, SP5978 as discount_amount, SP5979 as total_discount
                              FROM DH469 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
@@ -213,30 +193,6 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             where _1sjourn.iddoc=%s
                             ''', prm_row_delta['OBJID'])
     elif prm_row_delta['TYPEID'] == 3716:
-        # SP4639 агент
-        # logging.debug('''
-        #                     SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
-        #                     sc13.sp4805 as firma,
-        #                     sc46.sp4807 as client,
-        #                     sc31.SP5639 as sklad,
-        #                     SP6071 as idartmarket,
-        #                     0 as isnal,
-        #                     spragent.SP4808 as agent,
-        #                     spragent.descr as agentname,
-        #                     spragent.parentid as agentparentid,
-        #                     sprexpeditor.SP4808 as expeditor,
-        #                     sprexpeditor.descr as expeditorname,
-        #                     _1sjourn.iddoc, iddocdef, SP4383 as skidka,
-        #                      SP5572  as road_number
-        #                      FROM DH3716 as dh WITH (NOLOCK)
-        #                     left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc
-        #                     left join sc13 WITH (NOLOCK) on SP1005=sc13.id
-        #                     left join sc46 WITH (NOLOCK) on SP3718 = sc46.id
-        #                     left join sc31 WITH (NOLOCK) on SP3717 = sc31.id
-        #                     left join SC3246  as spragent WITH (NOLOCK) on SP4639 = spragent.id
-        #                     left join SC3246  as sprexpeditor WITH (NOLOCK) on SP3745 = sprexpeditor.id
-        #                     where _1sjourn.iddoc=%s
-        #                     ''', prm_row_delta['OBJID'])
         cursor.execute('''
                             SELECT   closed, CAST(LEFT(Date_Time_IDDoc, 8) as DateTime) as datedoc,docno,
                             sc13.sp4805 as firma,
@@ -249,8 +205,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             spragent.parentid as agentparentid,
                             sprexpeditor.SP4808 as expeditor,
                             sprexpeditor.descr as expeditorname,
-                            _1sjourn.iddoc, iddocdef, SP4383 as skidka,
-                             SP5572  as road_number, sp6140 as transportid
+                            _1sjourn.iddoc, iddocdef, SP4383 as percentage_discount,
+                             SP5572  as road_number, sp6140 as transportid,
+                             SP3726 as price_type, SP5976 as discount_amount, SP4384 as total_discount
                              FROM DH3716 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
@@ -293,6 +250,9 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             continue
             pass
         else:
+
+            price_code = nomenklatura.get_price_code_from_enumeration(row['price_type'])
+
             str_id = ",".join(client_list)
             get_client_groups(wsdl_client, cursor, str_id)
             logging.warning([row['firma'], row['sklad'], row['client']])
@@ -300,14 +260,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                                              client=row['client'].strip(), idartmarket=row['idartmarket'].strip()
                                              , document_date=row['datedoc'], nomerartmarket=row['docno'],
                                              bdid=row['iddoc'].strip(), bdtype=row['iddocdef'],
-                                             skidka_procent=row['skidka'], base_id=row['road_number'])
+                                             skidka_procent=row['percentage_discount'], base_id=row['road_number'])
 
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
             select  sp4802 as idtovar, SP424 as kolvo, SP427 as koef, SP426 as price, 
             SP5641 as id_pdate, SC5196.id as bdid_pdate,
-            SP428 as sum from dt410 WITH (NOLOCK)
+            SP428 as sum, SP6074 price_goods from dt410 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP423 = sc33.id
             left join SC5196 on SP5205=SC5196.id
             where iddoc=%s
@@ -316,14 +276,14 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
             cursor.execute('''
             select  sp4802 as idtovar, SP483 as kolvo, SP486 as koef, SP485 as price, 
             SP5641 as id_pdate, SC5196.id as bdid_pdate,
-            SP487 as sum from dt469 WITH (NOLOCK)
+            SP487 as sum, SP6075 price_goods from dt469 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP482=sc33.id 
             left join SC5196 on SP5207=SC5196.id
             where iddoc=%s''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 3716:
             cursor.execute('''
             select  sp4802 as idtovar, SP3731 as kolvo, SP3734 as koef, SP3733 as price, SP3735 as sum, 
-            SP5641 as id_pdate, SC5196.id as bdid_pdate
+            SP5641 as id_pdate, SC5196.id as bdid_pdate, SP4917 price_goods
             from dt3716 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP3730=sc33.id
             left join SC5196 on SP5203=SC5196.id
