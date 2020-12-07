@@ -76,7 +76,7 @@ def auto_load(prm_cursor):
 
         white_list.append(1183)  # счета контрагентов
 
-
+        white_list.append(5494)  # скидки клиентам
 
     if load_all == 0:
         pass
@@ -129,6 +129,11 @@ def auto_load(prm_cursor):
                 str_id = ",".join(["'" + row_delta['OBJID'] + "'"])
                 nomenklatura.load_nomenklatura(prm_cursor, prm_id_str=str_id, prm_id_mode=1, prm_with_parent=0,
                                                prm_update_mode=1, wsdl_client=wsdl_client)
+
+            # скидки клиентам
+            elif row_delta['TYPEID'] == 5494:
+                logging.info(row_delta['TYPEID'])
+                hdb.unload_customer_discounts(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # счета контрагентов
             elif row_delta['TYPEID'] == 1183:

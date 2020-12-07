@@ -173,6 +173,10 @@ def unload_agent_clients(cursor=None, wsdl_client=None, objid=''):
     logging.info(['Загрузка конец клиенты агента', res])
 
 
+def unload_customer_discounts(cursor=None, wsdl_client=None, objid=''):
+    pass
+
+
 def unload_agent_products(cursor=None, wsdl_client=None, objid=''):
     products_list = []
     logging.info('Выборка ассортимент агента')
