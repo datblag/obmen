@@ -200,6 +200,18 @@ def unload_customer_discounts(cursor=None, wsdl_client=None, objid=''):
             logging.warning('Не задан товар')
             continue
 
+        is_disable = '0'
+        if r['ismark'] or r['not_active'] == 1:
+            is_disable = '1'
+        nom = wsdl_client.hdb_type(name='', id=str(r['idartmarket']).strip(), idparent=r['idproduct'].strip(),
+                                   value1=r['parentid'].strip(), value2=is_disable, value1num=r['discount'])
+        discounts_list.append(nom)
+
+    hdb_array = wsdl_client.hdb_array_type(hdb_array=discounts_list)
+    logging.info('Загрузка начало скидки клиента')
+    res = wsdl_client.client.service.load_hdb_table_part(hdb_array, 1, 'customer_discounts')
+    logging.info(['Загрузка конец скидки клиента', res])
+
 
 def unload_agent_products(cursor=None, wsdl_client=None, objid=''):
     products_list = []
@@ -679,7 +691,7 @@ def get_client_groups(wsdl_client=None, prm_cursor=None, prm_id_list='', prm_par
     logging.info('Выборка клиентов')
     str_base_sql_query = '''
             select element1.SP56 as inn, element1.sp4603 as kpp, element1.descr, element1.sp48 as parentname,
-            element1. == as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
+            element1.sp4807 as idartmarket, element1.SP6066 as regionid, element1.SP3145 as adres,
             element1.SP50 as adres_post, SC5464.descr as typett,
             element1.SP3691 as license, element1.SP5239 as control_license, element1.SP5422 as license_begin_date,
             element1.SP5423 as license_end_date,

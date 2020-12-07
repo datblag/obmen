@@ -80,7 +80,7 @@ def auto_load(prm_cursor):
 
     if load_all == 0:
         pass
-        white_list.append(239)
+        white_list.append(5494)
 
     commit_limit = 100
     commit_count = 0
@@ -133,7 +133,7 @@ def auto_load(prm_cursor):
             # скидки клиентам
             elif row_delta['TYPEID'] == 5494:
                 logging.info(row_delta['TYPEID'])
-                hdb.unload_customer_discounts(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+                hdb.unload_customer_discounts(prm_cursor, wsdl_client, row_delta['OBJID'])
 
             # счета контрагентов
             elif row_delta['TYPEID'] == 1183:
