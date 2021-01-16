@@ -34,17 +34,16 @@ def auto_load(prm_cursor):
     white_list = []
     load_all = 0
     if load_all == 1:
-        white_list.append(3716)  # расходнаядоставка
-        white_list.append(410)  # расходнаянакладная
-        white_list.append(469)  # расходнаяреализатора
+        white_list.append(3716)  # расходнаядоставка v_alko++
+        white_list.append(410)  # расходнаянакладная v_alko++
+        white_list.append(469)  # расходнаяреализатора v_alko++
 
-        white_list.append(297)  # списания
-
+        white_list.append(297)  # списания v_alko++
 
         white_list.append(310)  # ввод остатков v_alko++
         white_list.append(434)  # приход v_alko++
-        white_list.append(239)  # перемещение
-        white_list.append(4425)  # заказ поставщику
+        white_list.append(239)  # перемещение v_alko++
+        white_list.append(4425)  # заказ поставщику v_alko++
         white_list.append(4553)  # счет на услуги service invoices
 
         white_list.append(2989)  # движенияденежныхсредств

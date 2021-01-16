@@ -527,7 +527,7 @@ def load_order_supplier(cursor, wsdl_client, prm_row_delta):
     rows_header = cursor.fetchall()
 
     for row_header in rows_header:
-        if not check_firma(row_header, 0):
+        if not check_firma(row_header, 0, True):
             continue
         if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))

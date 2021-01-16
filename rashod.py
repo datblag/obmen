@@ -227,7 +227,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         # list_partii=[]
         isclosed = is_process_doc(row['closed'])
 
-        if not check_firma(row, 0):
+        if not check_firma(row, 0, True):
             continue
         if row['idartmarket'] is None or row['idartmarket'].strip() == '':
             # if isclosed == 1:
