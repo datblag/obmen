@@ -33,9 +33,11 @@ def check_docid(prm_row, prm_is_filial):
         return False
 
 
-def check_firma(prm_row, prm_is_filial):
+def check_firma(prm_row, prm_is_filial, prm_add_firma=False):
     if prm_is_filial == 0:
         if prm_row['firma'] == '9CD36F19-B8BD-49BC-BED4-A3335D2175C2    ':
+            return True
+        elif prm_add_firma and prm_row['firma'] == '382621FF-DD8C-4697-85CB-F016ADC36D4D    ':
             return True
         else:
             return False

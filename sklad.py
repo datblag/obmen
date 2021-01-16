@@ -519,7 +519,7 @@ def vvodostatka_tovar(cursor, wsdl_client, prm_row_delta):
     rows_header = get_vvodostatka_header(cursor, 0, prm_row_delta)
 
     for row_header in rows_header:
-        if not check_firma(row_header, 0) or not check_docid(row_header, 0) or not check_sklad(row_header, 0):
+        if not check_firma(row_header, 0, True) or not check_docid(row_header, 0) or not check_sklad(row_header, 0):
             continue
 
         header = wsdl_client.header_type(document_type=2, firma=row_header['firma'].strip(),

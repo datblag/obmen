@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import logs
+import time
 from datetime import date
 from calendar import monthrange
 
@@ -31,28 +32,32 @@ def load_chicago():
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 1
+    load_all = 0
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка
         white_list.append(410)  # расходнаянакладная
         white_list.append(469)  # расходнаяреализатора
 
-        white_list.append(33)  # номенклатура
-        white_list.append(46)  # контрагенты
+        white_list.append(297)  # списания
 
+
+        white_list.append(310)  # ввод остатков v_alko++
+        white_list.append(434)  # приход v_alko++
         white_list.append(239)  # перемещение
-        white_list.append(310)  # ввод остатков
-        white_list.append(434)  # приход
+        white_list.append(4425)  # заказ поставщику
+        white_list.append(4553)  # счет на услуги service invoices
+
         white_list.append(2989)  # движенияденежныхсредств
         white_list.append(4308)  # выручкадоставка  sp4323 переброска
         white_list.append(2964)  # ПриходныйОрдерТБ
-        white_list.append(4179)  # АроченоклактПереоценкиКлиенты
+        white_list.append(4179)  # АктПереоценкиКлиенты
         white_list.append(4225)  # РасходныйОрдерТБ
-        white_list.append(297)  # списания
-        white_list.append(4425)  # заказ поставщику
 
         white_list.append(4114)  # приходный ордер Б
         white_list.append(4132)  # расходный ордер Б
+
+        white_list.append(33)  # номенклатура
+        white_list.append(46)  # контрагенты
 
         white_list.append(5468)  # производители импортеры
         white_list.append(5196)  # даты розлива
@@ -66,21 +71,15 @@ def auto_load(prm_cursor):
         white_list.append(5552)  # источник финансирования SP6128
         white_list.append(5554)  # для маркетинга SP6129
 
-        white_list.append(4553)  # счет на услуги service invoices
-
         white_list.append(5510)  # аналитики
-
         white_list.append(5584)  # доверенности
-
         white_list.append(5529)  # транспортное средство
-
-        white_list.append(1183)  # счета контрагентов
-
+        white_list.append(1183)  # счета контрагентов банк
         white_list.append(5494)  # скидки клиентам
 
     if load_all == 0:
         pass
-        white_list.append(5494)
+        white_list.append(434)
 
     commit_limit = 100
     commit_count = 0
@@ -255,7 +254,7 @@ def auto_load(prm_cursor):
                 logging.error(e)
 
         logging.warning('Выборка изменений завершена')
-        # time.sleep(10)
+        time.sleep(10)
 
 
     #exit()

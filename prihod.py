@@ -249,7 +249,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
         is_return = 0
         if row_header['isreturn'] == '    3J   ':
             is_return = 1
-        if not check_firma(row_header, 0):
+        if not check_firma(row_header, 0, True):
             continue
         if row_header['idartmarket'] is None or row_header['idartmarket'].strip() == '':
             logging.error(';'.join(['Пустой ид', row_header['docno']]))
