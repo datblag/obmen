@@ -266,7 +266,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
                 pass
             logging.info(['Выборка взаиморасчетов опмание объекта', row['datedoc'], row['docno']])
 
-            if not check_firma(row, 0):
+            if not check_firma(row, 0, True):
                 continue
             if row['idartmarket'] is None or row['idartmarket'].strip() == '':
                 if isclosed == 1:
@@ -314,7 +314,7 @@ def load_dolgi(cursor, wsdl_client, prm_row_delta):
                 pass
             logging.info(['Выборка взаиморасчетов опмание объекта', row['datedoc'], row['docno']])
 
-            if not check_firma(row, 0):
+            if not check_firma(row, 0, True):
                 continue
             if row['idartmarket'] is None or row['idartmarket'].strip() == '':
                 if isclosed == 1:

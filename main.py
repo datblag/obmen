@@ -32,7 +32,7 @@ def load_chicago():
 
 def auto_load(prm_cursor):
     white_list = []
-    load_all = 0
+    load_all = 1
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка v_alko++
         white_list.append(410)  # расходнаянакладная v_alko++
@@ -46,11 +46,11 @@ def auto_load(prm_cursor):
         white_list.append(4425)  # заказ поставщику v_alko++
         white_list.append(4553)  # счет на услуги service invoices
 
-        white_list.append(2989)  # движенияденежныхсредств
-        white_list.append(4308)  # выручкадоставка  sp4323 переброска
-        white_list.append(2964)  # ПриходныйОрдерТБ
-        white_list.append(4179)  # АктПереоценкиКлиенты
-        white_list.append(4225)  # РасходныйОрдерТБ
+        white_list.append(2989)  # движенияденежныхсредств v_alko++
+        white_list.append(4308)  # выручкадоставка  sp4323 переброска v_alko++
+        white_list.append(2964)  # ПриходныйОрдерТБ v_alko++
+        white_list.append(4179)  # АктПереоценкиКлиенты v_alko++
+        white_list.append(4225)  # РасходныйОрдерТБ v_alko++
 
         white_list.append(4114)  # приходный ордер Б
         white_list.append(4132)  # расходный ордер Б
@@ -79,6 +79,8 @@ def auto_load(prm_cursor):
     if load_all == 0:
         pass
         white_list.append(434)
+        white_list.append(239)  # перемещение v_alko++
+        white_list.append(4425)  # заказ поставщику v_alko++
 
     commit_limit = 100
     commit_count = 0
