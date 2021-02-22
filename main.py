@@ -57,6 +57,7 @@ def auto_load(prm_cursor):
 
         white_list.append(33)  # номенклатура
         white_list.append(46)  # контрагенты
+        white_list.append(31)  # склады
 
         white_list.append(5468)  # производители импортеры
         white_list.append(5196)  # даты розлива
@@ -77,10 +78,7 @@ def auto_load(prm_cursor):
         white_list.append(5494)  # скидки клиентам
 
     if load_all == 0:
-        pass
-        white_list.append(434)
-        white_list.append(239)  # перемещение v_alko++
-        white_list.append(4425)  # заказ поставщику v_alko++
+        white_list.append(31)  # склады
 
     commit_limit = 100
     commit_count = 0
@@ -100,11 +98,17 @@ def auto_load(prm_cursor):
         prm_cursor.execute('''SELECT  top 100000 * from _1SUPDTS WITH (NOLOCK) where (DBSIGN = 'P1 ') and 
                             (DWNLDID='1122!!') ''')
         rows_delta = prm_cursor.fetchall()
+
+        try:
+            load_chicago()
+        except Exception as e:
+            logging.exception(e)
+
         for row_delta in tqdm(rows_delta):
-            try:
-                load_chicago()
-            except:
-                pass
+            # try:
+            #     load_chicago()
+            # except Exception as e:
+            #     logging.exception(e)
             # logging.info(['typeid', row_delta['TYPEID']])
             if not (row_delta['TYPEID'] in white_list):
                 logging.info(['TYPEID', row_delta['TYPEID']])
@@ -172,6 +176,10 @@ def auto_load(prm_cursor):
             elif row_delta['TYPEID'] == 3769:
                 logging.info(row_delta['TYPEID'])
                 hdb.unload_unit(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+
+            # склады
+            elif row_delta['TYPEID'] == 31:
+                hdb.unload_warehouse(prm_cursor, wsdl_client.client, row_delta['OBJID'])
 
             # производитель импортер
             elif row_delta['TYPEID'] == 5468:

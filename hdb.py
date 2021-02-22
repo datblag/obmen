@@ -420,6 +420,30 @@ def unload_cost(cursor=None, wsdl_client=None, objid=''):
     logging.info('Загрузка затраты завершена')
 
 
+def unload_warehouse(cursor=None, wsdl_client=None, objid=''):
+    warehouse_list = []
+    hdb_type = wsdl_client.get_type('ns3:hdb_element')
+    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    logging.info('Выборка склады')
+    cursor.execute('''select el.SP5639 as idartmarket, el.descr, el.sp40 as person, SP5380 as address
+    from SC31 el where el.id=%s''', objid)
+    logging.info('Выборка склады завершена')
+    logging.info('Подготовка загрузки склады')
+    row = cursor.fetchall()
+    logging.info(objid)
+    logging.info(row)
+    for r in row:
+        logging.warning(r)
+        nom = hdb_type(name=r['descr'].strip(), id=str(r['idartmarket']).strip(), idparent='',
+                       value1=r['person'].strip(), value2=r['address'].strip())
+        warehouse_list.append(nom)
+
+    hdb_array = hdb_array_type(hdb_array=warehouse_list)
+    logging.info('Загрузка начало склады')
+    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'sklad')
+    logging.info('Загрузка склады завершена')
+
+
 def unload_unit(cursor=None, wsdl_client=None, objid=''):
     unit_list = []
     hdb_type = wsdl_client.get_type('ns3:hdb_element')
