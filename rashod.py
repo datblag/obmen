@@ -1,6 +1,7 @@
 import logging
 import nomenklatura
-from hdb import get_client_groups_filial, get_client_groups, unload_production_date, unload_agents
+from hdb import get_client_groups_filial, get_client_groups, unload_production_date, unload_agents,\
+    unload_egais_reference
 from config import cb_firma_id
 from utils import check_client, is_process_doc, check_firma
 from kassa import load_prihod_kassa
@@ -159,7 +160,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sp3693 as isnal,
                             _1sjourn.iddoc, iddocdef, SP4380 as percentage_discount,
                              SP5573 as road_number, sp6140 as transportid,
-                             SP3634 as price_type, SP5977 as discount_amount, SP4381 as total_discount
+                             SP3634 as price_type, SP5977 as discount_amount, SP4381 as total_discount,
+                             SP4792 as margin_percent, SP4793  as margin_amount
                              FROM DH410 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc46 WITH (NOLOCK) on SP413 = sc46.id
@@ -182,7 +184,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.descr as expeditorname,
                             _1sjourn.iddoc, iddocdef, SP5369 as percentage_discount,
                              SP5574 as road_number, sp6140 as transportid,
-                             SP3635 as price_type, SP5978 as discount_amount, SP5979 as total_discount
+                             SP3635 as price_type, SP5978 as discount_amount, SP5979 as total_discount,
+                             SP5370 as margin_percent, 0  as margin_amount
                              FROM DH469 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
@@ -207,7 +210,8 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                             sprexpeditor.descr as expeditorname,
                             _1sjourn.iddoc, iddocdef, SP4383 as percentage_discount,
                              SP5572  as road_number, sp6140 as transportid,
-                             SP3726 as price_type, SP5976 as discount_amount, SP4384 as total_discount
+                             SP3726 as price_type, SP5976 as discount_amount, SP4384 as total_discount,
+                              0 as margin_percent, 0  as margin_amount
                              FROM DH3716 as dh WITH (NOLOCK)
                             left join _1sjourn WITH (NOLOCK) on dh.iddoc=_1sjourn.iddoc 
                             left join sc13 WITH (NOLOCK) on SP1005=sc13.id
@@ -262,33 +266,42 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                                              bdid=row['iddoc'].strip(), bdtype=row['iddocdef'],
                                              skidka_procent=row['percentage_discount'], base_id=row['road_number'],
                                              price_type=price_code, discount_amount=row['discount_amount'],
-                                             discount_total=row['total_discount'])
+                                             discount_total=row['total_discount'], margin_percent=row['margin_percent'],
+                                             margin_amount=row['margin_amount'])
 
         logging.info('Выборка строк расхода')
         if prm_row_delta['TYPEID'] == 410:
             cursor.execute('''
             select  sp4802 as idtovar, SP424 as kolvo, SP427 as koef, SP426 as price, 
             SP5641 as id_pdate, SC5196.id as bdid_pdate,
-            SP428 as sum, SP6074 as price_goods from dt410 WITH (NOLOCK)
+            SP428 as sum, SP6074 as price_goods,
+            SP5730 as egais_reference_id, SC5724.SP5727 as reference2
+            from dt410 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP423 = sc33.id
             left join SC5196 on SP5205=SC5196.id
+            left join SC5724 WITH (NOLOCK) on SC5724.id = SP5730
             where iddoc=%s
                                 ''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 469:
             cursor.execute('''
             select  sp4802 as idtovar, SP483 as kolvo, SP486 as koef, SP485 as price, 
             SP5641 as id_pdate, SC5196.id as bdid_pdate,
-            SP487 as sum, SP6075 as price_goods from dt469 WITH (NOLOCK)
+            SP487 as sum, SP6075 as price_goods,
+            SP5731 as egais_reference_id, SC5724.SP5727 as reference2
+            from dt469 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP482=sc33.id 
             left join SC5196 on SP5207=SC5196.id
+            left join SC5724 WITH (NOLOCK) on SC5724.id = SP5731
             where iddoc=%s''', row['iddoc'])
         elif prm_row_delta['TYPEID'] == 3716:
             cursor.execute('''
             select  sp4802 as idtovar, SP3731 as kolvo, SP3734 as koef, SP3733 as price, SP3735 as sum, 
-            SP5641 as id_pdate, SC5196.id as bdid_pdate, SP4917 as price_goods
+            SP5641 as id_pdate, SC5196.id as bdid_pdate, SP4917 as price_goods,
+            SP5729 as egais_reference_id, SC5724.SP5727 as reference2
             from dt3716 WITH (NOLOCK)
             left join sc33 WITH (NOLOCK) on SP3730=sc33.id
             left join SC5196 on SP5203=SC5196.id
+            left join SC5724 WITH (NOLOCK) on SC5724.id = SP5729
             where iddoc=%s
                                 ''', row['iddoc'])
         logging.info('Выборка строк расхода завершена')
@@ -300,10 +313,15 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
         sum_total = 0
         for row_table in rows_table:
             if row_table['id_pdate']:
-                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
+                unload_production_date(cursor, wsdl_client, row_table['bdid_pdate'])
+
+            if row_table['reference2'] is not None and row_table['reference2'].strip() != '':
+                unload_egais_reference(cursor, wsdl_client, row_table['egais_reference_id'])
+
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'],
                                            price=row_table['price'], koef=row_table['koef'], sum=row_table['sum'],
-                                           pdate=row_table['id_pdate'], price_goods=row_table['price_goods'])
+                                           pdate=row_table['id_pdate'], price_goods=row_table['price_goods'],
+                                           field_str1=row_table['reference2'])
             if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
@@ -341,7 +359,7 @@ def load_rashod(cursor, wsdl_client, prm_row_delta):
                           transport_id=row['transportid'])
 
         list_partii = []
-        if isclosed == 1:
+        if isclosed == 1 and False:
             logging.info('Выборка партий расхода')
             cursor.execute('''
                                     select 

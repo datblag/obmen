@@ -336,7 +336,7 @@ def load_prihod(cursor, wsdl_client, prm_row_delta):
 
         for row_table in rows_table:
             if row_table['id_pdate']:
-                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
+                unload_production_date(cursor, wsdl_client, row_table['bdid_pdate'])
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
                                koef=row_table['koef'], sum=row_table['sum'], pricepriobr=row_table['pricepriobr'],
                                            pdate=row_table['id_pdate'])

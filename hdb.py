@@ -183,6 +183,7 @@ def unload_customer_discounts(cursor=None, wsdl_client=None, objid=''):
                         left join sc33 on sp5491 = sc33.id
                         where sc5494.id=%s
             ''', objid)
+    logging.warning(objid)
     logging.info('Выборка скидки клиента завершена')
     logging.info('Подготовка загрузки скидки клиента')
     row = cursor.fetchall()
@@ -266,8 +267,8 @@ def unload_agent_products(cursor=None, wsdl_client=None, objid=''):
 
 def unload_production_date(cursor=None, wsdl_client=None, objid=''):
     date_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка даты розлива')
     cursor.execute('''
                 select SP5641 as idartmarket, SP5194 as produce_date, SP5681 as egais_code, SC5196.descr,
@@ -286,15 +287,42 @@ def unload_production_date(cursor=None, wsdl_client=None, objid=''):
         date_list.append(nom)
     hdb_array = hdb_array_type(hdb_array=date_list)
     logging.info('Загрузка начало даты розлива')
-    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'pdate')
+    wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'pdate')
     logging.info('Загрузка даты розлива завершена')
+
+
+def unload_egais_reference(cursor=None, wsdl_client=None, objid=''):
+    reference_list = []
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
+    logging.info('Выборка справки егаис')
+    cursor.execute('''
+                select SC5196.id as pdate, SP5641 as idartmarket_owner, SP5726 as reference1, SP5727 as reference2, 
+                SP5752 as innkpp, SP6057 as ttn8  from SC5724 
+                left join SC5196 WITH (NOLOCK) on SC5724.parentext = SC5196.id 
+                where SC5724.id=%s
+            ''', objid)
+    logging.info('Выборка справки егаис завершена')
+    logging.info('Подготовка справки егаис')
+    row = cursor.fetchall()
+    for r in row:
+        logging.info(r)
+        unload_production_date(cursor, wsdl_client, r['pdate'])
+        nom = hdb_type(name=r['reference1'].strip(), id=str(r['reference2']).strip(), idparent='',
+                       value1=r['idartmarket_owner'].strip(), value2=r['innkpp'].strip(), value3=r['ttn8'].strip())
+        reference_list.append(nom)
+    hdb_array = hdb_array_type(hdb_array=reference_list)
+    logging.info('Загрузка начало справки егаис')
+    logging.warning(r['reference2'])
+    wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'egais_ref')
+    logging.info('Загрузка справки егаис завершена')
 
 
 # доверенности
 def unload_attorney(cursor=None, wsdl_client=None, objid=''):
     attorney_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка доверенности')
     cursor.execute('''
                         select  sp6139 as idartmarket, sc5584.code as number, sp5579 as date_in, sp5580 as date_out,
@@ -317,8 +345,8 @@ def unload_attorney(cursor=None, wsdl_client=None, objid=''):
 
 def unload_transport(cursor=None, wsdl_client=None, objid=''):
     analytic_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка транспортные средства')
     cursor.execute('''
                         select descr as name, sp6140 as idartmarket, sp5531 as number, sp5539 as capacity,
@@ -341,8 +369,8 @@ def unload_transport(cursor=None, wsdl_client=None, objid=''):
 
 def unload_analytics(cursor=None, wsdl_client=None, objid=''):
     analytic_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка аналитика')
     cursor.execute('''select sc.id, sc.descr as scname, sc.SP6137 as idartmarket, sc.isfolder
                         from SC5510 WITH (NOLOCK) sc  where sc.isfolder=2 and sc.id=%s''', objid)
@@ -364,8 +392,8 @@ def unload_analytics(cursor=None, wsdl_client=None, objid=''):
 def unload_bank_accounts(cursor=None, wsdl_client=None, objid=''):
     accounts_list = []
 
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка счета клиентов')
     cursor.execute('''select SP6144 as idartmarket, sp1188 as bik, sp1184 as rs, SC1183.descr as name, sp4807  as parentid   from sc1183 
                     left join sc46 on sc1183.parentext = sc46.id where ltrim(rtrim(sp1184)) <> '' 
@@ -383,11 +411,8 @@ def unload_bank_accounts(cursor=None, wsdl_client=None, objid=''):
 
     hdb_array = hdb_array_type(hdb_array=accounts_list)
     logging.info('Загрузка начало счета клиентов')
-    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'accounts')
+    wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'accounts')
     logging.info('Загрузка счета клиентов завершена')
-
-
-
 
 
 def unload_cost(cursor=None, wsdl_client=None, objid=''):
@@ -396,8 +421,8 @@ def unload_cost(cursor=None, wsdl_client=None, objid=''):
                   'FE7C24DA-E3D5-4186-A361-A1AEB5C5722E', '280F18F5-4E46-4774-B168-50891A2A765D',
                   '7A88694A-4C27-48C5-8425-228363F99F26']
 
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка затраты')
     cursor.execute('''select sc.id, sc.descr as scname, sc.sp6125 as idartmarket,sc.isfolder, scp.descr  as scpname,
         scp.sp6125 as parentid, scp.descr as parentname from sc3773 sc
@@ -422,8 +447,8 @@ def unload_cost(cursor=None, wsdl_client=None, objid=''):
 
 def unload_warehouse(cursor=None, wsdl_client=None, objid=''):
     warehouse_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка склады')
     cursor.execute('''select el.SP5639 as idartmarket, el.descr, el.sp40 as person, SP5380 as address
     from SC31 el where el.id=%s''', objid)
@@ -440,14 +465,14 @@ def unload_warehouse(cursor=None, wsdl_client=None, objid=''):
 
     hdb_array = hdb_array_type(hdb_array=warehouse_list)
     logging.info('Загрузка начало склады')
-    wsdl_client.service.load_hdb_elements(hdb_array, 1, 'sklad')
+    wsdl_client.client.service.load_hdb_elements(hdb_array, 1, 'sklad')
     logging.info('Загрузка склады завершена')
 
 
 def unload_unit(cursor=None, wsdl_client=None, objid=''):
     unit_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка подразделения')
     cursor.execute('''select el.SP6126 as idartmarket, el.descr, el.parentid, pr.descr as parentname, pr.sp6126 as parentid
                     from SC3769 el left join sc3769 pr on el.parentid = pr.id 
@@ -471,8 +496,8 @@ def unload_unit(cursor=None, wsdl_client=None, objid=''):
 
 def unload_for_marketing(cursor=None, wsdl_client=None, objid=''):
     marketing_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка для маркетинга')
     cursor.execute('''
             select SP6129 as idartmarket, descr  from SC5554 where id=%s
@@ -493,8 +518,8 @@ def unload_for_marketing(cursor=None, wsdl_client=None, objid=''):
 
 def unload_financing(cursor=None, wsdl_client=None, objid=''):
     financing_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка источник финансирования')
     cursor.execute('''
             select SP6128 as idartmarket, descr  from SC5552 where id=%s
@@ -515,8 +540,8 @@ def unload_financing(cursor=None, wsdl_client=None, objid=''):
 
 def unload_maker(cursor=None, wsdl_client=None, objid=''):
     maker_list = []
-    hdb_type = wsdl_client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     logging.info('Выборка производители')
     cursor.execute('''
             select SP6120 as idartmarket, SP5470 as inn, SP5471 as kpp, descr  from SC5468
@@ -538,8 +563,8 @@ def unload_maker(cursor=None, wsdl_client=None, objid=''):
 
 
 def get_region_groups_filial(prm_cursor, prm_id_list='', wsdl_client=None):
-    hdb_type = wsdl_client.client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     list_region = []
     nom_region = hdb_type(name=filial_region_name, id=filial_region_id, idparent='')
     list_region.append(nom_region)
@@ -573,8 +598,8 @@ def get_region_groups_filial(prm_cursor, prm_id_list='', wsdl_client=None):
 
 
 def get_region_groups(prm_cursor, prm_id_list='', wsdl_client=None):
-    hdb_type = wsdl_client.client.get_type('ns3:hdb_element')
-    hdb_array_type = wsdl_client.client.get_type('ns3:hdb_array_element')
+    hdb_type = wsdl_client.hdb_type
+    hdb_array_type = wsdl_client.hdb_array_type
     list_region = []
     logging.info('Выборка регионов уровень 1')
     prm_cursor.execute('''select sp4807 as idartmarket, descr,'' as idparent, '' as nameparent from
@@ -686,7 +711,7 @@ def send_clients(prm_clients_rows, wsdl_client, id_prefix=''):
 
         hdb_array = wsdl_client.hdb_array_type(hdb_array=list_clients)
         logging.info('Загрузка клиентов начало')
-        logging.info(hdb_array)
+        # logging.info(hdb_array)
         wsdl_client.client.service.load_client_groups(hdb_array, 1)
         logging.info('Загрузка клиентов завершена')
 

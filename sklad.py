@@ -2,7 +2,7 @@ import logging
 import nomenklatura
 from utils import check_firma, check_docid, check_sklad, is_process_doc
 from config import cb_firma_id, filial_sklad_white_list
-from hdb import unload_production_date
+from hdb import unload_production_date, unload_egais_reference
 
 
 def get_move_header(cursor, prm_isfilial, prm_row_delta):
@@ -155,10 +155,12 @@ def get_spisanie_rows(cursor, prm_isfilial, prm_row):
         logging.info(';'.join(['Выборка строк списание', prm_row['docno']]))
         cursor.execute('''
                         select  sc33.sp4802 as idtovar,SP304 as kolvo,SP306 as koef,0 as price,0 as sum,
-                        SP5641 as id_pdate, SC5196.id as bdid_pdate
+                        SP5641 as id_pdate, SC5196.id as bdid_pdate,
+                        SP5918 as egais_reference_id, SC5724.SP5727 as reference2
                         from dt297
                         left join sc33 on SP303=sc33.id
                         left join SC5196 on SP5209=SC5196.id  
+                        left join SC5724 WITH (NOLOCK) on SC5724.id = SP5918
                         where iddoc=%s
                             ''', prm_row['iddoc'])
     if prm_isfilial == 1:
@@ -297,8 +299,6 @@ def spisanie_filial(cursor, wsdl_client, prm_row_delta):
         logging.info(';'.join(['Загрузка документа списание', row_header['docno'], n]))
 
 
-
-
 def spisanie(cursor, wsdl_client, prm_row_delta):
     rows_header = get_spisanie_header(cursor, 0, prm_row_delta)
     for row_header in rows_header:
@@ -315,10 +315,16 @@ def spisanie(cursor, wsdl_client, prm_row_delta):
 
         for row_table in rows_table:
             if row_table['id_pdate']:
-                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
+                unload_production_date(cursor, wsdl_client, row_table['bdid_pdate'])
+
+            if row_table['reference2'] is not None and row_table['reference2'].strip() != '':
+                unload_egais_reference(cursor, wsdl_client, row_table['egais_reference_id'])
+
             row_nom = wsdl_client.row_type(tovar=row_table['idtovar'], quantity=row_table['kolvo'], price=row_table['price'],
                                            koef=row_table['koef'], sum=row_table['sum'],
-                                           pdate=row_table['id_pdate'])
+                                           pdate=row_table['id_pdate'],
+                                           field_str1=row_table['reference2'])
+
             if row_table['idtovar'] is None:
                 continue
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
@@ -331,7 +337,7 @@ def spisanie(cursor, wsdl_client, prm_row_delta):
                                        prm_update_mode=0, wsdl_client=wsdl_client)
 
         list_partii = []
-        if isclosed == 1:
+        if isclosed == 1 and False:
             logging.info('Выборка партий списания')
             cursor.execute('''
                 select 
@@ -394,7 +400,7 @@ def move_tovar(cursor, wsdl_client, prm_row_delta):
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
             if row_table['id_pdate']:
-                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
+                unload_production_date(cursor, wsdl_client, row_table['bdid_pdate'])
             row_list.append(row_nom)
 
         rows = wsdl_client.rows_type(rows=row_list)
@@ -541,7 +547,7 @@ def vvodostatka_tovar(cursor, wsdl_client, prm_row_delta):
             if not "'" + row_table['idtovar'] + "'" in tovar_list:
                 tovar_list.append("'" + row_table['idtovar'] + "'")
             if row_table['id_pdate']:
-                unload_production_date(cursor, wsdl_client.client, row_table['bdid_pdate'])
+                unload_production_date(cursor, wsdl_client, row_table['bdid_pdate'])
             row_list.append(row_nom)
 
         rows = wsdl_client.rows_type(rows=row_list)

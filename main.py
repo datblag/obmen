@@ -33,6 +33,8 @@ def load_chicago():
 def auto_load(prm_cursor):
     white_list = []
     load_all = 1
+    delete_change_records = True
+
     if load_all == 1:
         white_list.append(3716)  # расходнаядоставка v_alko++
         white_list.append(410)  # расходнаянакладная v_alko++
@@ -77,8 +79,54 @@ def auto_load(prm_cursor):
         white_list.append(1183)  # счета контрагентов банк
         white_list.append(5494)  # скидки клиентам
 
+        white_list.append(5724)  # справки егаис
+        white_list.append(5682)  # акцизные марки
+
     if load_all == 0:
-        white_list.append(31)  # склады
+        # white_list.append(5724)  # справки егаис
+        # white_list.append(3716)  # расходнаядоставка v_alko++
+        # white_list.append(410)  # расходнаянакладная v_alko++
+        # white_list.append(469)  # расходнаяреализатора v_alko++
+        #
+        # white_list.append(297)  # списания v_alko++
+        #
+        # white_list.append(310)  # ввод остатков v_alko++
+        # white_list.append(434)  # приход v_alko++
+        # white_list.append(239)  # перемещение v_alko++
+        # white_list.append(4425)  # заказ поставщику v_alko++
+        # white_list.append(4553)  # счет на услуги service invoices
+        #
+        # white_list.append(2989)  # движенияденежныхсредств v_alko++
+        # white_list.append(4308)  # выручкадоставка  sp4323 переброска v_alko++
+        # white_list.append(2964)  # ПриходныйОрдерТБ v_alko++
+        # white_list.append(4179)  # АктПереоценкиКлиенты v_alko++
+        # white_list.append(4225)  # РасходныйОрдерТБ v_alko++
+        #
+        # white_list.append(4114)  # приходный ордер Б
+        # white_list.append(4132)  # расходный ордер Б
+        #
+        # white_list.append(33)  # номенклатура
+        # white_list.append(46)  # контрагенты
+        # white_list.append(31)  # склады
+        #
+        # white_list.append(5468)  # производители импортеры
+        # white_list.append(5196)  # даты розлива
+        # white_list.append(4840)  # клиенты агента
+        # white_list.append(4843)  # ассортимент агента
+        #
+        # white_list.append(3769)  # подразделения
+        #
+        # white_list.append(3773)  # статьи затрат
+        #
+        # white_list.append(5552)  # источник финансирования SP6128
+        # white_list.append(5554)  # для маркетинга SP6129
+        #
+        # white_list.append(5510)  # аналитики
+        # white_list.append(5584)  # доверенности
+        # white_list.append(5529)  # транспортное средство
+        # white_list.append(1183)  # счета контрагентов банк
+        # white_list.append(5494)  # скидки клиентам
+        white_list.append(5682)  # акцизные марки
 
     commit_limit = 100
     commit_count = 0
@@ -111,7 +159,7 @@ def auto_load(prm_cursor):
             #     logging.exception(e)
             # logging.info(['typeid', row_delta['TYPEID']])
             if not (row_delta['TYPEID'] in white_list):
-                logging.info(['TYPEID', row_delta['TYPEID']])
+                # logging.info(['TYPEID', row_delta['TYPEID']])
                 if load_all == 1:
                     try:
                         prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!') and 
@@ -142,7 +190,7 @@ def auto_load(prm_cursor):
             # счета контрагентов
             elif row_delta['TYPEID'] == 1183:
                 logging.info(row_delta['TYPEID'])
-                hdb.unload_bank_accounts(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+                hdb.unload_bank_accounts(prm_cursor, wsdl_client, row_delta['OBJID'])
 
             # транспорт
             elif row_delta['TYPEID'] == 5529:
@@ -179,7 +227,7 @@ def auto_load(prm_cursor):
 
             # склады
             elif row_delta['TYPEID'] == 31:
-                hdb.unload_warehouse(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+                hdb.unload_warehouse(prm_cursor, wsdl_client, row_delta['OBJID'])
 
             # производитель импортер
             elif row_delta['TYPEID'] == 5468:
@@ -204,7 +252,12 @@ def auto_load(prm_cursor):
 
             # даты розлива
             elif row_delta['TYPEID'] == 5196:
-                hdb.unload_production_date(prm_cursor, wsdl_client.client, row_delta['OBJID'])
+                hdb.unload_production_date(prm_cursor, wsdl_client, row_delta['OBJID'])
+
+            # справки егаис
+            elif row_delta['TYPEID'] == 5724:
+                hdb.unload_egais_reference(prm_cursor, wsdl_client, row_delta['OBJID'])
+
             # приходный ордер Б
             elif row_delta['TYPEID'] == 4114:
                 kassa.prihod(prm_cursor, wsdl_client, row_delta)
@@ -249,13 +302,14 @@ def auto_load(prm_cursor):
                 prihod.load_prihod(prm_cursor, wsdl_client, row_delta)
             try:
 
-                prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
-                                    and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
-                commit_count += 1
-                if commit_count == commit_limit:
-                    conn.commit()
-                    commit_count = 0
-                    logging.warning('commit')
+                if delete_change_records:
+                    prm_cursor.execute('''delete from _1SUPDTS where (DBSIGN = 'P1 ') and (DWNLDID='1122!!')
+                                            and (OBJID=%s) and (TYPEID=%s)''', (row_delta['OBJID'], row_delta['TYPEID']))
+                    commit_count += 1
+                    if commit_count == commit_limit:
+                        conn.commit()
+                        commit_count = 0
+                        logging.warning('commit')
                 logging.info(';'.join(['Загружен объект', str(row_delta['OBJID']), str(row_delta['TYPEID'])]))
             except Exception as e:
                 logging.error(';'.join(['Ошибка загрузки объекта', str(row_delta['OBJID']),
